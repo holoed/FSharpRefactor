@@ -1,0 +1,120 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AddIn", "AddIn", "{16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AddIn.Tests", "AddIn.Tests", "{364B9413-FB7F-4C8F-971C-D22B1BF7C228}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Tokenizer", "Tokenizer\Tokenizer.fsproj", "{A58E02E4-01CF-401E-B7C4-64863B38ACBB}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TokenizerTests", "TokenizerTests\TokenizerTests.fsproj", "{71FF35DA-EE9F-4726-B3A4-4BF75B2418FE}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Parser", "Parser\Parser.fsproj", "{AE4A60AC-D526-4EF4-A747-6BF0450C884B}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ParserTests", "ParserTests\ParserTests.fsproj", "{8BA55EA0-C94C-4C26-A4E8-DB782C097577}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TypeSystem", "TypeSystem\TypeSystem.fsproj", "{99F36F74-99AE-4555-9546-5A157B494B50}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TypeSystemTests", "TypeSystemTests\TypeSystemTests.fsproj", "{F1A30665-03B6-493A-B659-D58371108E45}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "PrettyPrint", "PrettyPrint\PrettyPrint.fsproj", "{52E884D3-2989-4338-9C9C-B240AC988B02}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "PrettyPrintTests", "PrettyPrintTests\PrettyPrintTests.fsproj", "{19441DE2-619E-40C8-A44D-5BF18BD4CB2F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{5FAC989C-ADAF-4FEB-A744-52DB072CC4C6}"
+	ProjectSection(SolutionItems) = preProject
+		Libs\SharpMalib.dll = Libs\SharpMalib.dll
+		Libs\SharpMalib.pdb = Libs\SharpMalib.pdb
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 9
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://tfs02.codeplex.com/
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = Tokenizer\\Tokenizer.fsproj
+		SccProjectTopLevelParentUniqueName1 = FSharpRefactor.sln
+		SccProjectName1 = Tokenizer
+		SccLocalPath1 = Tokenizer
+		SccProjectUniqueName2 = TokenizerTests\\TokenizerTests.fsproj
+		SccProjectTopLevelParentUniqueName2 = FSharpRefactor.sln
+		SccProjectName2 = TokenizerTests
+		SccLocalPath2 = TokenizerTests
+		SccProjectUniqueName3 = Parser\\Parser.fsproj
+		SccProjectTopLevelParentUniqueName3 = FSharpRefactor.sln
+		SccProjectName3 = Parser
+		SccLocalPath3 = Parser
+		SccProjectUniqueName4 = ParserTests\\ParserTests.fsproj
+		SccProjectTopLevelParentUniqueName4 = FSharpRefactor.sln
+		SccProjectName4 = ParserTests
+		SccLocalPath4 = ParserTests
+		SccProjectUniqueName5 = TypeSystem\\TypeSystem.fsproj
+		SccProjectTopLevelParentUniqueName5 = FSharpRefactor.sln
+		SccProjectName5 = TypeSystem
+		SccLocalPath5 = TypeSystem
+		SccProjectUniqueName6 = TypeSystemTests\\TypeSystemTests.fsproj
+		SccProjectTopLevelParentUniqueName6 = FSharpRefactor.sln
+		SccProjectName6 = TypeSystemTests
+		SccLocalPath6 = TypeSystemTests
+		SccProjectUniqueName7 = PrettyPrint\\PrettyPrint.fsproj
+		SccProjectTopLevelParentUniqueName7 = FSharpRefactor.sln
+		SccProjectName7 = PrettyPrint
+		SccLocalPath7 = PrettyPrint
+		SccProjectUniqueName8 = PrettyPrintTests\\PrettyPrintTests.fsproj
+		SccProjectTopLevelParentUniqueName8 = FSharpRefactor.sln
+		SccProjectName8 = PrettyPrintTests
+		SccLocalPath8 = PrettyPrintTests
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A58E02E4-01CF-401E-B7C4-64863B38ACBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A58E02E4-01CF-401E-B7C4-64863B38ACBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A58E02E4-01CF-401E-B7C4-64863B38ACBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A58E02E4-01CF-401E-B7C4-64863B38ACBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71FF35DA-EE9F-4726-B3A4-4BF75B2418FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71FF35DA-EE9F-4726-B3A4-4BF75B2418FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71FF35DA-EE9F-4726-B3A4-4BF75B2418FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71FF35DA-EE9F-4726-B3A4-4BF75B2418FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE4A60AC-D526-4EF4-A747-6BF0450C884B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE4A60AC-D526-4EF4-A747-6BF0450C884B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE4A60AC-D526-4EF4-A747-6BF0450C884B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE4A60AC-D526-4EF4-A747-6BF0450C884B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BA55EA0-C94C-4C26-A4E8-DB782C097577}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BA55EA0-C94C-4C26-A4E8-DB782C097577}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BA55EA0-C94C-4C26-A4E8-DB782C097577}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BA55EA0-C94C-4C26-A4E8-DB782C097577}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99F36F74-99AE-4555-9546-5A157B494B50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99F36F74-99AE-4555-9546-5A157B494B50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99F36F74-99AE-4555-9546-5A157B494B50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99F36F74-99AE-4555-9546-5A157B494B50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1A30665-03B6-493A-B659-D58371108E45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1A30665-03B6-493A-B659-D58371108E45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1A30665-03B6-493A-B659-D58371108E45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1A30665-03B6-493A-B659-D58371108E45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52E884D3-2989-4338-9C9C-B240AC988B02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52E884D3-2989-4338-9C9C-B240AC988B02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52E884D3-2989-4338-9C9C-B240AC988B02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52E884D3-2989-4338-9C9C-B240AC988B02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19441DE2-619E-40C8-A44D-5BF18BD4CB2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19441DE2-619E-40C8-A44D-5BF18BD4CB2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19441DE2-619E-40C8-A44D-5BF18BD4CB2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19441DE2-619E-40C8-A44D-5BF18BD4CB2F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A58E02E4-01CF-401E-B7C4-64863B38ACBB} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
+		{AE4A60AC-D526-4EF4-A747-6BF0450C884B} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
+		{99F36F74-99AE-4555-9546-5A157B494B50} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
+		{52E884D3-2989-4338-9C9C-B240AC988B02} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
+		{71FF35DA-EE9F-4726-B3A4-4BF75B2418FE} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
+		{8BA55EA0-C94C-4C26-A4E8-DB782C097577} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
+		{F1A30665-03B6-493A-B659-D58371108E45} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
+		{19441DE2-619E-40C8-A44D-5BF18BD4CB2F} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
+	EndGlobalSection
+EndGlobal
