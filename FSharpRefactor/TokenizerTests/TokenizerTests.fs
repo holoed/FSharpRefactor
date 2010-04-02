@@ -13,6 +13,14 @@ let assertTest expected input =
 type TokenizerTests() =
     
     [<Test>]
+    member this.Identifiers() = 
+        assertTest (seq [Identifier "x"]) "x" 
+        assertTest (seq [Identifier "x'"]) "x'" 
+        assertTest (seq [Identifier "_x"]) "_x"        
+        assertTest (seq [Identifier "x42"]) "x42" 
+        assertTest (seq [Identifier "_x42'"]) "_x42'" 
+
+    [<Test>]
     member this.Words() = 
         assertTest (seq [Identifier "Hello"; Identifier "World"]) "Hello World" 
 
