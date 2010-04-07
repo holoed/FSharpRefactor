@@ -19,9 +19,12 @@ type ParserTests() =
     
     [<Test>]
     member this.BindingToValue() =
-        Assert.IsTrue (Some(Binding (Name (Identifier "x"), Literal (IntegerLiteral 42))) = parse "let x = 42")
+        Assert.IsTrue (Some(ValueBinding (Name (Identifier "x"), Literal (IntegerLiteral 42))) = parse "let x = 42")
 
     [<Test>]
     member this.BindingToArithmeticExpression() =
-        Assert.IsTrue (Some(Binding (Name (Identifier "x"), BinaryExpression (SymbolOp "*", Literal (IntegerLiteral 2), Literal (IntegerLiteral 3)))) = parse "let x = 2 * 3")
+        Assert.IsTrue (Some(ValueBinding (Name (Identifier "x"), BinaryExpression (SymbolOp "*", Literal (IntegerLiteral 2), Literal (IntegerLiteral 3)))) = parse "let x = 2 * 3")
                                                             
+    [<Test>]
+    member this.FunctionBinding() = 
+        Assert.IsTrue (Some(FunctionBinding (Identifier "f", [Name (Identifier "x")], Name (Identifier "x")))  = parse "let f x = x")
