@@ -6,8 +6,10 @@ open Tokenizer
 
 type Expression = | Literal of Token   
                   | Name of Token            
-                  | Binding of Expression * Expression
-                  | BinaryExpression of Token * Expression * Expression
+                  | BinaryExpression of Token * Expression * Expression 
+                  | ValueBinding of Expression * Expression
+                  | FunctionBinding of Token * Expression list * Expression
+                  
 
 let keyword s = parser { let! _ = sat (fun t -> t = Keyword s)
                          return s }
@@ -44,15 +46,22 @@ and term = chainl1 factor (mulOp +++ divOp)
 
 
 
-let rec binding = parser { let! _ = keyword "let"
-                           let! name = identifier 
-                           let! _ = symbol "="
-                           let! value = exp
-                           return Binding (name, value) }
+let rec valueBinding = parser { let! _ = keyword "let"
+                                let! name = identifier 
+                                let! _ = symbol "="
+                                let! value = exp
+                                return ValueBinding (name, value) }
 
-and exp = expr +++ identifier +++ literal +++ binding
+and functionBinding = parser { let! _ = keyword "let"
+                               let! name = item 
+                               let! args = many identifier
+                               let! _ = symbol "="
+                               let! body = exp
+                               return FunctionBinding (name, Seq.toList args, body) }
+
+and exp = expr +++ identifier +++ literal +++ valueBinding +++ functionBinding
 
 let parseCode (xs: seq<Token>) : Expression option =
-    match parseString binding xs with
+    match parseString exp xs with
     | Empty -> None
     | Cons(x, _) -> Some x
