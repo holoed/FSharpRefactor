@@ -47,3 +47,7 @@ type TokenizerTests() =
     [<Test>]
     member this.FunctionBinding() = 
         assertTest (seq [Keyword "let"; Identifier "f"; Identifier "x"; SymbolOp "="; Identifier "x"]) "let f x = x"
+
+    [<Test>]
+    member this.FunctionBinding2() = 
+        assertTest (seq [Keyword "let"; Identifier "square"; Identifier "x"; SymbolOp "="; Identifier "x"; SymbolOp "*"; Identifier "x"]) "let square x = x * x"
