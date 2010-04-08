@@ -4,8 +4,12 @@ open StringUtils
 open SharpMalib.Parser.ParserMonad
 open Tokenizer
 
-type Expression = | Literal of Token   
-                  | Name of Token            
+type Type = Unknown | Int | Double | Float | String | Char | Tuple of Type list | Function of Type list * Type
+
+type Expression = | Literal of Token
+                  | TypedLiteral of Token * Type  
+                  | Name of Token       
+                  | TypedName of Token * Type
                   | BinaryExpression of Token * Expression * Expression 
                   | ValueBinding of Expression * Expression
                   | FunctionBinding of Token * Expression list * Expression
@@ -16,12 +20,12 @@ let keyword s = parser { let! _ = sat (fun t -> t = Keyword s)
                             
 let literal = parser { let! x = item
                        return! match x with
-                               | IntegerLiteral _ -> result (Literal x)
+                               | IntegerLiteral _ -> result (Literal (x))
                                | _ -> zero }
 
 let identifier = parser { let! x = item
                           return! match x with
-                                  | Identifier _ -> result (Name x)
+                                  | Identifier _ -> result (Name (x))
                                   | _ -> zero }
 
 let symbol s = parser { let! x = sat (fun t -> t = SymbolOp s)
@@ -37,10 +41,10 @@ let divOp = parser { let! x = symbol "/"
                      return fun l r -> BinaryExpression (x,l,r) }
 
 
-let rec factor = literal +++ parser { let! _ = symbol "("
-                                      let! n = expr
-                                      let! _ = symbol ")"
-                                      return n }
+let rec factor = literal +++ identifier +++ parser { let! _ = symbol "("
+                                                     let! n = expr
+                                                     let! _ = symbol ")"
+                                                     return n }
 and expr = chainl1 term (addOp +++ subOp)
 and term = chainl1 factor (mulOp +++ divOp)
 
