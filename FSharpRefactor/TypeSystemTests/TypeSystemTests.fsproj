@@ -47,13 +47,25 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Parser\Parser.fsproj">
+      <Name>Parser</Name>
+      <Project>{ae4a60ac-d526-4ef4-a747-6bf0450c884b}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Tokenizer\Tokenizer.fsproj">
+      <Name>Tokenizer</Name>
+      <Project>{a58e02e4-01cf-401e-b7c4-64863b38acbb}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\TypeSystem\TypeSystem.fsproj">
       <Name>TypeSystem</Name>
       <Project>{99f36f74-99ae-4555-9546-5a157b494b50}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Compile Include="TypeInferenceTests.fs" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
