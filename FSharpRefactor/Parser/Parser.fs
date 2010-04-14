@@ -4,15 +4,13 @@ open StringUtils
 open SharpMalib.Parser.ParserMonad
 open Tokenizer
 
-type Type = Unknown | Int | Double | Float | String | Char | Tuple of Type list | Function of Type list * Type
-
-type Expression = | Literal of Token
-                  | TypedLiteral of Token * Type  
-                  | Name of Token       
-                  | TypedName of Token * Type
-                  | BinaryExpression of Token * Expression * Expression 
-                  | ValueBinding of Expression * Expression
-                  | FunctionBinding of Token * Expression list * Expression
+type Expression<'a> = | Literal of 'a
+                      | TypedLiteral of 'a
+                      | Name of 'a       
+                      | TypedName of 'a
+                      | BinaryExpression of 'a * Expression<'a> * Expression<'a>
+                      | ValueBinding of Expression<'a> * Expression<'a>
+                      | FunctionBinding of 'a * Expression<'a> list * Expression<'a>
                   
 
 let keyword s = parser { let! _ = sat (fun t -> t = Keyword s)
@@ -65,7 +63,7 @@ and functionBinding = parser { let! _ = keyword "let"
 
 and exp = expr +++ identifier +++ literal +++ valueBinding +++ functionBinding
 
-let parseCode (xs: seq<Token>) : Expression option =
+let parseCode (xs: seq<Token>) : Expression<Token> option =
     match parseString exp xs with
     | Empty -> None
     | Cons(x, _) -> Some x
