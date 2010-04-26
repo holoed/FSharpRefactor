@@ -3,6 +3,8 @@
 open StringUtils
 open SharpMalib.Parser.ParserMonad
 
+type SrcLoc = { srcFilename : string; srcLine : int; srcColumn : int }   
+
 type Token = | Identifier of string
              | IntegerLiteral of int
              | StringLiteral of string
