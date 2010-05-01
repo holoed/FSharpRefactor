@@ -44,7 +44,7 @@ type Exp
     | InfixApp of Exp * Op * Exp            // infix application
     | App of Exp * Exp                      // ordinary application
     | Lambda of Pat list * Exp              // lambda expression
-    | Let of Name * Exp                     // local declarations with @let@ ... @in@ ...
+    | Let of Pat * Exp                     // local declarations with @let@ ... @in@ ...
     | If of Exp * Exp * Exp                 // @if@ /exp/ @then@ /exp/ @else@ /exp/
     | Match of Exp * Alt list               // @case@ /exp/ @of@ /alts/
     | Tuple of Exp list                     // tuple expression
@@ -90,11 +90,20 @@ let rec factor = literal +++ variable +++ parser { let! _ = symbol "("
 and expr = chainl1 term (addOp +++ subOp)
 and term = chainl1 factor (mulOp +++ divOp)
 
+let varPat = parser { let! x = identifier
+                      return PVar x }
+
+let rec funPat = parser { let! name = identifier
+                          let! args = many1 pattern
+                          return PApp (name, Seq.toList args) }
+
+and pattern = funPat +++ varPat
+
 let rec valueBinding = parser { let! _ = keyword "let"
-                                let! ident = identifier                                 
+                                let! pat = pattern                                 
                                 let! _ = symbol "="
                                 let! value = exp
-                                return Let (ident, value) }
+                                return Let (pat, value) }
 
 and exp = app +++ expr +++ variable +++ literal
 

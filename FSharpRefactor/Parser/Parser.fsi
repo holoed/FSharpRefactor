@@ -42,7 +42,7 @@ type Exp
     | InfixApp of Exp * Op * Exp            // infix application
     | App of Exp * Exp                      // ordinary application
     | Lambda of Pat list * Exp              // lambda expression
-    | Let of Name * Exp                     // local declarations with @let@ ... @in@ ...
+    | Let of Pat * Exp                     // local declarations with @let@ ... @in@ ...
     | If of Exp * Exp * Exp                 // @if@ /exp/ @then@ /exp/ @else@ /exp/
     | Match of Exp * Alt list               // @case@ /exp/ @of@ /alts/
     | Tuple of Exp list                     // tuple expression

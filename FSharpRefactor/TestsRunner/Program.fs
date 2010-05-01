@@ -4,4 +4,4 @@ open ParserTests
 
 let parserTests = new ParserTests()
 
-parserTests.FunctionApplication ()
+parserTests.FunctionBinding ()
