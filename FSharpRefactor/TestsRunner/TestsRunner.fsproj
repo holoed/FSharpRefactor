@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0a91d820-0e31-4bd4-bdb9-db1556d16cc2}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>TestsRunner</RootNamespace>
+    <AssemblyName>TestsRunner</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <Name>TestsRunner</Name>
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <Tailcalls>false</Tailcalls>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <DocumentationFile>bin\Debug\TestsRunner.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <Tailcalls>true</Tailcalls>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <DocumentationFile>bin\Release\TestsRunner.XML</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="FSharp.Core" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ParserTests\ParserTests.fsproj">
+      <Name>ParserTests</Name>
+      <Project>{8ba55ea0-c94c-4c26-a4e8-db782c097577}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Parser\Parser.fsproj">
+      <Name>Parser</Name>
+      <Project>{ae4a60ac-d526-4ef4-a747-6bf0450c884b}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\PrettyPrintTests\PrettyPrintTests.fsproj">
+      <Name>PrettyPrintTests</Name>
+      <Project>{19441de2-619e-40c8-a44d-5bf18bd4cb2f}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\PrettyPrint\PrettyPrint.fsproj">
+      <Name>PrettyPrint</Name>
+      <Project>{52e884d3-2989-4338-9c9c-b240ac988b02}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\TokenizerTests\TokenizerTests.fsproj">
+      <Name>TokenizerTests</Name>
+      <Project>{71ff35da-ee9f-4726-b3a4-4bf75b2418fe}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Tokenizer\Tokenizer.fsproj">
+      <Name>Tokenizer</Name>
+      <Project>{a58e02e4-01cf-401e-b7c4-64863b38acbb}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\TypeSystemTests\TypeSystemTests.fsproj">
+      <Name>TypeSystemTests</Name>
+      <Project>{f1a30665-03b6-493a-b659-d58371108e45}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\TypeSystem\TypeSystem.fsproj">
+      <Name>TypeSystem</Name>
+      <Project>{99f36f74-99ae-4555-9546-5a157b494b50}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
+  <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+	     Other similar extension points exist, see Microsoft.Common.targets.
+	<Target Name="BeforeBuild">
+	</Target>
+	<Target Name="AfterBuild">
+	</Target>
+	-->
+</Project>

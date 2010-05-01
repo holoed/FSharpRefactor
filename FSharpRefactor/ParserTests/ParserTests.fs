@@ -23,6 +23,11 @@ type ParserTests() =
         parse "x * 42")
 
     [<Test>]
+    member this.FunctionApplication() = 
+        Assert.IsTrue (Some(App ( Var (Ident "f"), Var (Ident "x"))) = 
+        parse "f x")
+
+    [<Test>]
     member this.BindingToValue() =
         Assert.IsTrue (Some(Let (Ident "x", Lit (Integer 42))) = 
         parse "let x = 42")
@@ -31,11 +36,11 @@ type ParserTests() =
     member this.BindingToArithmeticExpression() =
         Assert.IsTrue (Some(Let (Ident "x", InfixApp ( Lit (Integer 2), VarOp (Symbol "*"), Lit (Integer 3)))) = 
         parse "let x = 2 * 3")
-//                                                            
-//    [<Test>]
-//    member this.FunctionBinding() = 
-//        Assert.IsTrue (Some(FunctionBinding (Identifier "f", [Name (Identifier "x")], Name (Identifier "x")))  = 
-//        parse "let f x = x")
+                                                            
+    [<Test>]
+    member this.BindingToFunctionApplication() = 
+        Assert.IsTrue (Some(Let (Ident "x", App ( Var (Ident "f"), Var (Ident "x")))) = 
+        parse "let x = f x")
 //
 //    [<Test>]
 //    member this.FunctionBinding2() =         

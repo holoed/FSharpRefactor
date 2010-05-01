@@ -90,24 +90,21 @@ let rec factor = literal +++ variable +++ parser { let! _ = symbol "("
 and expr = chainl1 term (addOp +++ subOp)
 and term = chainl1 factor (mulOp +++ divOp)
 
-
-
 let rec valueBinding = parser { let! _ = keyword "let"
                                 let! ident = identifier                                 
                                 let! _ = symbol "="
                                 let! value = exp
                                 return Let (ident, value) }
 
-//and functionBinding = parser { let! _ = keyword "let"
-//                               let! name = item 
-//                               let! args = many identifier
-//                               let! _ = symbol "="
-//                               let! body = exp
-//                               return Let (name, Seq.toList args, body) }
+and exp = app +++ expr +++ variable +++ literal
 
-and exp = expr +++ variable +++ literal +++ valueBinding// +++ functionBinding
+and code = valueBinding +++ exp
+
+and app = parser { let! e1 = variable
+                   let! e2 = variable
+                   return App (e1, e2) }
 
 let parseCode (xs: seq<Token>) : Exp option =
-    match parseString exp xs with
+    match parseString code xs with
     | Empty -> None
     | Cons(x, _) -> Some x
