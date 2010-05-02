@@ -1,6 +1,7 @@
 ﻿module ParserTests
 
 open Tokenizer
+open Ast
 open Parser
 open NUnit.Framework
 

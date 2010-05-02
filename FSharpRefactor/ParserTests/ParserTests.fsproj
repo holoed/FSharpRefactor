@@ -47,6 +47,11 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Ast\Ast.fsproj">
+      <Name>Ast</Name>
+      <Project>{82d936e2-ab11-4afa-9a8b-5c0a97c54f2c}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Parser\Parser.fsproj">
       <Name>Parser</Name>
       <Project>{ae4a60ac-d526-4ef4-a747-6bf0450c884b}</Project>
