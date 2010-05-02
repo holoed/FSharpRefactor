@@ -44,6 +44,11 @@ type ParserTests() =
         parse "let x = 42")
 
     [<Test>]
+    member this.TupleValueBinding() =
+        Assert.IsTrue (Some(Let (PTuple [PVar (Ident "x"); PVar (Ident "y")], Tuple [Lit (Integer 2); Lit (Integer 3)])) = 
+        parse "let (x,y) = (2,3)")
+
+    [<Test>]
     member this.BindingToArithmeticExpression() =
         Assert.IsTrue (Some(Let (PVar (Ident "x"), InfixApp ( Lit (Integer 2), VarOp (Symbol "*"), Lit (Integer 3)))) = 
         parse "let x = 2 * 3")
