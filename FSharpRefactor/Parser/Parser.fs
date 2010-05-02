@@ -48,7 +48,12 @@ let rec funPat = parser { let! name = identifier
                           let! args = many1 pattern
                           return PApp (name, Seq.toList args) }
 
-and pattern = funPat +++ varPat
+and pattern = funPat +++ tuplePat +++ varPat
+
+and tuplePat = parser { let! _ = symbol "("
+                        let! exprs = sepBy pattern (symbol ",") 
+                        let! _ = symbol ")"
+                        return PTuple (Seq.toList exprs) }
 
 let rec valueBinding = parser { let! _ = keyword "let"
                                 let! pat = pattern                                 
