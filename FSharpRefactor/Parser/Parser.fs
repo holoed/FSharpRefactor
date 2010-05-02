@@ -61,7 +61,7 @@ let rec valueBinding = parser { let! _ = keyword "let"
                                 let! value = exp
                                 return Let (pat, value) }
 
-and exp = tuple +++ app +++ expr +++ variable +++ literal
+and exp = lambda +++ tuple +++ app +++ expr +++ variable +++ literal
 
 and code = valueBinding +++ exp
 
@@ -73,6 +73,12 @@ and tuple = parser { let! _ = symbol "("
                      let! exprs = sepBy exp (symbol ",") 
                      let! _ = symbol ")"
                      return Tuple (Seq.toList exprs) }
+
+and lambda = parser { let! _ = keyword "fun"
+                      let! pats = many1 pattern
+                      let! _ = symbol "->"
+                      let! body = exp
+                      return Lambda (Seq.toList pats, body) }
 
 let parseCode (xs: seq<Token>) : Exp option =
     match parseString code xs with

@@ -39,6 +39,11 @@ type ParserTests() =
         parse "(x, y, z)")
 
     [<Test>]
+    member this.Lambda() = 
+        Assert.IsTrue (Some (Lambda ([PVar (Ident "x")], Var (Ident "x"))) = 
+        parse "fun x -> x")
+
+    [<Test>]
     member this.BindingToValue() =
         Assert.IsTrue (Some(Let (PVar (Ident "x"), Lit (Integer 42))) = 
         parse "let x = 42")
@@ -63,8 +68,3 @@ type ParserTests() =
         Assert.IsTrue (Some(Let (PApp (Ident "f", [PVar (Ident "x")]), Var (Ident "x"))) = 
         parse "let f x = x")
 
-//
-//    [<Test>]
-//    member this.FunctionBinding2() =         
-//        Assert.IsTrue (Some(FunctionBinding (Identifier "square", [Name (Identifier "x")], BinaryExpression(SymbolOp "*", Name (Identifier "x"), Name (Identifier "x"))))  = 
-//        parse "let square x = x * x")

@@ -8,4 +8,4 @@ let parserTests = new ParserTests()
 
 //tokenizerTests.Symbols ()
 
-parserTests.TupleParse ()
+parserTests.Lambda ()
