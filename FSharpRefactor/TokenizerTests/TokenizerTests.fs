@@ -1,5 +1,6 @@
 ﻿module TokenizerTests
 
+open Tokens
 open Tokenizer
 open System.Collections
 open NUnit.Framework
@@ -34,7 +35,16 @@ type TokenizerTests() =
 
     [<Test>]
     member this.Symbols() = 
-        assertTest (seq [SymbolOp "="; SymbolOp "/"; SymbolOp "*"; SymbolOp "+"; SymbolOp ">"; SymbolOp "<"]) "= / * + > <"
+        assertTest (seq 
+        [Symbol "=";
+         Symbol "/"; 
+         Symbol "*"; 
+         Symbol "+";
+         Symbol ">"; 
+         Symbol "<"; 
+         Symbol "("; 
+         Symbol ")";
+         Symbol ","]) "= / * + > < ( ) ,"
 
     [<Test>]
     member this.Keyword() = 
@@ -42,12 +52,12 @@ type TokenizerTests() =
 
     [<Test>]
     member this.Binding() = 
-        assertTest (seq [Keyword "let"; Identifier "x"; SymbolOp "="; IntegerLiteral 42]) "let x = 42"
+        assertTest (seq [Keyword "let"; Identifier "x"; Symbol "="; IntegerLiteral 42]) "let x = 42"
 
     [<Test>]
     member this.FunctionBinding() = 
-        assertTest (seq [Keyword "let"; Identifier "f"; Identifier "x"; SymbolOp "="; Identifier "x"]) "let f x = x"
+        assertTest (seq [Keyword "let"; Identifier "f"; Identifier "x"; Symbol "="; Identifier "x"]) "let f x = x"
 
     [<Test>]
     member this.FunctionBinding2() = 
-        assertTest (seq [Keyword "let"; Identifier "square"; Identifier "x"; SymbolOp "="; Identifier "x"; SymbolOp "*"; Identifier "x"]) "let square x = x * x"
+        assertTest (seq [Keyword "let"; Identifier "square"; Identifier "x"; Symbol "="; Identifier "x"; Symbol "*"; Identifier "x"]) "let square x = x * x"

@@ -56,9 +56,9 @@
       <Project>{82d936e2-ab11-4afa-9a8b-5c0a97c54f2c}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\Tokenizer\Tokenizer.fsproj">
-      <Name>Tokenizer</Name>
-      <Project>{a58e02e4-01cf-401e-b7c4-64863b38acbb}</Project>
+    <ProjectReference Include="..\Tokens\Tokens.fsproj">
+      <Name>Tokens</Name>
+      <Project>{348ac9a5-c8a2-46bc-839e-8b12eb4100a5}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>

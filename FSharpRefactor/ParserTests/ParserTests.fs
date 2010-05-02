@@ -29,6 +29,16 @@ type ParserTests() =
         parse "f x")
 
     [<Test>]
+    member this.TupleParse() = 
+        Assert.IsTrue (Some(Tuple [Lit (Integer 42); Var(Ident "y")]) = 
+        parse "(42, y)")
+
+    [<Test>]
+    member this.Tuple3Parse() = 
+        Assert.IsTrue (Some(Tuple [Var(Ident "x"); Var(Ident "y");Var(Ident "z")]) = 
+        parse "(x, y, z)")
+
+    [<Test>]
     member this.BindingToValue() =
         Assert.IsTrue (Some(Let (PVar (Ident "x"), Lit (Integer 42))) = 
         parse "let x = 42")

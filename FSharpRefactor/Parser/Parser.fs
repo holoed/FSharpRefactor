@@ -2,7 +2,7 @@
 
 open StringUtils
 open SharpMalib.Parser.ParserMonad
-open Tokenizer  
+open Tokens 
 open Ast                      
 
 let keyword s = parser { let! _ = sat (fun t -> t = Keyword s)
@@ -21,7 +21,7 @@ let identifier = parser { let! x = item
 let variable = parser { let! x = identifier
                         return Var x }
 
-let symbol s = parser { let! _ = sat (fun t -> t = SymbolOp s)
+let symbol s = parser { let! _ = sat (fun t -> t = Tokens.Symbol s)
                         return VarOp (Symbol s) }
 
 let addOp = parser { let! x = symbol "+"
@@ -56,13 +56,18 @@ let rec valueBinding = parser { let! _ = keyword "let"
                                 let! value = exp
                                 return Let (pat, value) }
 
-and exp = app +++ expr +++ variable +++ literal
+and exp = tuple +++ app +++ expr +++ variable +++ literal
 
 and code = valueBinding +++ exp
 
 and app = parser { let! e1 = variable
                    let! e2 = variable
                    return App (e1, e2) }
+
+and tuple = parser { let! _ = symbol "("
+                     let! exprs = sepBy exp (symbol ",") 
+                     let! _ = symbol ")"
+                     return Tuple (Seq.toList exprs) }
 
 let parseCode (xs: seq<Token>) : Exp option =
     match parseString code xs with
