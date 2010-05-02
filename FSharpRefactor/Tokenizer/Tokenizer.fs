@@ -14,13 +14,16 @@ let (+|) p q = parser { let! x = p
 
 let SeqToString xs = new System.String (Seq.toArray xs)
 
-let keyword  = parser { let! x = stringp "let" +++ stringp "in"
+let keyword  = parser { let! x = stringp "let" +++ 
+                                 stringp "in"  +++
+                                 stringp "fun"
                         return Keyword (SeqToString x) }
 
 let identifier  = parser { let! x = (stringp "_") +| (word |+ number) |+ (stringp "\'")
                            return Identifier (SeqToString x) }
 
-let symbolOp  = parser { let! x = symb "=" +++ 
+let symbolOp  = parser { let! x = symb "->" +++
+                                  symb "=" +++ 
                                   symb "/" +++ 
                                   symb "*" +++ 
                                   symb "+" +++ 
@@ -28,7 +31,7 @@ let symbolOp  = parser { let! x = symb "=" +++
                                   symb "<" +++
                                   symb "," +++
                                   symb "(" +++
-                                  symb ")" 
+                                  symb ")"                                  
                          return Symbol (SeqToString x) }
 
 let integerLiteral  = parser { let! x = integer
