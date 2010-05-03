@@ -49,6 +49,11 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Ast\Ast.fsproj">
+      <Name>Ast</Name>
+      <Project>{82d936e2-ab11-4afa-9a8b-5c0a97c54f2c}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\ParserTests\ParserTests.fsproj">
       <Name>ParserTests</Name>
       <Project>{8ba55ea0-c94c-4c26-a4e8-db782c097577}</Project>

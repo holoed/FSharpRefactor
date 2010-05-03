@@ -1,4 +1,4 @@
-﻿module Parser
+﻿module CodeParser
 
 open Tokens
 open Ast

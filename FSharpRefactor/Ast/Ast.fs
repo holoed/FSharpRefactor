@@ -37,6 +37,7 @@ type Exp
     = Var of Name                           // variable
     | Con of Name                           // type constructor
     | Lit of Literal                        // literal constant
+    | LookUp of Exp * Name                  // lookup List.map
     | InfixApp of Exp * Op * Exp            // infix application
     | App of Exp * Exp                      // ordinary application
     | Lambda of Pat list * Exp              // lambda expression

@@ -30,6 +30,7 @@ let symbolOp  = parser { let! x = symb "->" +++
                                   symb ">" +++ 
                                   symb "<" +++
                                   symb "," +++
+                                  symb "." +++
                                   symb "(" +++
                                   symb ")"                                  
                          return Symbol (SeqToString x) }

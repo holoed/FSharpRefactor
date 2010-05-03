@@ -45,7 +45,8 @@ type TokenizerTests() =
          Symbol "("; 
          Symbol ")";
          Symbol ",";
-         Symbol "->"]) "= / * + > < ( ) , ->"
+         Symbol ".";
+         Symbol "->"]) "= / * + > < ( ) , . ->"
 
     [<Test>]
     member this.Keyword() = 

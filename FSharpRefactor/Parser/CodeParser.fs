@@ -1,4 +1,4 @@
-﻿module Parser
+﻿module CodeParser
 
 open StringUtils
 open SharpMalib.Parser.ParserMonad
@@ -34,19 +34,24 @@ let divOp = parser { let! x = symbol "/"
                      return fun l r -> InfixApp (l,x,r) }
 
 
-let rec factor = literal +++ variable +++ parser { let! _ = symbol "("
-                                                   let! n = expr
-                                                   let! _ = symbol ")"
-                                                   return n }
-and expr = chainl1 term (addOp +++ subOp)
-and term = chainl1 factor (mulOp +++ divOp)
+let rec factor = valueBinding +++ lambda +++ lookUp +++ tuple +++ literal +++ variable +++ parens
 
-let varPat = parser { let! x = identifier
+and parens = parser { let! _ = symbol "("
+                      let! n = expr
+                      let! _ = symbol ")"
+                      return n }
+
+and expr = chainl1 term (addOp +++ subOp)
+and term = chainl1 app (mulOp +++ divOp)
+and app = chainl1 factor (parser { return fun e1 e2 -> App(e1, e2) })
+
+
+and varPat = parser { let! x = identifier
                       return PVar x }
 
-let rec funPat = parser { let! name = identifier
-                          let! args = many1 pattern
-                          return PApp (name, Seq.toList args) }
+and funPat = parser { let! name = identifier
+                      let! args = many1 pattern
+                      return PApp (name, Seq.toList args) }
 
 and pattern = funPat +++ tuplePat +++ varPat
 
@@ -55,32 +60,29 @@ and tuplePat = parser { let! _ = symbol "("
                         let! _ = symbol ")"
                         return PTuple (Seq.toList exprs) }
 
-let rec valueBinding = parser { let! _ = keyword "let"
-                                let! pat = pattern                                 
-                                let! _ = symbol "="
-                                let! value = exp
-                                return Let (pat, value) }
+and valueBinding = parser { let! _ = keyword "let"
+                            let! pat = pattern                                 
+                            let! _ = symbol "="
+                            let! value = expr
+                            return Let (pat, value) }
 
-and exp = lambda +++ tuple +++ app +++ expr +++ variable +++ literal
-
-and code = valueBinding +++ exp
-
-and app = parser { let! e1 = variable
-                   let! e2 = variable
-                   return App (e1, e2) }
+and lookUp = parser { let! e = variable
+                      let! _ = symbol "."
+                      let! name = identifier
+                      return LookUp (e, name) }
 
 and tuple = parser { let! _ = symbol "("
-                     let! exprs = sepBy exp (symbol ",") 
+                     let! exprs = sepBy expr (symbol ",") 
                      let! _ = symbol ")"
                      return Tuple (Seq.toList exprs) }
 
 and lambda = parser { let! _ = keyword "fun"
                       let! pats = many1 pattern
                       let! _ = symbol "->"
-                      let! body = exp
+                      let! body = expr
                       return Lambda (Seq.toList pats, body) }
 
 let parseCode (xs: seq<Token>) : Exp option =
-    match parseString code xs with
+    match parseString expr xs with
     | Empty -> None
     | Cons(x, _) -> Some x
