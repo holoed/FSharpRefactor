@@ -1,4 +1,4 @@
-﻿module ParserTests
+﻿module CodeParserTests
 
 open Tokenizer
 open Ast
@@ -16,7 +16,12 @@ let parse s = maybe  { let! x = tokenize s
                        return y }
 
 [<TestFixture>]
-type ParserTests() =
+type CodeParserTests() =
+
+    [<Test>]
+    member this.Variable() =        
+        Assert.IsTrue (Some (Var (Ident "x")) = parse "x")
+        Assert.IsTrue (Some (Var (Ident "x")) = parse "(x)")
     
     [<Test>]
     member this.ArithmeticExpression() =        
@@ -78,3 +83,13 @@ type ParserTests() =
         Assert.IsTrue (Some(Let (PApp (Ident "f", [PVar (Ident "x")]), Var (Ident "x"))) = 
         parse "let f x = x")
 
+    [<Test>]
+    member this.Example1() = 
+        Assert.IsTrue (Some (Let (
+                                  PVar (Ident "product"), 
+                                  App (
+                                    App (
+                                         LookUp (Var (Ident "List"), Ident "fold"), 
+                                         Lambda ([PVar (Ident "x"); PVar (Ident "y")],  InfixApp(Var (Ident "x"), VarOp (Symbol "*"), Var (Ident "y"))) ), 
+                                   Lit(Integer 1)))) = 
+        parse "let product = List.fold (fun x y -> x * y) 1")

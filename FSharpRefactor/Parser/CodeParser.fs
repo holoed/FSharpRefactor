@@ -56,9 +56,11 @@ and funPat = parser { let! name = identifier
 and pattern = funPat +++ tuplePat +++ varPat
 
 and tuplePat = parser { let! _ = symbol "("
-                        let! exprs = sepBy pattern (symbol ",") 
+                        let! exprs = sepBy1 pattern (symbol ",") 
                         let! _ = symbol ")"
-                        return PTuple (Seq.toList exprs) }
+                        let ret = Seq.toList exprs
+                        if (ret.Length > 1) then 
+                           return PTuple (ret) }
 
 and valueBinding = parser { let! _ = keyword "let"
                             let! pat = pattern                                 
@@ -72,12 +74,14 @@ and lookUp = parser { let! e = variable
                       return LookUp (e, name) }
 
 and tuple = parser { let! _ = symbol "("
-                     let! exprs = sepBy expr (symbol ",") 
+                     let! exprs = sepBy1 expr (symbol ",") 
                      let! _ = symbol ")"
-                     return Tuple (Seq.toList exprs) }
+                     let ret = Seq.toList exprs
+                     if (ret.Length > 1) then 
+                        return Tuple ret }
 
 and lambda = parser { let! _ = keyword "fun"
-                      let! pats = many1 pattern
+                      let! pats = many1 (varPat +++ tuplePat)
                       let! _ = symbol "->"
                       let! body = expr
                       return Lambda (Seq.toList pats, body) }

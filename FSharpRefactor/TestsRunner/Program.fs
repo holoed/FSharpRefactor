@@ -1,15 +1,15 @@
 ﻿// Learn more about F# at http://fsharp.net
 
 open TokenizerTests
-open ParserTests
+open CodeParserTests
 
 //let tokenizerTests = new TokenizerTests()
-let parserTests = new ParserTests()
+let parserTests = new CodeParserTests()
 
 //tokenizerTests.Symbols ()
 
-parserTests.FunctionApplicationIsLeftAssociative ()
+//parserTests.FunctionApplicationIsLeftAssociative ()
 
-//let ast = ParserTests.parse "let product = List.fold (fun x y -> x * y) 1"
+let ast = CodeParserTests.parse "let product = List.fold (fun x y -> x * y) 1"
 
-//ast.ToString()
+ast.ToString()
