@@ -2,7 +2,7 @@
 
 open Tokenizer
 open Ast
-open Parser
+open CodeParser
 open NUnit.Framework
 
 type MaybeBuilder() =
@@ -24,9 +24,19 @@ type ParserTests() =
         parse "x * 42")
 
     [<Test>]
+    member this.LookUp() = 
+        Assert.IsTrue (Some(LookUp ( Var (Ident "List"), (Ident "map"))) = 
+        parse "List.map")
+
+    [<Test>]
     member this.FunctionApplication() = 
         Assert.IsTrue (Some(App ( Var (Ident "f"), Var (Ident "x"))) = 
         parse "f x")
+
+    [<Test>]
+    member this.FunctionApplicationIsLeftAssociative() = 
+        Assert.IsTrue (Some(App(App ( Var (Ident "f"), Var (Ident "x")), Var (Ident "y"))) = 
+        parse "f x y")
 
     [<Test>]
     member this.TupleParse() = 

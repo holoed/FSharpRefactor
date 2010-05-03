@@ -1,7 +1,7 @@
 ﻿module TypeInferenceTests
 
 open NUnit.Framework
-open Parser
+open CodeParser
 open Tokenizer
 open TypeInference
 

@@ -8,4 +8,8 @@ let parserTests = new ParserTests()
 
 //tokenizerTests.Symbols ()
 
-parserTests.Lambda ()
+parserTests.FunctionApplicationIsLeftAssociative ()
+
+//let ast = ParserTests.parse "let product = List.fold (fun x y -> x * y) 1"
+
+//ast.ToString()
