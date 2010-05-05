@@ -47,6 +47,8 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="StringToIndexedString.fsi" />
+    <Compile Include="StringToIndexedString.fs" />
     <Compile Include="Tokenizer.fsi" />
     <Compile Include="Tokenizer.fs" />
   </ItemGroup>

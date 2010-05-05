@@ -1,6 +1,6 @@
 ﻿module TypeInference
 
-open CodeParser
+
 open Tokenizer
 
 type Type = Int | String
