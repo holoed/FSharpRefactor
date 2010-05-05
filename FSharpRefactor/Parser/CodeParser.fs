@@ -5,23 +5,27 @@ open SharpMalib.Parser.ParserMonad
 open Tokens 
 open Ast                      
 
-let keyword s = parser { let! _ = sat (fun t -> t = Keyword s)
+let keyword s = parser { let! _ = sat (fun t -> match t with
+                                                | Keyword(s', p) when s = s' -> true
+                                                | _ -> false)
                          return s }
                             
 let literal = parser { let! x = item
                        return! match x with
-                               | IntegerLiteral v -> result (Lit (Integer v))
+                               | IntegerLiteral (v, _) -> result (Lit (Integer (System.Int32.Parse v)))
                                | _ -> zero }
 
 let identifier = parser { let! x = item
                           return! match x with
-                                  | Identifier v -> result (Ident v)
+                                  | Identifier (v, _) -> result (Ident v)
                                   | _ -> zero }
 
 let variable = parser { let! x = identifier
                         return Var x }
 
-let symbol s = parser { let! _ = sat (fun t -> t = Tokens.Symbol s)
+let symbol s = parser { let! _ = sat (fun t -> match t with
+                                               | Tokens.Symbol(s', p) when s = s' -> true
+                                               | _ -> false)
                         return VarOp (Symbol s) }
 
 let addOp = parser { let! x = symbol "+"

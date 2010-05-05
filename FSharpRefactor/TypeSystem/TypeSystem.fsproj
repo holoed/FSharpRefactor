@@ -48,11 +48,6 @@
     <Compile Include="TypeInference.fs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Parser\Parser.fsproj">
-      <Name>Parser</Name>
-      <Project>{ae4a60ac-d526-4ef4-a747-6bf0450c884b}</Project>
-      <Private>True</Private>
-    </ProjectReference>
     <ProjectReference Include="..\Tokenizer\Tokenizer.fsproj">
       <Name>Tokenizer</Name>
       <Project>{a58e02e4-01cf-401e-b7c4-64863b38acbb}</Project>

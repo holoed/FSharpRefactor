@@ -1,9 +1,11 @@
 ﻿module Tokens
 
-type SrcLoc = { srcFilename : string; srcLine : int; srcColumn : int }   
+type SrcLoc = { srcLine : int; srcColumn : int }   
 
-type Token = | Identifier of string
-             | IntegerLiteral of int
-             | StringLiteral of string
-             | Symbol of string
-             | Keyword of string
+type Token = | Identifier of string * SrcLoc
+             | IntegerLiteral of string * SrcLoc
+             | StringLiteral of string * SrcLoc
+             | Symbol of string * SrcLoc
+             | Keyword of string * SrcLoc
+
+let zeroLoc = { srcLine = 0; srcColumn = 0 }
