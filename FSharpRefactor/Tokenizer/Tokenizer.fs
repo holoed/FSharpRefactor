@@ -44,21 +44,21 @@ let (+|) p q = parser { let! x = p
                         let! y = q
                         return Seq.append x y } +++ q
 
-let SeqToString xs = 
+let SeqToString xs f = 
    if (Seq.isEmpty xs) then 
-        (String.Empty, { srcLine = 0; srcColumn = 0 })
+        Token (f "", { srcLine = 0; srcColumn = 0 })
    else
        let (r, c, _) = Seq.head xs
        let xs' = new System.String (Seq.toArray (Seq.map (fun (_, _, x) -> x) xs))
-       (xs', { srcLine = r; srcColumn = c })
+       Token (f xs', { srcLine = r; srcColumn = c })
 
 let keyword  = parser { let! x = stringp "let" +++ 
                                  stringp "in"  +++
                                  stringp "fun"
-                        return Keyword (SeqToString x) }
+                        return SeqToString x Keyword }
 
 let identifier  = parser { let! x = (stringp "_") +| (word |+ number) |+ (stringp "\'")
-                           return Identifier (SeqToString x) }
+                           return SeqToString x Identifier }
 
 let symbolOp  = parser { let! x = symb "->" +++
                                   symb "=" +++ 
@@ -71,18 +71,18 @@ let symbolOp  = parser { let! x = symb "->" +++
                                   symb "." +++
                                   symb "(" +++
                                   symb ")"                                  
-                         return Symbol (SeqToString x) }
+                         return SeqToString x Symbol }
 
 let integerLiteral  = parser { let! x = number
-                               return IntegerLiteral (SeqToString x) }
+                               return SeqToString x IntegerLiteral }
 
 let stringLiteral  = parser { let! _ = symb "\""
                               let! s = many1 (letter +++ digit +++ pwhitespace)
                               let! _ = symb "\""
-                              return StringLiteral (SeqToString s)  }
+                              return SeqToString s StringLiteral }
 
 let whitespace  = parser { let! x = whitespaces
-                           return Identifier (SeqToString x) }
+                           return SeqToString x Identifier }
 
 let tokenize s = 
     let is = indexStr s

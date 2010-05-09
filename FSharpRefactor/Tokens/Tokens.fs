@@ -2,10 +2,12 @@
 
 type SrcLoc = { srcLine : int; srcColumn : int }   
 
-type Token = | Identifier of string * SrcLoc
-             | IntegerLiteral of string * SrcLoc
-             | StringLiteral of string * SrcLoc
-             | Symbol of string * SrcLoc
-             | Keyword of string * SrcLoc
+type TokenKind = | Identifier of string
+                 | IntegerLiteral of string
+                 | StringLiteral of string
+                 | Symbol of string
+                 | Keyword of string
+
+type Token = Token of TokenKind * SrcLoc
 
 let zeroLoc = { srcLine = 0; srcColumn = 0 }

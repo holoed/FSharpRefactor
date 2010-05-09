@@ -1,5 +1,6 @@
 ﻿module CodeParserTests
 
+open System;
 open Tokenizer
 open Ast
 open CodeParser
@@ -93,3 +94,23 @@ type CodeParserTests() =
                                          Lambda ([PVar (Ident "x"); PVar (Ident "y")],  InfixApp(Var (Ident "x"), VarOp (Symbol "*"), Var (Ident "y"))) ), 
                                    Lit(Integer 1)))) = 
         parse "let product = List.fold (fun x y -> x * y) 1")
+
+    [<Test>]
+    member this.Bindings() =
+        Assert.IsTrue (Some(Code([Let (PVar (Ident "x"), Lit (Integer 42));
+                                  Let (PVar (Ident "y"), Lit (Integer 24))])) = 
+        parse ("let x = 42" + Environment.NewLine + 
+               "let y = 24"))
+
+    [<Test>]
+    member this.Bindings2() =
+        Assert.IsTrue (Some(Let (PVar (Ident "x"), Lit (Integer 42))) = 
+        parse ("let x = " + Environment.NewLine + 
+               "        42"))
+
+    [<Test>]
+    member this.BindingsOffSide() =
+        let ret = parse (" let x = " + Environment.NewLine + 
+                         "42")
+        Assert.IsTrue (ret.IsNone)
+        
