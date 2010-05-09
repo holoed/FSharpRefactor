@@ -47,6 +47,7 @@ type Exp
     | Tuple of Exp list                     // tuple expression
     | List of Exp list                      // list expression
     | Paren of Exp                          // parenthesised expression
+    | Code of Exp list
 
 and Alt
     = Alt of Pat * Exp
