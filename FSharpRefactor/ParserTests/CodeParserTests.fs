@@ -16,16 +16,11 @@ open Tokenizer
 open Ast
 open CodeParser
 open NUnit.Framework
+open Utils
 
-type MaybeBuilder() =
-    member this.Bind (m, f) = Option.bind f m
-    member this.Return x = Some x
-
-let maybe = MaybeBuilder()
-
-let parse s = maybe  { let! x = tokenize s 
-                       let! y = parseCode x
-                       return y }
+let parse s = option  { let! x = tokenize s 
+                        let! y = parseCode x
+                        return y }
 
 [<TestFixture>]
 type CodeParserTests() =
@@ -94,6 +89,11 @@ type CodeParserTests() =
     member this.FunctionBinding() = 
         Assert.IsTrue (Some(Let (PApp (Ident "f", [PVar (Ident "x")]), Var (Ident "x"))) = 
         parse "let f x = x")
+
+    [<Test>]
+    member this.FunctionBindingWithArithmeticExpressionBody() = 
+        Assert.IsTrue (Some(Let (PApp (Ident "f", [PVar (Ident "x")]),  InfixApp (Var (Ident "x"), VarOp (Symbol "+"), Lit (Integer 1)))) = 
+        parse "let f x = x + 1")
 
     [<Test>]
     member this.Example1() = 

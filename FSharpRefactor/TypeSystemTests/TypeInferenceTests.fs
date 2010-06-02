@@ -13,17 +13,30 @@ module TypeInferenceTests
 
 open NUnit.Framework
 open Tokenizer
+open CodeParser
+open Ast
 open TypeInference
+open Utils
 
+[<TestFixture>]
+type TypeInferenceTests() =
 
+    let infer x = option { let! tok = tokenize x
+                           let! ast = parseCode tok
+                           let! typ = typeInfer ast
+                           return typ } 
+    
+    [<Test>]
+    [<Ignore("Continue from here...")>]
+    member this.Infer1() = 
+        Assert.IsTrue (match (infer "let x = 1") with
+                       | None -> false
+                       | Some x -> x = Type(Int))
 
-//[<TestFixture>]
-//type TypeInferenceTests() =
-//    
-//    [<Test>]
-//    member this.Integer() = 
-//        let x = Literal (IntegerLiteral 42)
-//        let y = Literal (IntegerLiteral 42, Int)
-//        let success = infer x = y
-//        Assert.IsTrue success
+    [<Test>]
+    [<Ignore("Continue from here...")>]
+    member this.Infer2() = 
+        Assert.IsTrue (match (infer "let f x = x + 1") with
+                       | None -> false
+                       | Some x -> x = TyFun (Type Int, Type Int))
 

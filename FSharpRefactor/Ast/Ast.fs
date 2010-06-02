@@ -15,7 +15,14 @@ type Name
     = Ident of string   
     | Symbol of string 
 
-type Type =   
+type PrimitiveType =
+    | Int
+    | String
+    | DateTime
+    | Double
+
+type Type =  
+     | Type of PrimitiveType 
      | TyFun of Type * Type     // function type
      | TyTuple of Type list     // tuple type
      | TyList of  Type          // list syntax, e.g. [a], as opposed to [] a
