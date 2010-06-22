@@ -9,9 +9,17 @@
 // * You must not remove this notice, or any other, from this software.
 // * **********************************************************************************************
 
-module CodeParser
+module Utils
 
-open Tokens
-open Ast
-              
-val parseCode : seq<Token> -> Exp option
+open System
+
+let (|Empty|Cons|) xs : Choice<Unit, 'a * seq<'a>> =
+     if (Seq.isEmpty xs) then 
+        Empty 
+      else 
+        Cons(Seq.head xs, Seq.skip 1 xs)
+
+let cons x xs = seq { yield x
+                      yield! xs }
+
+let seqtostring xs = new System.String(Seq.toArray xs)

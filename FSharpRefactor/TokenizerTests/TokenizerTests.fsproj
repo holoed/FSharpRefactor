@@ -47,18 +47,6 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Tokenizer\Tokenizer.fsproj">
-      <Name>Tokenizer</Name>
-      <Project>{a58e02e4-01cf-401e-b7c4-64863b38acbb}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Tokens\Tokens.fsproj">
-      <Name>Tokens</Name>
-      <Project>{348ac9a5-c8a2-46bc-839e-8b12eb4100a5}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="TokenizerTests.fs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
