@@ -28,6 +28,15 @@ type LocalDefinitionTests() =
     member this.NestedLocalDefinitions() = 
         Assert.IsTrue(Some (Let("b", [Lit(Integer 4)], Let("b", [InfixApp(Var "b", "+", Lit(Integer 1))], Var "b")))  = 
              parseExp "let b = 4 in let b = b + 1 in  b")    
+        Assert.IsTrue(Some (Let("z", [Let("x", [Lit(Integer 42)], Var "x")], Var "z")) = 
+             parseExp "let z = let x = 42 in x in z")    
+
+    [<Test>]
+    member this.MultilineDef() = 
+        Assert.IsTrue(Some (Let("z", [Let("x", [Lit(Integer 42)], Var "x")], Var "z")) = 
+             parseExp ("let z =                           \n" +
+                       "    let x = 42 in x in z          \n"))    
+    
 
 //    [<Test>]
 //    member this.OffSideLocalDefinitions() =
