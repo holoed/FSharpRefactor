@@ -15,10 +15,7 @@ open System
 open Utils
 open MonadicParser
 
-let setEnv (pos:Pos) p = Parser(fun _ -> fun ps -> match (parse p pos ps) with
-                                          | [] -> []
-                                          | [(x, PString(_, xs))] -> [(x, PString(pos, xs))])
-
+let setEnv (pos:Pos) p = Parser(fun _ -> fun ps -> parse p pos ps)
 
 let env = Parser(fun pos -> fun ps -> [(pos, ps)])
 
@@ -87,8 +84,7 @@ and many p = many1 p +++ parser { return Seq.empty }
 let off p = parser { let! (dl, dc) = env
                      let! ((l,c), _) = fetch
                      if (c = dc) then
-                        let! v = setEnv (l, dc) p
-                        return v }
+                        return! setEnv (l, dc) p }
 
 let rec many1_offside p = parser { let! (pos, _) = fetch
                                    let! vs = setEnv pos (many1 (off p)) 
