@@ -46,10 +46,10 @@ and lam = parser { let! _ = symbol "fun"
 and local = parser { let! _ = symbol "let"
                      let! x = variable
                      let! _ = symbol "="
-                     let! e = exp
+                     let! ds = many1_offside exp
                      let! _ = symbol "in"
-                     let! e' = exp
-                     return Let (seqtostring x, e, e') }
+                     let! e = exp
+                     return Let (seqtostring x, Seq.toList ds, e) }
 
 and var = parser { let! x = variable
                    return Var (seqtostring x) }
@@ -61,6 +61,6 @@ and paren = parser { let! _ = symbol "("
 
 and variable = identifier ["let";"in"]
 
-let parseExp s = match (parse exp (PString((0,0), s))) with
+let parseExp s = match (parse exp (0,0) (PString((0,0), s))) with
                  | [] -> None
                  | [(exp, _)] -> Some exp
