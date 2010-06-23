@@ -15,9 +15,18 @@ open System
 open Utils
 open MonadicParser
 
+let setEnv (pos:Pos) p = Parser(fun _ -> fun ps -> match (parse p pos ps) with
+                                          | [] -> []
+                                          | [(x, PString(_, xs))] -> [(x, PString(pos, xs))])
+
+
+let env = Parser(fun pos -> fun ps -> [(pos, ps)])
+
+let fetch = Parser(fun _ -> fun (PString(pos, s)) -> [((pos, s), PString(pos, s))])
+
 let newstate (PString((l, c), Cons(x,xs))) = 
     let newpos = match x with
-                 | '\n' -> (l+1, 0)
+                 | '\n' -> (l + 1, 0)
                  | '\t' -> (l, ((c / 8) + 1) * 8)
                  | _    -> (l, c + 1)                 
     PString(newpos, xs)                 
@@ -25,18 +34,17 @@ let newstate (PString((l, c), Cons(x,xs))) =
 let onside (l, c) (dl, dc) = (c > dc) || (l = dl)    
 
 // Deterministic choice operator
-let (+++) p q = Parser (fun s -> match parse p s with
-                                 | []-> parse q s
-                                 | result -> result)
+let (+++) p q = Parser (fun pos -> fun s -> match parse p pos s with
+                                            | []-> parse q pos s
+                                            | result -> result)
 
-let item = Parser(fun ps -> match (string ps) with
-                            | Empty -> []
-                            | Cons(x, _) ->
-                                let defp = pos ps       
-                                let (PString(p, xs)) = newstate ps 
-                                if (onside p defp) then 
-                                    [(x, PString(p, xs))]
-                                else [])
+let item = Parser(fun defpos -> fun ps -> match (string ps) with
+                                          | Empty -> []
+                                          | Cons(x, _) ->      
+                                                let (PString(pos, xs)) = newstate ps 
+                                                if (onside pos defpos) then 
+                                                    [(x, PString(pos, xs))]
+                                                else [])
 
 let sat p = parser { let! x = item
                      if (p x) then
@@ -75,6 +83,19 @@ let rec many1 p = parser { let! y = p
                            return cons y ys }
 and many p = many1 p +++ parser { return Seq.empty }
 
+
+let off p = parser { let! (dl, dc) = env
+                     let! ((l,c), _) = fetch
+                     if (c = dc) then
+                        let! v = setEnv (l, dc) p
+                        return v }
+
+let rec many1_offside p = parser { let! (pos, _) = fetch
+                                   let! vs = setEnv pos (many1 (off p)) 
+                                   return vs }
+and many_offside p = many1_offside p +++ parser { return Seq.empty }
+
+
 let ident = parser { let! x = lower
                      let! xs = many alphanum
                      return cons x xs }
@@ -86,7 +107,7 @@ let comment = parser { let! _ = stringp "//"
                        let! _ = many1 (sat (fun ch -> ch <> '\n'))
                        return () }
 
-let junk = parser { let! _ = many (spaces +++ comment)
+let junk = parser { let! _ = setEnv (0,-1) (many (spaces +++ comment))
                     return () }
 
 let token p = parser { let! v = p
