@@ -17,25 +17,35 @@ open Ast
 open MonadicParser
 open MonadicParserCombinators
 
-let addOp = parser { let! _ = symbol "+"
-                     return fun x y -> InfixApp (x, "+", y) }
-let subOp = parser { let! _ = symbol "-"
-                     return fun x y -> InfixApp (x, "-", y) }
-let mulOp = parser { let! _ = symbol "*"
-                     return fun x y -> InfixApp (x, "*", y) }
-let divOp = parser { let! _ = symbol "/"
-                     return fun x y -> InfixApp (x, "/", y) }
+let chainl1Line p op =         
+      let rec rest (x, l1) = parser { let! f = op
+                                      let! ((l2,_), _) = fetch
+                                      let! y = p                                       
+                                      if (l1 = l2) then
+                                            return! rest ((f x y), l2) } +++ parser { return x }
+      parser { let! ((l,_), _) = fetch
+               let! x = p               
+               return! rest (x,l) }
 
+
+let addOp = parser { let! _ = symbol "+"
+                    return fun x y -> InfixApp (x, "+", y) }
+let subOp = parser { let! _ = symbol "-"
+                    return fun x y -> InfixApp (x, "-", y) }
+let mulOp = parser { let! _ = symbol "*"
+                    return fun x y -> InfixApp (x, "*", y) }
+let divOp = parser { let! _ = symbol "/"
+                    return fun x y -> InfixApp (x, "/", y) }
 let appOp = parser { return fun x y -> App (x, y) }
 
-let integer = parser { let! x = integer
-                       return Lit(Integer x) }
+let integerp = parser { let! x = integer
+                      return Lit(Integer x) }
 
-let rec atom = lam +++ local +++ var +++ integer +++ paren
+let rec atom = local +++ lam +++ var +++ integerp +++ paren
 
-and exp = chainl1 term (addOp +++ subOp)
-and term = chainl1 factor (mulOp +++ divOp)
-and factor = chainl1 atom (appOp)
+and exp = chainl1Line item (appOp)
+and item = chainl1 term (addOp +++ subOp)
+and term = chainl1 atom (mulOp +++ divOp)
 
 and lam = parser { let! _ = symbol "fun"
                    let! x = variable
@@ -46,13 +56,16 @@ and lam = parser { let! _ = symbol "fun"
 and local = parser { let! _ = symbol "let"
                      let! x = variable
                      let! _ = symbol "="
-                     let! ds = many1_offside exp
-                     let! _ = symbol "in"
                      let! e = exp
-                     return Let (seqtostring x, Seq.toList ds, e) }
+                     let! e' = localExp +++ (off exp)
+                     return Let (seqtostring x, e, e') }
+
+and localExp = parser { let! _ = symbol "in"
+                        let! e = exp
+                        return e } 
 
 and var = parser { let! x = variable
-                   return Var (seqtostring x) }
+                  return Var (seqtostring x) }
 
 and paren = parser { let! _ = symbol "("
                      let! e = exp
@@ -61,6 +74,6 @@ and paren = parser { let! _ = symbol "("
 
 and variable = identifier ["let";"in"]
 
-let parseExp s = match (parse exp (0,0) (PString((0,0), s))) with
+let parseExp s = match (parse exp (0,1) (PString((0,-1), s))) with
                  | [] -> None
-                 | [(exp, _)] -> Some exp
+                 | [(exp, _)] -> Some exp         

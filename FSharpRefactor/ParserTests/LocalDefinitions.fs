@@ -21,28 +21,38 @@ type LocalDefinitionTests() =
 
     [<Test>]
     member this.LocalDefinitions() =
-        Assert.IsTrue(Some (Let("x", [Lit(Integer 42)], Var "x")) = parseExp "let x = 42 in x")
-        Assert.IsTrue(Some (Let("x", [Lit(Integer 42)], Var "x")) = parseExp "let x = 42 in x")
+        Assert.IsTrue(Some (Let("x", Lit(Integer 42), Var "x")) = parseExp "let x = 42 in x")
+        Assert.IsTrue(Some (Let("x", Lit(Integer 42), Var "x")) = parseExp "let x = 42 in x")
 
     [<Test>]
     member this.NestedLocalDefinitions() = 
-        Assert.IsTrue(Some (Let("b", [Lit(Integer 4)], Let("b", [InfixApp(Var "b", "+", Lit(Integer 1))], Var "b")))  = 
+        Assert.IsTrue(Some (Let("b", Lit(Integer 4), Let("b", InfixApp(Var "b", "+", Lit(Integer 1)), Var "b")))  = 
              parseExp "let b = 4 in let b = b + 1 in  b")    
-        Assert.IsTrue(Some (Let("z", [Let("x", [Lit(Integer 42)], Var "x")], Var "z")) = 
+        Assert.IsTrue(Some (Let("z", Let("x", Lit(Integer 42), Var "x"), Var "z")) = 
              parseExp "let z = let x = 42 in x in z")    
 
     [<Test>]
     member this.MultilineDef() = 
-        Assert.IsTrue(Some (Let("z", [Let("x", [Lit(Integer 42)], Var "x")], Var "z")) = 
+        Assert.IsTrue(Some (Let("z", Let("x", Lit(Integer 42), Var "x"), Var "z")) = 
              parseExp ("let z =                           \n" +
                        "    let x = 42 in x in z          \n"))    
     
 
-//    [<Test>]
-//    member this.OffSideLocalDefinitions() =
-//        let ret = parseExp "let z =                      " + Environment.NewLine +
-//                           "    let x = 42               " + Environment.NewLine +
-//                           "    let y = 12 in x + y      "
+    [<Test>]
+    member this.OffSideLocalDefinitions() =
+        let k = Some (Let("x", Lit(Integer 12), Let("y", Lit(Integer 32), InfixApp(Var "x", "+", Var "y"))))
+
+        let x = parseExp "let x = 12 in let y = 32 in x + y"
+
+        let y = parseExp ("let x = 12 in " + 
+                          "let y = 32 in " +
+                          "x + y         ");
+
+        let z = parseExp ("let x = 12 \n " + 
+                          "let y = 32 \n " +
+                          "x + y         ");                    
+        Assert.IsTrue (k = x && x = y && y = z)
+
     
 
   

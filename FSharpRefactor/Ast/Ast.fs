@@ -14,14 +14,14 @@ module Ast
 open System
 
 type Literal
-    = Char  of  char          // character literal
-    | String of string        // string literal
-    | Integer of  int         // integer literal
-    | Frac  of  float         // floating point literal   
+   = Char  of  char          // character literal
+   | String of string        // string literal
+   | Integer of  int         // integer literal
+   | Frac  of  float         // floating point literal   
 
-type Exp = InfixApp of Exp * String * Exp     // infix application
-         | App of Exp * Exp                   // application
-         | Lam of String * Exp                // lambda abstraction
-         | Let of String * (Exp list) * Exp   // local definition
-         | Var of String                      // variable
-         | Lit of Literal                     // literal
+type Exp = InfixApp of Exp * String * Exp        // infix application
+            | App of Exp * Exp                   // application
+            | Lam of String * Exp                // lambda abstraction
+            | Let of String * Exp * Exp          // local definition
+            | Var of String                      // variable
+            | Lit of Literal                     // literal 

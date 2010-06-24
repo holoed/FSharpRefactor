@@ -22,30 +22,30 @@ let env = Parser(fun pos -> fun ps -> [(pos, ps)])
 let fetch = Parser(fun _ -> fun (PString(pos, s)) -> [((pos, s), PString(pos, s))])
 
 let newstate (PString((l, c), Cons(x,xs))) = 
-    let newpos = match x with
-                 | '\n' -> (l + 1, 0)
-                 | '\t' -> (l, ((c / 8) + 1) * 8)
-                 | _    -> (l, c + 1)                 
-    PString(newpos, xs)                 
-    
+   let newpos = match x with
+                | '\n' -> (l + 1, 0)
+                | '\t' -> (l, ((c / 8) + 1) * 8)
+                | _    -> (l, c + 1)                 
+   PString(newpos, xs)                 
+   
 let onside (l, c) (dl, dc) = (c > dc) || (l = dl)    
 
 // Deterministic choice operator
 let (+++) p q = Parser (fun pos -> fun s -> match parse p pos s with
-                                            | []-> parse q pos s
-                                            | result -> result)
+                                           | []-> parse q pos s
+                                           | result -> result)
 
 let item = Parser(fun defpos -> fun ps -> match (string ps) with
-                                          | Empty -> []
-                                          | Cons(x, _) ->      
-                                                let (PString(pos, xs)) = newstate ps 
-                                                if (onside pos defpos) then 
-                                                    [(x, PString(pos, xs))]
-                                                else [])
+                                         | Empty -> []
+                                         | Cons(x, _) ->      
+                                               let (PString(pos, xs)) = newstate ps 
+                                               if (onside pos defpos) then 
+                                                   [(x, PString(pos, xs))]
+                                               else [])
 
 let sat p = parser { let! x = item
-                     if (p x) then
-                        return x }
+                    if (p x) then
+                       return x }
 
 let char x = sat (fun y -> x = y)
 
@@ -60,17 +60,17 @@ let letter = lower +++ upper
 let alphanum = letter +++ digit
 
 let rec stringp s = parser { match s with
-                             | Empty -> return seq[]
-                             | Cons (x, xs) -> let! _ = char x
-                                               let! _ = stringp xs
-                                               return cons x xs }
+                            | Empty -> return seq[]
+                            | Cons (x, xs) -> let! _ = char x
+                                              let! _ = stringp xs
+                                              return cons x xs }
 
 let chainl1 p op =         
-       let rec rest l = parser { let! f = op
-                                 let! r = p 
-                                 return! rest (f l r) } +++ parser { return l }
-       parser { let! l = p
-                return! rest l }
+      let rec rest l = parser { let! f = op
+                                let! r = p 
+                                return! rest (f l r) } +++ parser { return l }
+      parser { let! l = p
+               return! rest l }
 
 let chainl p op l = (chainl1 p op) +++ parser { return l }
 
@@ -82,9 +82,10 @@ and many p = many1 p +++ parser { return Seq.empty }
 
 
 let off p = parser { let! (dl, dc) = env
-                     let! ((l,c), _) = fetch
+                     let! ((l,c), ps) = fetch
+                     let debug = Seq.toList ps
                      if (c = dc) then
-                        return! setEnv (l, dc) p }
+                       return! setEnv (l, dc) p }
 
 let rec many1_offside p = parser { let! (pos, _) = fetch
                                    let! vs = setEnv pos (many1 (off p)) 
@@ -96,7 +97,7 @@ let ident = parser { let! x = lower
                      let! xs = many alphanum
                      return cons x xs }
 
-let spaces = parser { let! _ = many1 (sat (Char.IsWhiteSpace))
+let spaces = parser { let! _ = many1 (sat (fun ch -> Char.IsWhiteSpace ch || ch = '\n' || ch = '\r' || ch = '\t'))
                       return () }
 
 let comment = parser { let! _ = stringp "//"
@@ -109,27 +110,26 @@ let junk = parser { let! _ = setEnv (0,-1) (many (spaces +++ comment))
 let token p = parser { let! v = p
                        do! junk
                        return v }
- 
+
 let symbol xs = token (stringp xs)
 
 let identifier (ks:string list) = token (parser { let! x = ident
-                                    if (not (List.exists(fun xi -> xi = seqtostring x) ks)) then
-                                             return x })
+                                   if (not (List.exists(fun xi -> xi = seqtostring x) ks)) then
+                                            return x })
 let number = many1 digit
 
 let natural = 
-    let toDigit x = (int x) - (int '0')
-    let op m n = 10 * m + n    
-    let eval xs = xs |> Seq.map toDigit
-                     |> Seq.reduce op 
-    parser { let! xs = token number
-             return eval xs }
+   let toDigit x = (int x) - (int '0')
+   let op m n = 10 * m + n    
+   let eval xs = xs |> Seq.map toDigit
+                    |> Seq.reduce op 
+   parser { let! xs = token number
+            return eval xs }
 
 let integer = 
-   let negate x = -x
-   let op = parser { let! _ = char '-'
-                     return negate } +++ parser { return id }
-   parser { let! f = op
-            let! n = natural
-            return f n }
-
+  let negate x = -x
+  let op = parser { let! _ = char '-'
+                    return negate } +++ parser { return id }
+  parser { let! f = op
+           let! n = natural
+           return f n }
