@@ -13,20 +13,27 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Ast", "Ast\Ast.fsproj", "{8
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ParserTestsRunner", "ParserTestsRunner\ParserTestsRunner.fsproj", "{CA3FDA39-FDB0-44AF-A6F1-0B7B5E60F8B0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThirdParty", "ThirdParty", "{DCAECB19-042A-4DD3-9C3B-2965E9FAD41F}"
+	ProjectSection(SolutionItems) = preProject
+		ThirdParty\license.txt = ThirdParty\license.txt
+		ThirdParty\nunit.framework.dll = ThirdParty\nunit.framework.dll
+		ThirdParty\nunit.framework.xml = ThirdParty\nunit.framework.xml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 5
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs02.codeplex.com/
-		SccProjectUniqueName0 = ParserTests\\ParserTests.fsproj
-		SccProjectTopLevelParentUniqueName0 = FSharpRefactor.sln
-		SccProjectName0 = ParserTests
-		SccLocalPath0 = ParserTests
-		SccProjectUniqueName1 = Ast\\Ast.fsproj
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = ParserTests\\ParserTests.fsproj
 		SccProjectTopLevelParentUniqueName1 = FSharpRefactor.sln
-		SccProjectName1 = Ast
-		SccLocalPath1 = Ast
-		SccLocalPath2 = .
+		SccProjectName1 = ParserTests
+		SccLocalPath1 = ParserTests
+		SccProjectUniqueName2 = Ast\\Ast.fsproj
+		SccProjectTopLevelParentUniqueName2 = FSharpRefactor.sln
+		SccProjectName2 = Ast
+		SccLocalPath2 = Ast
 		SccProjectUniqueName3 = Parser\\Parser.fsproj
 		SccProjectTopLevelParentUniqueName3 = FSharpRefactor.sln
 		SccProjectName3 = Parser
