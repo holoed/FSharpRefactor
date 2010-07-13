@@ -41,39 +41,43 @@ let appOp = parser { return fun x y -> App (x, y) }
 let integerp = parser { let! x = integer
                       return Lit(Integer x) }
 
-let rec atom = local +++ lam +++ var +++ integerp +++ paren
+// expr::= expr+ term| expr–term| term
+// term::= term* factor| term/ factor| factor
+// factor::= int| ( expr)
+// int::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
 
-and exp = chainl1Line item (appOp)
-and item = chainl1 term (addOp +++ subOp)
-and term = chainl1 atom (mulOp +++ divOp)
+let rec expr = chainl1 term (addOp +++ subOp)
+and term = chainl1 factor (mulOp +++ divOp)
+and factor =  chainl1Line atom appOp
+and atom = local +++ lam +++ var +++ integerp +++ paren
 
 and lam = parser { let! _ = symbol "fun"
                    let! x = variable
                    let! _ = symbol "->"
-                   let! e = exp 
+                   let! e = expr 
                    return Lam (seqtostring x, e) }
 
 and local = parser { let! _ = symbol "let"
                      let! x = variable
                      let! _ = symbol "="
-                     let! e = exp
-                     let! e' = localExp +++ (off exp)
+                     let! e = expr
+                     let! e' = localExp +++ (off expr)
                      return Let (seqtostring x, e, e') }
 
 and localExp = parser { let! _ = symbol "in"
-                        let! e = exp
+                        let! e = expr
                         return e } 
 
 and var = parser { let! x = variable
                   return Var (seqtostring x) }
 
 and paren = parser { let! _ = symbol "("
-                     let! e = exp
+                     let! e = expr
                      let! _ = symbol ")" 
                      return e }
 
 and variable = identifier ["let";"in"]
 
-let parseExp s = match (parse exp (0,1) (PString((0,-1), s))) with
+let parseExp s = match (parse expr (0,1) (PString((0,-1), s))) with
                  | [] -> None
                  | [(exp, _)] -> Some exp         
