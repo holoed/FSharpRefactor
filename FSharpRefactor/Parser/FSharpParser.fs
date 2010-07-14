@@ -46,10 +46,11 @@ let integerp = parser { let! x = integer
 // factor::= int| ( expr)
 // int::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
 
-let rec expr = chainl1 term (addOp +++ subOp)
+let rec prog = decl +++ expr
+and expr = chainl1 term (addOp +++ subOp)
 and term = chainl1 factor (mulOp +++ divOp)
 and factor =  chainl1Line atom appOp
-and atom = local +++ lam +++ var +++ integerp +++ paren
+and atom =  lam +++ var +++ integerp +++ paren
 
 and lam = parser { let! _ = symbol "fun"
                    let! x = variable
@@ -57,27 +58,27 @@ and lam = parser { let! _ = symbol "fun"
                    let! e = expr 
                    return Lam (seqtostring x, e) }
 
-and local = parser { let! _ = symbol "let"
+and decl = parser {  let! _ = symbol "let"
                      let! x = variable
                      let! _ = symbol "="
-                     let! e = expr
-                     let! e' = localExp +++ (off expr)
+                     let! e = prog
+                     let! e' = localExp +++ (off prog) +++ parser { return Var (seqtostring x) } 
                      return Let (seqtostring x, e, e') }
 
 and localExp = parser { let! _ = symbol "in"
-                        let! e = expr
+                        let! e = prog
                         return e } 
 
 and var = parser { let! x = variable
                   return Var (seqtostring x) }
 
 and paren = parser { let! _ = symbol "("
-                     let! e = expr
+                     let! e = prog
                      let! _ = symbol ")" 
                      return e }
 
 and variable = identifier ["let";"in"]
 
-let parseExp s = match (parse expr (0,1) (PString((0,-1), s))) with
+let parseExp s = match (parse prog (0,1) (PString((0,-1), s))) with
                  | [] -> None
                  | [(exp, _)] -> Some exp         

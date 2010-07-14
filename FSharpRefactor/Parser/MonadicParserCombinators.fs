@@ -84,7 +84,7 @@ and many p = many1 p +++ parser { return Seq.empty }
 let off p = parser { let! (dl, dc) = env
                      let! ((l,c), ps) = fetch
                      let debug = Seq.toList ps
-                     if (c = dc) then
+                     if (c >= dc) then
                        return! setEnv (l, dc) p }
 
 let rec many1_offside p = parser { let! (pos, _) = fetch
