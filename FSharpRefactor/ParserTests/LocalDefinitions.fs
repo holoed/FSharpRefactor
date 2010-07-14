@@ -65,12 +65,12 @@ type LocalDefinitionTests() =
 
         let x = parseExp "let z = (let x = 12 in let y = 32 in x + y) in z"
 
-//        let y = parseExp ("let z =       \n " + 
-//                          "   let x = 12 \n " +
-//                          "   let y = 32 \n " +
-//                          "   x + y         ")     
+        let y = parseExp ("let z =       \n " + 
+                          "   let x = 12 \n " +
+                          "   let y = 32 \n " +
+                          "   x + y         ")     
         Assert.IsTrue ( (k = x) )                                       
-     //   Assert.IsTrue ( (x = y) )
+        Assert.IsTrue ( (x = y) )
 
     
 
