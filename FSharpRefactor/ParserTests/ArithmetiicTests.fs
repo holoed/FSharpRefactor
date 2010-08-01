@@ -9,7 +9,7 @@
 // * You must not remove this notice, or any other, from this software.
 // * **********************************************************************************************
 
-module ArithmetiicTests 
+module ArithmetiicTests
 
 open NUnit.Framework
 open Ast
@@ -20,7 +20,7 @@ type ArithmeticTests() =
 
     [<Test>]
     member this.Integer() =
-        Assert.IsTrue(Some (Lit (Integer 42)) = parseExp "42")
+        Assert.IsTrue(Some (Lit (Integer 42)) = parseExp "42") 
         Assert.IsTrue(Some (Lit (Integer -42)) = parseExp "-42")
 
     [<Test>]

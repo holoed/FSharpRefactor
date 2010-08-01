@@ -9,7 +9,7 @@
 // * You must not remove this notice, or any other, from this software.
 // * **********************************************************************************************
 
-module LambdaTests 
+module LambdaTests
 
 open NUnit.Framework
 open Ast
@@ -20,7 +20,7 @@ type LambdaTests() =
 
     [<Test>]
     member this.Lambdas() =
-        Assert.IsTrue(Some (Lam("x", Var "x")) = parseExp "fun x -> x")
+        Assert.IsTrue(Some (Lam("x", Var "x")) = parseExp "fun x -> x") 
         Assert.IsTrue(Some (Lam("x", Lam("y", InfixApp(Var "x", "+", Var "y")))) = parseExp "fun x -> fun y -> x + y")
         
     
