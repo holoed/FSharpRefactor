@@ -9,7 +9,7 @@
 // * You must not remove this notice, or any other, from this software.
 // * **********************************************************************************************
 
-module LocalDefinitions 
+module LocalDefinitions
 
 open System
 open NUnit.Framework
@@ -21,7 +21,7 @@ type LocalDefinitionTests() =
 
     [<Test>]
     member this.LocalDefinitions() =
-        Assert.IsTrue(Some (Let(PVar "x", Lit(Integer 42), Var "x")) = parseExp "let x = 42 in x")
+        Assert.IsTrue(Some (Let(PVar "x", Lit(Integer 42), Var "x")) = parseExp "let x = 42 in x") 
         Assert.IsTrue(Some (Let(PVar "x", Lit(Integer 42), Var "x")) = parseExp "let x = 42 in x")
 
     [<Test>]

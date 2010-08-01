@@ -9,7 +9,7 @@
 // * You must not remove this notice, or any other, from this software.
 // * **********************************************************************************************
 
-module ApplicationsTests 
+module ApplicationsTests
 
 open NUnit.Framework
 open Ast
@@ -20,7 +20,7 @@ type ApplicationsTests() =
 
     [<Test>]
     member this.ApplicationsAssociatesToTheLeft() =
-        Assert.IsTrue(Some (App(Var "f", Var "g")) = parseExp "f g")
+        Assert.IsTrue(Some (App(Var "f", Var "g")) = parseExp "f g") 
         Assert.IsTrue(Some (App(App(Var "f", Var "g"), Var "h")) = parseExp "f g h")
         Assert.IsTrue(Some (App(App(App(Var "f", Var "g"), Var "h"), Var "j")) = parseExp "f g h j")
 
