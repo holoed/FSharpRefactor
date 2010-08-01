@@ -126,6 +126,13 @@ let natural =
    parser { let! xs = token number
             return eval xs }
 
+let decimals =
+   let toDigit x = float ((int x) - (int '0'))
+   let eval xs = xs |> Seq.mapi (fun i x -> (toDigit x) * (Math.Pow(10.0, -(float i))))
+                    |> Seq.reduce (+)
+   parser { let! xs = token number
+            return (eval xs) / 10.0 }
+
 let integer = 
   let negate x = -x
   let op = parser { let! _ = char '-'
@@ -133,3 +140,10 @@ let integer =
   parser { let! f = op
            let! n = natural
            return f n }
+
+let float = parser { let! x = integer
+                     let! _ = char '.'
+                     let! y = decimals
+                     let x = float x
+                     return if x >= 0.0 then x + y else x - y}
+

@@ -21,26 +21,31 @@ type LocalDefinitionTests() =
 
     [<Test>]
     member this.LocalDefinitions() =
-        Assert.IsTrue(Some (Let("x", Lit(Integer 42), Var "x")) = parseExp "let x = 42 in x")
-        Assert.IsTrue(Some (Let("x", Lit(Integer 42), Var "x")) = parseExp "let x = 42 in x")
+        Assert.IsTrue(Some (Let(PVar "x", Lit(Integer 42), Var "x")) = parseExp "let x = 42 in x")
+        Assert.IsTrue(Some (Let(PVar "x", Lit(Integer 42), Var "x")) = parseExp "let x = 42 in x")
+
+    [<Test>]
+    member this.LocalFunctionDefinitions() =
+        Assert.IsTrue(Some (Let(PApp(PVar "f", PVar "x"), Var "x", Var "f")) = parseExp "let f x = x")
+        Assert.IsTrue(Some (Let(PApp(PVar "g", PVar "x"), InfixApp(Var "x", "*", Var "x"), Var "g")) = parseExp "let g x = x * x")
 
     [<Test>]
     member this.NestedLocalDefinitions() = 
-        Assert.IsTrue(Some (Let("b", Lit(Integer 4), Let("b", InfixApp(Var "b", "+", Lit(Integer 1)), Var "b")))  = 
+        Assert.IsTrue(Some (Let(PVar "b", Lit(Integer 4), Let(PVar "b", InfixApp(Var "b", "+", Lit(Integer 1)), Var "b")))  = 
              parseExp "let b = 4 in let b = b + 1 in  b")    
-        Assert.IsTrue(Some (Let("z", Let("x", Lit(Integer 42), Var "x"), Var "z")) = 
+        Assert.IsTrue(Some (Let(PVar "z", Let(PVar "x", Lit(Integer 42), Var "x"), Var "z")) = 
              parseExp "let z = let x = 42 in x in z")    
 
     [<Test>]
     member this.MultilineDef() = 
-        Assert.IsTrue(Some (Let("z", Let("x", Lit(Integer 42), Var "x"), Var "z")) = 
+        Assert.IsTrue(Some (Let(PVar "z", Let(PVar "x", Lit(Integer 42), Var "x"), Var "z")) = 
              parseExp ("let z =                           \n" +
                        "    let x = 42 in x in z          \n"))    
     
 
     [<Test>]
     member this.OffSideLocalDefinitions() =
-        let k = Some (Let("x", Lit(Integer 12), Let("y", Lit(Integer 32), InfixApp(Var "x", "+", Var "y"))))
+        let k = Some (Let(PVar "x", Lit(Integer 12), Let(PVar "y", Lit(Integer 32), InfixApp(Var "x", "+", Var "y"))))
 
         let x = parseExp "let x = 12 in let y = 32 in x + y"
 
@@ -55,10 +60,10 @@ type LocalDefinitionTests() =
 
     [<Test>]
     member this.OffSideLocalDefinitions2() =
-        let k = Some (Let ("z", 
-                                Let("x", 
+        let k = Some (Let (PVar "z", 
+                                Let(PVar "x", 
                                     Lit(Integer 12), 
-                                    Let("y", 
+                                    Let(PVar "y", 
                                         Lit(Integer 32), 
                                         InfixApp (Var "x", "+", Var "y"))), 
                                 Var "z"))
@@ -70,6 +75,24 @@ type LocalDefinitionTests() =
                           "   let y = 32 \n " +
                           "   x + y         ")     
         Assert.IsTrue ( (k = x) )                                       
+        Assert.IsTrue ( (x = y) )
+
+
+    [<Test>]
+    member this.OffSideLocalDefinition3() =
+        
+        let x = parseExp ("let computeDerivative f x = \n" +
+                          "    let p1 = f (x - 0.05)   \n" +
+                          "    let p2 = f (x + 0.05)   \n" +
+                          "    (p2 - p1) / 0.1           ")
+                           
+        let y = Some(
+                    Let(
+                        PApp(PApp(PVar "computeDerivative", PVar "f"), PVar "x"), 
+                            Let(PVar "p1", App(Var "f", InfixApp(Var "x", "-", Lit(Float(0.05)))), 
+                                Let(PVar "p2", App(Var "f", InfixApp(Var "x", "+", Lit(Float(0.05)))), 
+                                    InfixApp(InfixApp(Var "p2", "-", Var "p1"), "/", Lit(Float(0.1))))), Var "computeDerivative"))
+
         Assert.IsTrue ( (x = y) )
 
     
