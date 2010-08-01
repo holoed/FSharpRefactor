@@ -17,6 +17,10 @@ open Ast
 open MonadicParser
 open MonadicParserCombinators
 
+let rec extractBindName x = match x with 
+                            | PVar s -> Var s 
+                            | PApp (x', _) -> extractBindName x'
+
 let chainl1Line p op =         
       let rec rest (x, l1) = parser { let! f = op
                                       let! ((l2,_), _) = fetch
@@ -41,6 +45,9 @@ let appOp = parser { return fun x y -> App (x, y) }
 let integerp = parser { let! x = integer
                       return Lit(Integer x) }
 
+let floatp = parser { let! x = float
+                      return Lit(Float x) }
+
 // expr::= expr+ term| expr–term| term
 // term::= term* factor| term/ factor| factor
 // factor::= int| ( expr)
@@ -50,7 +57,7 @@ let rec prog = decl +++ expr
 and expr = chainl1 term (addOp +++ subOp)
 and term = chainl1 factor (mulOp +++ divOp)
 and factor =  chainl1Line atom appOp
-and atom =  lam +++ var +++ integerp +++ paren
+and atom =  lam +++ var +++ floatp +++ integerp +++ paren
 
 and lam = parser { let! _ = symbol "fun"
                    let! x = variable
@@ -59,18 +66,18 @@ and lam = parser { let! _ = symbol "fun"
                    return Lam (seqtostring x, e) }
 
 and decl = parser {  let! _ = symbol "let"
-                     let! x = variable
+                     let! x = pattern
                      let! _ = symbol "="
                      let! e = prog
-                     let! e' = localExp +++ (off prog) +++ parser { return Var (seqtostring x) } 
-                     return Let (seqtostring x, e, e') }
+                     let! e' = localExp +++ (off prog) +++ parser { return extractBindName x } 
+                     return Let (x, e, e') }
 
 and localExp = parser { let! _ = symbol "in"
                         let! e = prog
                         return e } 
 
 and var = parser { let! x = variable
-                  return Var (seqtostring x) }
+                   return Var (seqtostring x) }
 
 and paren = parser { let! _ = symbol "("
                      let! e = prog
@@ -78,6 +85,13 @@ and paren = parser { let! _ = symbol "("
                      return e }
 
 and variable = identifier ["let";"in"]
+
+and pvar = parser { let! x = variable
+                   return PVar (seqtostring x) }
+
+and papp = chainl1 pvar (parser { return fun x y -> PApp (x, y) })            
+
+and pattern = papp +++ pvar
 
 let parseExp s = match (parse prog (0,1) (PString((0,-1), s))) with
                  | [] -> None

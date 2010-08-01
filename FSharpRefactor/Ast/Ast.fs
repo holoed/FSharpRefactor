@@ -17,11 +17,16 @@ type Literal
    = Char  of  char          // character literal
    | String of string        // string literal
    | Integer of  int         // integer literal
-   | Frac  of  float         // floating point literal   
+   | Float  of  float        // floating point literal   
+
+type Pat =
+    | PVar of string
+    | PLit of Literal
+    | PApp of Pat * Pat
 
 type Exp = InfixApp of Exp * String * Exp        // infix application
             | App of Exp * Exp                   // application
             | Lam of String * Exp                // lambda abstraction
-            | Let of String * Exp * Exp          // local definition
+            | Let of Pat * Exp * Exp             // local definition
             | Var of String                      // variable
             | Lit of Literal                     // literal 

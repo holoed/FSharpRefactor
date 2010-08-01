@@ -24,6 +24,12 @@ type ArithmeticTests() =
         Assert.IsTrue(Some (Lit (Integer -42)) = parseExp "-42")
 
     [<Test>]
+    member this.Float() =
+        Assert.IsTrue(Some (Lit (Float 0.05)) = parseExp "0.05")
+        Assert.IsTrue(Some (Lit (Float -12.5)) = parseExp "-12.5")
+        Assert.IsTrue(Some (Lit (Float 2.0015)) = parseExp "2.0015")
+
+    [<Test>]
     member this.Sum() =
         Assert.IsTrue(Some (InfixApp (Lit (Integer 42),"+",Lit (Integer 24))) = parseExp "42 + 24")
 

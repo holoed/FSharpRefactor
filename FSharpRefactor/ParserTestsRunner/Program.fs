@@ -3,6 +3,9 @@
 open System
 open FSharpParser
 
+let x = parseExp ("let f x = x")
+
+printfn "%A" x
 
 //let ret = parseExp ("let z = let x = 42 in x in z")
 

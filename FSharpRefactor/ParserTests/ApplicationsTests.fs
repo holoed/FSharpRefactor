@@ -29,4 +29,8 @@ type ApplicationsTests() =
         Assert.IsTrue(Some (App(Var "f", App(Var "g", Var "h"))) = parseExp "f (g h)")
         Assert.IsTrue(Some (App(Var "f", App(Var "g", App(Var "h", Var "j")))) = parseExp "f (g (h j))")
 
+    [<Test>]
+    member this.Currying() = 
+        Assert.IsTrue (Some (Let (PVar "squares", App (App(Var "map", Var "square"), Var "numbers"), Var "squares")) = parseExp "let squares = map square numbers")
+
   
