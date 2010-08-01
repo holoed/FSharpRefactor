@@ -3,7 +3,7 @@
 open System
 open FSharpParser
 
-let x = parseExp ("let f x = x")
+let x = parseExp ("let f x = x") 
 
 printfn "%A" x
 
