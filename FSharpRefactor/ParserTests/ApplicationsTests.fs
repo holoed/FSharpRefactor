@@ -9,7 +9,7 @@
 // * You must not remove this notice, or any other, from this software.
 // * **********************************************************************************************
 
-module ApplicationsTests
+module ApplicationsTests 
 
 open NUnit.Framework
 open Ast

@@ -27,7 +27,7 @@ type Parser<'a> = Parser of (Pos -> PString -> ('a * PString) list)
 let parse (Parser f) x = f x
                            
 type ParserMonad() =
-   //a -> m a
+   //a -> m a 
    member this.Return x = Parser(fun pos -> fun ps -> [(x, ps)])  
    
    //m a -> (a -> m b) -> m b

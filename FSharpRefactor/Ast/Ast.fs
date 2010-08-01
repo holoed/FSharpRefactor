@@ -17,7 +17,7 @@ type Literal
    = Char  of  char          // character literal
    | String of string        // string literal
    | Integer of  int         // integer literal
-   | Float  of  float        // floating point literal   
+   | Float  of  float        // floating point literal    
 
 type Pat =
     | PVar of string

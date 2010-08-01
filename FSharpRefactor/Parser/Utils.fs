@@ -22,4 +22,4 @@ let (|Empty|Cons|) xs : Choice<Unit, 'a * seq<'a>> =
 let cons x xs = seq { yield x
                       yield! xs }
 
-let seqtostring xs = new System.String(Seq.toArray xs)
+let seqtostring xs = new System.String(Seq.toArray xs) 
