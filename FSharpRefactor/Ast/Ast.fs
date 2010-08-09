@@ -13,6 +13,19 @@ module Ast
 
 open System
 
+type PrimitiveType
+    = Integer
+    | String
+    | Bool
+
+type Type
+    = TyInfixApp of Type * string * Type
+    | TyApp of Type * Type
+    | TyLam of Type * Type
+    | TyLet of Type * Type * Type
+    | TyVar  of string
+    | TyLit  of PrimitiveType
+
 type Literal
    = Char  of  char          // character literal
    | String of string        // string literal
@@ -21,12 +34,17 @@ type Literal
 
 type Pat =
     | PVar of string
-    | PLit of Literal
     | PApp of Pat * Pat
+    | PLit of Literal    
 
-type Exp = InfixApp of Exp * String * Exp        // infix application
-            | App of Exp * Exp                   // application
-            | Lam of String * Exp                // lambda abstraction
-            | Let of Pat * Exp * Exp             // local definition
-            | Var of String                      // variable
-            | Lit of Literal                     // literal 
+type Exp 
+    = Var      of String               // variable    
+    | Lam      of String * Exp         // lambda abstraction
+    | App      of Exp * Exp            // application    
+    | InfixApp of Exp * String * Exp   // infix application
+    | Let      of Pat * Exp * Exp      // local definition
+    
+    | Lit      of Literal              // literal 
+    | WithTy   of Exp * Type
+
+

@@ -5,12 +5,12 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{82d936e2-ab11-4afa-9a8b-5c0a97c54f2c}</ProjectGuid>
+    <ProjectGuid>{b167829d-330d-46e5-a849-6d3ed448738b}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Ast</RootNamespace>
-    <AssemblyName>Ast</AssemblyName>
+    <RootNamespace>TypeInference</RootNamespace>
+    <AssemblyName>TypeInference</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <Name>Ast</Name>
+    <Name>TypeInference</Name>
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
     <SccAuxPath>SAK</SccAuxPath>
@@ -24,8 +24,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile>bin\Debug\TypeInference.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,7 +33,7 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Release\Ast.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\TypeInference.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -44,8 +43,15 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Ast.fs" />
-    <Compile Include="Catamorphism.fs" />
+    <Compile Include="StateMonad.fs" />
+    <Compile Include="TypeInference.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ast\Ast.fsproj">
+      <Name>Ast</Name>
+      <Project>{82d936e2-ab11-4afa-9a8b-5c0a97c54f2c}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />

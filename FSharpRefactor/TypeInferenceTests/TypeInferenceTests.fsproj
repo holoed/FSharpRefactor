@@ -5,12 +5,12 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{82d936e2-ab11-4afa-9a8b-5c0a97c54f2c}</ProjectGuid>
+    <ProjectGuid>{b803c2d8-d172-40b0-9ae8-cac7a2614d11}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Ast</RootNamespace>
-    <AssemblyName>Ast</AssemblyName>
+    <RootNamespace>TypeInferenceTests</RootNamespace>
+    <AssemblyName>TypeInferenceTests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <Name>Ast</Name>
+    <Name>TypeInferenceTests</Name>
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
     <SccAuxPath>SAK</SccAuxPath>
@@ -24,8 +24,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile>bin\Debug\TypeInferenceTests.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,18 +33,27 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Release\Ast.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\TypeInferenceTests.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />
+    <Reference Include="nunit.framework">
+      <HintPath>..\ThirdParty\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Ast.fs" />
-    <Compile Include="Catamorphism.fs" />
+    <Compile Include="TypeInferenceTests.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ast\Ast.fsproj">
+      <Name>Ast</Name>
+      <Project>{82d936e2-ab11-4afa-9a8b-5c0a97c54f2c}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
