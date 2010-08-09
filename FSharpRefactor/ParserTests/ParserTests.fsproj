@@ -59,7 +59,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArithmetiicTests.fs" />
+    <Compile Include="ArithmeticTests.fs" />
     <Compile Include="ApplicationsTests.fs" />
     <Compile Include="LambdaTests.fs" />
     <Compile Include="LocalDefinitions.fs" />
