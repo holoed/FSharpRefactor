@@ -1,11 +1,33 @@
-﻿// Learn more about F# at http://fsharp.net
+﻿// * **********************************************************************************************
+// * Copyright (c) Edmondo Pentangelo. 
+// *
+// * This source code is subject to terms and conditions of the Microsoft Public License. 
+// * A copy of the license can be found in the License.html file at the root of this distribution. 
+// * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
+// * Microsoft Public License.
+// *
+// * You must not remove this notice, or any other, from this software.
+// * **********************************************************************************************
 
 open System
+open Ast
 open FSharpParser
+open TypeInf
 
-let x = parseExp ("let f x = x") 
+
+let (Some x) = parseExp ("let f = fun x -> fun y -> y")
+
 
 printfn "%A" x
+
+//let inf = Inferencer()
+
+//let t = inf.TypeOf(x)
+
+let t = typeOf x
+
+printfn "%A"(t.ToString())
+
 
 //let ret = parseExp ("let z = let x = 42 in x in z")
 
