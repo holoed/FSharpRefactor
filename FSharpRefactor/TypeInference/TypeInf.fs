@@ -23,11 +23,16 @@ type Subst = Map<string, Type>
 
 let extend v t (s:Subst) : Subst = Map.add v t s
 
-let lookup v (s:Subst) = if (Map.containsKey v s) then Map.find v s else TyVar v
+let lookup v (s:Subst) = 
+    if (Map.containsKey v s) then 
+        Map.find v s 
+    else 
+        TyVar v
 
-let newTyVar = state { let! x = getState
-                       do! setState(x + 1)
-                       return TyVar(sprintf "T%d" x) }
+let newTyVar = 
+    state { let! x = getState
+            do! setState(x + 1)
+            return TyVar(sprintf "T%d" x) }
 
 let rec subs t s = 
     match t with
@@ -38,19 +43,23 @@ let rec subs t s =
     | TyLam(a, r) -> 
           TyLam(subs a s, subs r s)
     | TyCon(name, tyArgs) ->
-            TyCon(name, tyArgs |> List.map (fun x -> subs x s))
+            TyCon(name, tyArgs 
+            |> List.map (fun x -> subs x s))
 
 let rec typeVarsOfType = function
     | TyVar(tv)  -> Set.singleton tv
     | TyLam(a, r) -> typeVarsOfType(a) + typeVarsOfType(r)
-    | TyCon(_, tyArgs) -> (Set.empty, tyArgs) ||> List.fold (fun acc ty -> acc + typeVarsOfType ty)
+    | TyCon(_, tyArgs) -> 
+        (Set.empty, tyArgs) 
+        ||> List.fold (fun acc ty -> acc + typeVarsOfType ty)
 
 let typeVarsOfScheme((t, tyvars) : TyScheme) = 
     (typeVarsOfType t) - tyvars
 
 let typeVarsOfEnv (env : Env) = 
     let schemes = env |> Map.toSeq |> Seq.map snd
-    (Set.empty, schemes) ||> Seq.fold (fun acc s -> acc + (typeVarsOfScheme s))
+    (Set.empty, schemes)
+    ||> Seq.fold (fun acc s -> acc + (typeVarsOfScheme s))
 
 exception UnificationException of Type * Type
 
@@ -68,31 +77,31 @@ let integer = TyCon("int", [])
 
 let rec analyze (env: Env) (exp:Exp) (bt : Type) (s : Subst) = 
     state {
-                match exp with
-                | Lit v -> return unify integer bt s
-                | Var n ->  if not (Map.containsKey n env) 
-                            then failwith "Name %s no found" n 
-                            let (t, _) = Map.find n env
-                            return unify (subs t s) bt s
-                | Lam (x, e) ->  
-                            let! a = newTyVar
-                            let! b = newTyVar
-                            let s1 = unify bt (TyLam (a, b)) s
-                            let newEnv = Map.add x (a, Set.empty) env
-                            return! analyze newEnv e b s1
-                | App(e1, e2) ->
-                            let! a = newTyVar
-                            let! s1 = analyze env e1 (TyLam(a, bt)) s
-                            return! analyze env e2 a s1
-                | InfixApp(e1, op, e2) ->
-                            let exp1 = App(App(Var op, e1), e2)
-                            return! analyze env exp1 bt s
-                | Let(PVar name, inV, body) ->
-                            let! a = newTyVar
-                            let! s1 = analyze env inV a s
-                            let t = subs a s1
-                            let newScheme = t, ((typeVarsOfType t) - (typeVarsOfEnv env))
-                            return! analyze (Map.add name newScheme env) body bt s1 }
+            match exp with
+            | Lit v -> return unify integer bt s
+            | Var n ->  if not (Map.containsKey n env) 
+                        then failwith "Name %s no found" n 
+                        let (t, _) = Map.find n env
+                        return unify (subs t s) bt s
+            | Lam (x, e) ->  
+                        let! a = newTyVar
+                        let! b = newTyVar
+                        let s1 = unify bt (TyLam (a, b)) s
+                        let newEnv = Map.add x (a, Set.empty) env
+                        return! analyze newEnv e b s1
+            | App(e1, e2) ->
+                        let! a = newTyVar
+                        let! s1 = analyze env e1 (TyLam(a, bt)) s
+                        return! analyze env e2 a s1
+            | InfixApp(e1, op, e2) ->
+                        let exp1 = App(App(Var op, e1), e2)
+                        return! analyze env exp1 bt s
+            | Let(PVar name, inV, body) ->
+                        let! a = newTyVar
+                        let! s1 = analyze env inV a s
+                        let t = subs a s1
+                        let newScheme = t, ((typeVarsOfType t) - (typeVarsOfEnv env))
+                        return! analyze (Map.add name newScheme env) body bt s1 }
 
 let newTypeScheme t : TyScheme = (t, Set.empty)
  
@@ -125,11 +134,13 @@ let alpha t =
                 | TyVar(name) ->
                     let! newName = getName name             
                     return TyVar(sprintf "'%c" newName)
-                | TyLam(arg, res) -> let! t1 = run arg
-                                     let! t2 = run res
-                                     return TyLam(t1, t2)
-                | TyCon(name, typeArgs) -> let! list = mmap (fun x -> run x) typeArgs
-                                           return TyCon(name, list) }
+                | TyLam(arg, res) -> 
+                    let! t1 = run arg
+                    let! t2 = run res
+                    return TyLam(t1, t2)
+                | TyCon(name, typeArgs) -> 
+                    let! list = mmap (fun x -> run x) typeArgs
+                    return TyCon(name, list) }
     execute (run t) (Map.empty, 'a')
 
 let typeOf (exp: Exp) : Type =
