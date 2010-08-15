@@ -42,7 +42,6 @@ let execute m s = match m with
                                match r with
                                |(x,_) -> x
 
-// F# Monadically label n-ary tree
 let mmap f xs = 
             let rec MMap' (f, xs', out) = 
                 state {
