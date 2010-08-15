@@ -9,17 +9,15 @@
 // * You must not remove this notice, or any other, from this software.
 // * **********************************************************************************************
 
-module TypeInference
+module TypeTree
 
-open Ast
-open AstCatamorphisms
-open StateMonad
-
-let getNewId = state { let! x = getState
-                       do! setState(x + 1)
-                       return x.ToString() }
-
-
-
-
+type Type
+    = TyLam of Type * Type
+    | TyVar of string
+    | TyCon of string * Type list
+    with override this.ToString() = 
+            match this with
+            | TyLam (t1, t2) -> sprintf "%s -> %s" (t1.ToString()) (t2.ToString())
+            | TyVar a -> a
+            | TyCon (s, ts) -> s
 

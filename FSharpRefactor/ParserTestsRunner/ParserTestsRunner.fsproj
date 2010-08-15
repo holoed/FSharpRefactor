@@ -59,6 +59,11 @@
       <Project>{ae4a60ac-d526-4ef4-a747-6bf0450c884b}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\TypeInference\TypeInference.fsproj">
+      <Name>TypeInference</Name>
+      <Project>{b167829d-330d-46e5-a849-6d3ed448738b}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />

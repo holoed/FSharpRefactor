@@ -15,10 +15,22 @@ module StateMonad
 
 type State<'state, 'a> = State of ('state ->'a * 'state)
 
+let run (State f) s = f s
+
 type StateMonad() = 
         member b.Bind(State m, f) = State (fun s -> let (v,s') = m s in
                                                     let (State n) = f v in n s')                                                    
-        member b.Return(x) = State (fun s -> x, s)
+        member b.Return x = State (fun s -> x, s)
+
+        member b.ReturnFrom x = x
+
+        member b.Zero () = State (fun s -> (), s)
+
+        member b.Combine(r1, r2) = b.Bind(r1, fun () -> r2)
+
+        member b.Delay f = State (fun s -> run (f()) s)
+
+
 
 let state = StateMonad()
 
@@ -29,3 +41,14 @@ let execute m s = match m with
                   | State f -> let r = f s
                                match r with
                                |(x,_) -> x
+
+// F# Monadically label n-ary tree
+let mmap f xs = 
+            let rec MMap' (f, xs', out) = 
+                state {
+                        match xs' with
+                        | h :: t -> let! h' = f(h)
+                                    return! MMap'(f, t, List.append out [h'])
+                        | [] -> return out
+                      }
+            MMap' (f, xs, [])
