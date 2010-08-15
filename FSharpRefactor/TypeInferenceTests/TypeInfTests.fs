@@ -29,32 +29,44 @@ type TypeInferenceTests () =
         Assert.AreEqual ("int", typeOfExp.ToString())
 
     [<Test>]
+    member x.SimpleBinding2 () =
+        let exp = parseExp "let x = 42.5"
+        let typeOfExp = typeOf exp
+        Assert.AreEqual ("float", typeOfExp.ToString())   
+
+    [<Test>]
     member x.IdentityFunction () =
         let exp = parseExp "let f = fun x -> x"
         let typeOfExp = typeOf exp
-        Assert.AreEqual ("'a -> 'a", typeOfExp.ToString())
+        Assert.AreEqual ("('a -> 'a)", typeOfExp.ToString())
 
     [<Test>]
     member x.TakesATakesBReturnsB () =
         let exp = parseExp "let f = fun x -> fun y -> y"
         let typeOfExp = typeOf exp
-        Assert.AreEqual ("'a -> 'b -> 'b", typeOfExp.ToString())
+        Assert.AreEqual ("('a -> ('b -> 'b))", typeOfExp.ToString())
 
     [<Test>]
     member x.TakesATakesBReturnsA () =
         let exp = parseExp "let f = fun x -> fun y -> x"
         let typeOfExp = typeOf exp
-        Assert.AreEqual ("'a -> 'b -> 'a", typeOfExp.ToString())
+        Assert.AreEqual ("('a -> ('b -> 'a))", typeOfExp.ToString())
 
     [<Test>]
     member x.TakesATakesBReturnsAPlusB () =
         let exp = parseExp "let f = fun x -> fun y -> x + y"
         let typeOfExp = typeOf exp
-        Assert.AreEqual ("int -> int -> int", typeOfExp.ToString())
+        Assert.AreEqual ("(int -> (int -> int))", typeOfExp.ToString())
 
     [<Test>]
     member x.Increment () =
         let exp = parseExp "let f = fun x -> x + 1"
         let typeOfExp = typeOf exp
-        Assert.AreEqual ("int -> int", typeOfExp.ToString())
+        Assert.AreEqual ("(int -> int)", typeOfExp.ToString())
+
+    [<Test>]
+    member x.Compose () =
+        let exp = parseExp "let compose = fun f -> fun g -> fun x -> g (f x) "
+        let typeOfExp = typeOf exp
+        Assert.AreEqual ("(('a -> 'b) -> (('b -> 'c) -> ('a -> 'c)))", typeOfExp.ToString())
 

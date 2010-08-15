@@ -32,19 +32,19 @@ let onside (l, c) (dl, dc) = (c > dc) || (l = dl)
 
 // Deterministic choice operator
 let (+++) p q = Parser (fun pos -> fun s -> match parse p pos s with
-                                           | []-> parse q pos s
-                                           | result -> result)
+                                            | []-> parse q pos s
+                                            | result -> result)
 
 let item = Parser(fun defpos -> fun ps -> match (string ps) with
-                                         | Empty -> []
-                                         | Cons(x, _) ->      
+                                          | Empty -> []
+                                          | Cons(x, _) ->      
                                                let (PString(pos, xs)) = newstate ps 
                                                if (onside pos defpos) then 
                                                    [(x, PString(pos, xs))]
                                                else [])
 
 let sat p = parser { let! x = item
-                    if (p x) then
+                     if (p x) then
                        return x }
 
 let char x = sat (fun y -> x = y)
