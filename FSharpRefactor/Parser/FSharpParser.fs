@@ -89,9 +89,16 @@ and variable = identifier ["let";"in"]
 and pvar = parser { let! x = variable
                    return PVar (seqtostring x) }
 
-and papp = chainl1 pvar (parser { return fun x y -> PApp (x, y) })            
+and pvarAnnotated = parser { let! _ = symbol "("
+                             let! x = pvar
+                             let! _ = symbol ":"
+                             let! t = ident
+                             let! _ = symbol ")" 
+                             return PWithTy (x, TyCon(seqtostring t, [])) }
 
-and pattern = papp +++ pvar
+and papp = chainl1 (pvarAnnotated +++ pvar) (parser { return fun x y -> PApp (x, y) })            
+
+and pattern = papp +++ pvar +++ pvarAnnotated
 
 let parseExp s = match (parse prog (0,1) (PString((0,-1), s))) with
                  | [] -> None

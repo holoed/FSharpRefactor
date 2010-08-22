@@ -11,7 +11,7 @@
 
 module Unification
 
-open TypeTree
+open Ast
 open Substitutions
 open Environments
 

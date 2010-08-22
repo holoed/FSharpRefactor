@@ -9,15 +9,17 @@
 // * You must not remove this notice, or any other, from this software.
 // * **********************************************************************************************
 
-module TypeTree
+module TypeAnnotationTests
 
-type Type
-    = TyLam of Type * Type
-    | TyVar of string
-    | TyCon of string * Type list
-    with override this.ToString() = 
-            match this with
-            | TyLam (t1, t2) -> sprintf "(%s -> %s)" (t1.ToString()) (t2.ToString())
-            | TyVar a -> a
-            | TyCon (s, ts) -> s
+open NUnit.Framework
+open FSharpParser
+open Ast
+
+[<TestFixture>]
+type TypeAnnotationTests() =
+    
+        [<Test>]
+        member this.Test() =
+            Assert.IsTrue(Some (Let(PApp(PVar "f", PWithTy(PVar "x", tyInteger)), Var "x", Var "f")) = parseExp "let f (x:int) = x") 
+
 

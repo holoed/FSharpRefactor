@@ -11,7 +11,7 @@
 
 module Environments
 
-open TypeTree
+open Ast
 
 type TyScheme = TyScheme of Type * Set<string>
 

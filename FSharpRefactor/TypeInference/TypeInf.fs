@@ -12,7 +12,7 @@
 module TypeInf
 
 open Ast
-open TypeTree
+open Ast
 open Substitutions
 open Environments
 open Unification
@@ -24,17 +24,12 @@ let newTyVar =
             do! setState(x + 1)
             return TyVar(sprintf "T%d" x) }
 
-let integerCon = TyCon("int", [])
-let floatCon = TyCon("float", [])
-let charCon = TyCon("char", [])
-let stringCon = TyCon("string", [])
-
 let litToTy lit = 
     match lit with
-    | Integer _ -> integerCon
-    | Float _ -> floatCon
-    | Char _ -> charCon
-    | String  _ -> stringCon
+    | Integer _ -> tyInteger
+    | Float _ -> tyFloat
+    | Char _ -> tyChar
+    | String  _ -> tyString
 
 // Calculate the principal type scheme for an expression in a given 
 // typing environment 
@@ -71,9 +66,9 @@ let rec tp env exp bt s =
                         return! tp (addSc name newScheme env) body bt s1 }
  
 let predefinedEnv = 
-    Env(["+", TyScheme (TyLam(integerCon, TyLam(integerCon, integerCon)), Set.empty)
-         "*", TyScheme (TyLam(integerCon, TyLam(integerCon, integerCon)), Set.empty)
-         "-", TyScheme (TyLam(integerCon, TyLam(integerCon, integerCon)), Set.empty)
+    Env(["+", TyScheme (TyLam(tyInteger, TyLam(tyInteger, tyInteger)), Set.empty)
+         "*", TyScheme (TyLam(tyInteger, TyLam(tyInteger, tyInteger)), Set.empty)
+         "-", TyScheme (TyLam(tyInteger, TyLam(tyInteger, tyInteger)), Set.empty)
            ] |> Map.ofList)
 
 // typeOf: Exp -> Type
