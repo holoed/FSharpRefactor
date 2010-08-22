@@ -22,4 +22,8 @@ type TypeAnnotationTests() =
         member this.``Simple type annotation of function argument``() =
             Assert.IsTrue(Some (Let(PApp(PVar "f", PWithTy(PVar "x", tyInteger)), Var "x", Var "f")) = parseExp "let f (x:int) = x") 
 
+        [<Test>]
+        member this.``Simple type annotation of lambda argument``() =
+            Assert.IsTrue(Some (Let(PVar "f", Lam([PWithTy(PVar "x", tyInteger)], Var "x"), Var "f")) = parseExp "let f = fun (x:int) -> x") 
+
 

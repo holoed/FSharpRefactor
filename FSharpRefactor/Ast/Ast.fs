@@ -42,7 +42,7 @@ type Pat =
 
 type Exp 
     = Var      of String               // variable    
-    | Lam      of String * Exp         // lambda abstraction
+    | Lam      of Pat list * Exp       // lambda abstraction
     | App      of Exp * Exp            // application    
     | InfixApp of Exp * String * Exp   // infix application
     | Let      of Pat * Exp * Exp      // local definition    

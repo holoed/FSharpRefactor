@@ -20,8 +20,8 @@ type LambdaTests() =
 
     [<Test>]
     member this.Lambdas() =
-        Assert.IsTrue(Some (Lam("x", Var "x")) = parseExp "fun x -> x") 
-        Assert.IsTrue(Some (Lam("x", Lam("y", InfixApp(Var "x", "+", Var "y")))) = parseExp "fun x -> fun y -> x + y")
+        Assert.IsTrue(Some (Lam([PVar "x"], Var "x")) = parseExp "fun x -> x") 
+        Assert.IsTrue(Some (Lam([PVar "x"], Lam([PVar "y"], InfixApp(Var "x", "+", Var "y")))) = parseExp "fun x -> fun y -> x + y")
         
     
 

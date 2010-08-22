@@ -60,10 +60,10 @@ and factor =  chainl1Line atom appOp
 and atom =  lam +++ var +++ floatp +++ integerp +++ paren
 
 and lam = parser { let! _ = symbol "fun"
-                   let! x = variable
+                   let! x = many1 pattern
                    let! _ = symbol "->"
                    let! e = expr 
-                   return Lam (seqtostring x, e) }
+                   return Lam (Seq.toList x, e) }
 
 and decl = parser {  let! _ = symbol "let"
                      let! x = pattern
