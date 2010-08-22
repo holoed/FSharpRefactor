@@ -45,7 +45,7 @@ let rec tp env exp bt s =
                         then failwith "Name %s no found" n 
                         let (TyScheme (t, _)) = findSc n env
                         return mgu (subs t s) bt s
-            | Lam (x, e) ->  
+            | Lam ([PVar x], e) ->  
                         let! a = newTyVar
                         let! b = newTyVar
                         let s1 = mgu bt (TyLam (a, b)) s
