@@ -11,7 +11,7 @@
 
 module Substitutions
 
-open TypeTree
+open Ast
 
 type Subst = Subst of Map<string, Type>
 

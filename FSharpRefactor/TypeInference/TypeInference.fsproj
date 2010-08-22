@@ -44,7 +44,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="StateMonad.fs" />
-    <Compile Include="TypeTree.fs" />
     <Compile Include="Substitutions.fs" />
     <Compile Include="Environments.fs" />
     <Compile Include="Unification.fs" />

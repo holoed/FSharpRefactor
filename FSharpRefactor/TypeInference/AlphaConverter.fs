@@ -12,7 +12,7 @@
 module AlphaConverter
 
 open StateMonad
-open TypeTree
+open Ast
 
 let getName k =
     let containsKey k = state { let! (map, id) = getState
