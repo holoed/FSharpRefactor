@@ -70,3 +70,8 @@ type TypeInferenceTests () =
         let typeOfExp = typeOf exp
         Assert.AreEqual ("(('a -> 'b) -> (('b -> 'c) -> ('a -> 'c)))", typeOfExp.ToString())
 
+    [<Test>]
+    member x.``Identity function with type annotation`` () =
+        let exp = parseExp "let f = fun (x:int) -> x"
+        let typeOfExp = typeOf exp
+        Assert.AreEqual ("(int -> int)", typeOfExp.ToString())
