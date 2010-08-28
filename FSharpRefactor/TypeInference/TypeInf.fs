@@ -51,6 +51,11 @@ let rec tp env exp bt s =
                         let s1 = mgu bt (TyLam (a, b)) s
                         let newEnv = addSc x (TyScheme (a, Set.empty)) env
                         return! tp newEnv e b s1
+            | Lam ([PWithTy(PVar x, t)], e) ->  
+                        let! b = newTyVar
+                        let s1 = mgu bt (TyLam (t, b)) s
+                        let newEnv = addSc x (TyScheme (t, Set.empty)) env
+                        return! tp newEnv e b s1
             | App(e1, e2) ->
                         let! a = newTyVar
                         let! s1 = tp env e1 (TyLam(a, bt)) s
