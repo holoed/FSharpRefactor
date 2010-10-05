@@ -28,5 +28,7 @@ let rec mgu a b s =
     | TyLam (a1, b1), TyLam (a2, b2) -> mgu a1 a2 (mgu b1 b2 s)
     | TyCon(name1, args1), TyCon(name2, args2) when name1 = name2 ->
             (s, args1, args2) |||> List.fold2 (fun subst t1 t2 -> mgu t1 t2 subst)
+    | t1, ((TyVar "num") as t2) -> extend "num" t1 s
+    | ((TyVar "num") as t1), t2 -> extend "num" t2 s
     | x,y -> raise <| UnificationError (x,y) 
 

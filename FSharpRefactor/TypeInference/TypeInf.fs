@@ -71,7 +71,7 @@ let rec tp env exp bt s =
                         return! tp (addSc name newScheme env) body bt s1 }
  
 let predefinedEnv = 
-    Env(["+", TyScheme (TyLam(tyInteger, TyLam(tyInteger, tyInteger)), Set.empty)
+    Env(["+", TyScheme (TyLam(tyNum, TyLam(tyNum, tyNum)), Set.empty)
          "*", TyScheme (TyLam(tyInteger, TyLam(tyInteger, tyInteger)), Set.empty)
          "-", TyScheme (TyLam(tyInteger, TyLam(tyInteger, tyInteger)), Set.empty)
            ] |> Map.ofList)
