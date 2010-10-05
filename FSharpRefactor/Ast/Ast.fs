@@ -27,6 +27,7 @@ let tyInteger = TyCon("int", [])
 let tyFloat = TyCon("float", [])
 let tyChar = TyCon("char", [])
 let tyString = TyCon("string", [])
+let tyNum = TyVar "num"
 
 type Literal
    = Char  of  char          // character literal

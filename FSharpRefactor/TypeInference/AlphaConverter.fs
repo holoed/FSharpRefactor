@@ -34,6 +34,8 @@ let renameTVarsToLetters t =
     let rec run x = 
         state {
                 match x with
+                | TyVar "num" ->                    
+                    return tyInteger
                 | TyVar(name) ->
                     let! newName = getName name             
                     return TyVar(sprintf "'%c" newName)

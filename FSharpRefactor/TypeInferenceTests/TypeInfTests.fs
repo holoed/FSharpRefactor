@@ -54,7 +54,7 @@ type TypeInferenceTests () =
 
     [<Test>]
     member x.TakesATakesBReturnsAPlusB () =
-        let exp = parseExp "let f = fun x -> fun y -> x + y"
+        let exp = parseExp "let f = fun (x:int) -> fun y -> x + y"
         let typeOfExp = typeOf exp
         Assert.AreEqual ("(int -> (int -> int))", typeOfExp.ToString())
 
@@ -75,3 +75,18 @@ type TypeInferenceTests () =
         let exp = parseExp "let f = fun (x:int) -> x"
         let typeOfExp = typeOf exp
         Assert.AreEqual ("(int -> int)", typeOfExp.ToString())
+
+    [<Test>]
+    member x.``Plus function should be polymorphic`` () =
+        let typeOfExp = "let f = fun (x:float) -> fun y -> x + y" |> parseExp |> typeOf
+        Assert.AreEqual ("(float -> (float -> float))", typeOfExp.ToString())
+
+        let typeOfExp = "let f = fun (x:int) -> fun y -> x + y" |> parseExp |> typeOf
+        Assert.AreEqual ("(int -> (int -> int))", typeOfExp.ToString())
+
+        let typeOfExp = "let f = fun x -> fun (y:int) -> x + y" |> parseExp |> typeOf
+        Assert.AreEqual ("(int -> (int -> int))", typeOfExp.ToString())
+
+        let typeOfExp = "let f = fun x -> fun (y:float) -> x + y" |> parseExp |> typeOf
+        Assert.AreEqual ("(float -> (float -> float))", typeOfExp.ToString())
+        
