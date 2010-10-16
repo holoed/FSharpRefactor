@@ -24,6 +24,7 @@ type Type
             | TyCon (s, ts) -> s
 
 let tyInteger = TyCon("int", [])
+let tyDouble = TyCon("double", [])
 let tyFloat = TyCon("float", [])
 let tyChar = TyCon("char", [])
 let tyString = TyCon("string", [])
@@ -33,7 +34,8 @@ type Literal
    = Char  of  char          // character literal
    | String of string        // string literal
    | Integer of  int         // integer literal
-   | Float  of  float        // floating point literal    
+   | Float  of  float        // floating point literal   
+   | Double of double 
 
 type Pat =
     | PVar of string
