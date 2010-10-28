@@ -89,4 +89,47 @@ type TypeInferenceTests () =
 
         let typeOfExp = "let f = fun x -> fun (y:float) -> x + y" |> parseExp |> typeOf
         Assert.AreEqual ("(float -> (float -> float))", typeOfExp.ToString())
+
+    [<Test>]
+    member x.``Plus function should default to int`` () =
+        let typeOfExp = "let f = fun x -> fun y -> x + y" |> parseExp |> typeOf
+        Assert.AreEqual ("(int -> (int -> int))", typeOfExp.ToString())
+
+    [<Test>]
+    member x.``Multiplication function should be polymorphic`` () =
+        let typeOfExp = "let f = fun (x:float) -> fun y -> x * y" |> parseExp |> typeOf
+        Assert.AreEqual ("(float -> (float -> float))", typeOfExp.ToString())
+
+        let typeOfExp = "let f = fun (x:int) -> fun y -> x * y" |> parseExp |> typeOf
+        Assert.AreEqual ("(int -> (int -> int))", typeOfExp.ToString())
+
+        let typeOfExp = "let f = fun x -> fun (y:int) -> x * y" |> parseExp |> typeOf
+        Assert.AreEqual ("(int -> (int -> int))", typeOfExp.ToString())
+
+        let typeOfExp = "let f = fun x -> fun (y:float) -> x * y" |> parseExp |> typeOf
+        Assert.AreEqual ("(float -> (float -> float))", typeOfExp.ToString())
+
+    [<Test>]
+    member x.``Multiplication function should default to int`` () =
+        let typeOfExp = "let f = fun x -> fun y -> x * y" |> parseExp |> typeOf
+        Assert.AreEqual ("(int -> (int -> int))", typeOfExp.ToString())
+
+    [<Test>]
+    member x.``Subtraction function should be polymorphic`` () =
+        let typeOfExp = "let f = fun (x:float) -> fun y -> x - y" |> parseExp |> typeOf
+        Assert.AreEqual ("(float -> (float -> float))", typeOfExp.ToString())
+
+        let typeOfExp = "let f = fun (x:int) -> fun y -> x - y" |> parseExp |> typeOf
+        Assert.AreEqual ("(int -> (int -> int))", typeOfExp.ToString())
+
+        let typeOfExp = "let f = fun x -> fun (y:int) -> x - y" |> parseExp |> typeOf
+        Assert.AreEqual ("(int -> (int -> int))", typeOfExp.ToString())
+
+        let typeOfExp = "let f = fun x -> fun (y:float) -> x - y" |> parseExp |> typeOf
+        Assert.AreEqual ("(float -> (float -> float))", typeOfExp.ToString())
+
+    [<Test>]
+    member x.``Subtraction function should default to int`` () =
+        let typeOfExp = "let f = fun x -> fun y -> x - y" |> parseExp |> typeOf
+        Assert.AreEqual ("(int -> (int -> int))", typeOfExp.ToString())
         
