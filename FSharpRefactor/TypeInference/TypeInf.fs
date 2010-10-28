@@ -72,15 +72,38 @@ let rec tp env exp bt s =
  
 let predefinedEnv = 
     Env(["+", TyScheme (TyLam(tyNum, TyLam(tyNum, tyNum)), Set.empty)
-         "*", TyScheme (TyLam(tyInteger, TyLam(tyInteger, tyInteger)), Set.empty)
-         "-", TyScheme (TyLam(tyInteger, TyLam(tyInteger, tyInteger)), Set.empty)
+         "*", TyScheme (TyLam(tyNum, TyLam(tyNum, tyNum)), Set.empty)
+         "-", TyScheme (TyLam(tyNum, TyLam(tyNum, tyNum)), Set.empty)
            ] |> Map.ofList)
 
+
+let rec findType name (Subst s) = 
+    match (s.[name]) with
+    | TyVar x -> if (Map.containsKey x s) then findType x (Subst s) else Some x
+    | TyCon _ -> None  
+
+let checkIfSupposedToBeAnInt (Subst s) =
+    if (not (Map.containsKey "num" s)) then
+        None
+    else
+        findType "num" (Subst s)
+
+let rec replaceAllWithIntegers t x =
+    match x with
+    | TyVar a when a = t -> tyInteger
+    | TyLam (a,b) -> TyLam (replaceAllWithIntegers t a, replaceAllWithIntegers t b)
+    | TyCon _ -> x
+   
+     
 // typeOf: Exp -> Type
 let typeOf exp =
    let typeOf' exp = 
     state { let! (a:Type) = newTyVar
             let emptySubst = Subst (Map.empty)
             let! s1 = tp predefinedEnv exp a emptySubst
-            return subs a s1 }
+            let x = subs a s1
+            let ret = match checkIfSupposedToBeAnInt s1 with
+                      | Some t -> replaceAllWithIntegers t x
+                      | _ -> x
+            return ret }
    in execute (typeOf' exp) 0 |> renameTVarsToLetters
