@@ -57,6 +57,11 @@
       <Project>{ae4a60ac-d526-4ef4-a747-6bf0450c884b}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\PrettyPrinter\PrettyPrinter.fsproj">
+      <Name>PrettyPrinter</Name>
+      <Project>{8c623567-ef7d-4473-b87a-acf38baf06a2}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArithmeticTests.fs" />
@@ -64,6 +69,7 @@
     <Compile Include="LambdaTests.fs" />
     <Compile Include="LocalDefinitions.fs" />
     <Compile Include="TypeAnnotationTests.fs" />
+    <Compile Include="PrinterTests.fs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />

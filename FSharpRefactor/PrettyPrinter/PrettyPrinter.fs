@@ -24,4 +24,4 @@ type PrettyPrinter() =
     | String s -> s.AsLiteral()
     | Double d -> d.ToString()
     | Integer i -> i.ToString()
-    | Float f -> f.ToString() + "f"
+    | Float f -> f.ToString()
