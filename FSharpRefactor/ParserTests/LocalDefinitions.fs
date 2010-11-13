@@ -23,6 +23,7 @@ type LocalDefinitionTests() =
     member this.LocalDefinitions() =
         Assert.IsTrue(Some (Let(PVar "x", Lit(Integer 42), Var "x")) = parseExp "let x = 42 in x") 
         Assert.IsTrue(Some (Let(PVar "x", Lit(Integer 42), Var "x")) = parseExp "let x = 42 in x")
+        Assert.IsTrue(Some (Let(PVar "x", Lit(Integer 42), InfixApp(Var "x", "*", Var "x"))) = parseExp "let x = 42 in x * x")
 
     [<Test>]
     member this.LocalFunctionDefinitions() =
