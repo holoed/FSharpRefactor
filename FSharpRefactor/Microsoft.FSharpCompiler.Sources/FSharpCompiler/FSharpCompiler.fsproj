@@ -13,6 +13,10 @@
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <Name>Language</Name>
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
@@ -42,7 +46,7 @@
   <PropertyGroup>
     <FsLexOutputFolder>$(IntermediateOutputPath)</FsLexOutputFolder>
     <FsYaccOutputFolder>$(IntermediateOutputPath)</FsYaccOutputFolder>
-    <FsSrGenToolPath>C:\Program Files\FSharpPowerPack-2.0.0.0\bin\</FsSrGenToolPath>
+    <FsSrGenToolPath>$(MSBuildExtensionsPath32)\..\FSharpPowerPack-2.0.0.0\bin\</FsSrGenToolPath>
   </PropertyGroup>
   <ItemGroup>
     <FsSrGen Include="FSComp.txt">
@@ -194,6 +198,10 @@
     <Compile Include="Reactor.fs" />
     <Compile Include="service.fsi" />
     <Compile Include="service.fs" />
+    <FsSrGen Include="FSCstrings.txt" />
+    <Compile Include="ilwrite.fsi" />
+    <Compile Include="ilwrite.fs" />
+    <Compile Include="fsc.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.PowerPack">
@@ -209,6 +217,8 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
