@@ -1,0 +1,220 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{3a2627b6-4909-4820-9a25-df6bc99a12a7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Language</RootNamespace>
+    <AssemblyName>FSharpCompiler</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <Name>Language</Name>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <Tailcalls>false</Tailcalls>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;COMPILER; INCLUDE_METADATA_WRITER</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <DocumentationFile>
+    </DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <Tailcalls>true</Tailcalls>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <DocumentationFile>bin\Release\Language.XML</DocumentationFile>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\..\FSharpPowerPack-2.0.0.0\bin\FSharp.PowerPack.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\..\FSharpPowerPack-2.0.0.0\bin\FSharp.SRGen.targets" />
+  <PropertyGroup>
+    <FsLexOutputFolder>$(IntermediateOutputPath)</FsLexOutputFolder>
+    <FsYaccOutputFolder>$(IntermediateOutputPath)</FsYaccOutputFolder>
+    <FsSrGenToolPath>C:\Program Files\FSharpPowerPack-2.0.0.0\bin\</FsSrGenToolPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <FsSrGen Include="FSComp.txt">
+    </FsSrGen>
+    <Compile Include="ildiag.fsi" />
+    <Compile Include="ildiag.fs" />
+    <Compile Include="prim-lexing.fsi" />
+    <Compile Include="prim-lexing.fs" />
+    <Compile Include="FlatList.fs" />
+    <Compile Include="illib.fs" />
+    <Compile Include="HashMultiMap.fsi" />
+    <Compile Include="HashMultiMap.fs" />
+    <Compile Include="TaggedCollections.fsi" />
+    <Compile Include="TaggedCollections.fs" />
+    <Compile Include="zset.fsi" />
+    <Compile Include="zset.fs" />
+    <Compile Include="filename.fsi" />
+    <Compile Include="filename.fs" />
+    <Compile Include="zmap.fsi" />
+    <Compile Include="zmap.fs" />
+    <Compile Include="lib.fs" />
+    <Compile Include="range.fsi" />
+    <Compile Include="range.fs" />
+    <Compile Include="ErrorLogger.fs" />
+    <Compile Include="prim-parsing.fsi" />
+    <Compile Include="prim-parsing.fs" />
+    <Compile Include="bytes.fsi" />
+    <Compile Include="bytes.fs" />
+    <Compile Include="il.fsi" />
+    <Compile Include="il.fs" />
+    <Compile Include="PrettyNaming.fs" />
+    <Compile Include="InternalFileSystemUtils.fsi" />
+    <Compile Include="InternalFileSystemUtils.fs" />
+    <Compile Include="unilex.fsi" />
+    <Compile Include="unilex.fs" />
+    <Compile Include="ilx.fsi" />
+    <Compile Include="ilx.fs" />
+    <Compile Include="ilascii.fsi" />
+    <Compile Include="ilascii.fs" />
+    <Compile Include="$(IntermediateOutputPath)\ilpars.fs">
+      <Link>ilpars.fs</Link>
+    </Compile>
+    <Compile Include="$(IntermediateOutputPath)\illex.fs">
+      <Link>illex.fs</Link>
+    </Compile>
+    <Compile Include="ast.fs" />
+    <Compile Include="$(IntermediateOutputPath)\pars.fs">
+      <Link>pars.fs</Link>
+    </Compile>
+    <Compile Include="lexhelp.fsi">
+    </Compile>
+    <Compile Include="lexhelp.fs">
+    </Compile>
+    <Compile Include="$(IntermediateOutputPath)\lex.fs">
+      <Link>lex.fs</Link>
+    </Compile>
+    <FsLex Include="illex.fsl">
+      <OtherFlags>--unicode --lexlib Internal.Utilities.Text.Lexing</OtherFlags>
+    </FsLex>
+    <FsLex Include="lex.fsl">
+      <OtherFlags>--unicode --lexlib Internal.Utilities.Text.Lexing</OtherFlags>
+    </FsLex>
+    <FsYacc Include="pars.fsy">
+      <Module>Microsoft.FSharp.Compiler.Parser</Module>
+      <Open>Microsoft.FSharp.Compiler</Open>
+      <OtherFlags>--internal --lexlib Internal.Utilities.Text.Lexing --parslib Internal.Utilities.Text.Parsing</OtherFlags>
+    </FsYacc>
+    <FsYacc Include="ilpars.fsy">
+      <Module>Microsoft.FSharp.Compiler.AbstractIL.Internal.AsciiParser</Module>
+      <Open>Microsoft.FSharp.Compiler.AbstractIL</Open>
+      <OtherFlags>--internal --lexlib Internal.Utilities.Text.Lexing --parslib Internal.Utilities.Text.Parsing</OtherFlags>
+    </FsYacc>
+    <Compile Include="sreflect.fsi" />
+    <Compile Include="sreflect.fs" />
+    <Compile Include="QueueList.fs" />
+    <Compile Include="tast.fs" />
+    <Compile Include="CompilerLocationUtils.fs" />
+    <Compile Include="ilxsettings.fs" />
+    <Compile Include="ilmorph.fsi" />
+    <Compile Include="ilmorph.fs" />
+    <Compile Include="ilprint.fsi" />
+    <Compile Include="ilprint.fs" />
+    <Compile Include="pubclo.fsi" />
+    <Compile Include="pubclo.fs" />
+    <Compile Include="env.fs" />
+    <Compile Include="sformat.fsi" />
+    <Compile Include="sformat.fs" />
+    <Compile Include="layout.fsi" />
+    <Compile Include="layout.fs" />
+    <Compile Include="tastops.fsi" />
+    <Compile Include="tastops.fs" />
+    <Compile Include="import.fsi" />
+    <Compile Include="import.fs" />
+    <Compile Include="infos.fs" />
+    <Compile Include="outcome.fsi" />
+    <Compile Include="outcome.fs" />
+    <Compile Include="augment.fsi" />
+    <Compile Include="augment.fs" />
+    <Compile Include="nameres.fsi" />
+    <Compile Include="nameres.fs" />
+    <Compile Include="typrelns.fs" />
+    <Compile Include="patcompile.fsi" />
+    <Compile Include="patcompile.fs" />
+    <Compile Include="csolve.fsi" />
+    <Compile Include="csolve.fs" />
+    <Compile Include="formats.fsi" />
+    <Compile Include="formats.fs" />
+    <Compile Include="unsolved.fs" />
+    <Compile Include="creflect.fsi" />
+    <Compile Include="creflect.fs" />
+    <Compile Include="check.fsi" />
+    <Compile Include="check.fs" />
+    <Compile Include="tc.fsi" />
+    <Compile Include="tc.fs" />
+    <Compile Include="ReferenceResolution.fsi" />
+    <Compile Include="ReferenceResolution.fs" />
+    <Compile Include="pickle.fsi" />
+    <Compile Include="pickle.fs" />
+    <Compile Include="opt.fsi" />
+    <Compile Include="opt.fs" />
+    <Compile Include="sr.fsi" />
+    <Compile Include="sr.fs" />
+    <Compile Include="TraceCall.fs" />
+    <Compile Include="ilsupp.fsi" />
+    <Compile Include="ilsupp.fs" />
+    <Compile Include="ilbinary.fsi" />
+    <Compile Include="ilbinary.fs" />
+    <Compile Include="InternalCollections.fsi" />
+    <Compile Include="InternalCollections.fs" />
+    <Compile Include="ilread.fsi" />
+    <Compile Include="ilread.fs" />
+    <Compile Include="lexfilter.fs" />
+    <Compile Include="build.fsi" />
+    <Compile Include="build.fs" />
+    <Compile Include="cu_erase.fsi" />
+    <Compile Include="cu_erase.fs" />
+    <Compile Include="lowertop.fs" />
+    <Compile Include="ilxgen.fsi" />
+    <Compile Include="ilxgen.fs" />
+    <Compile Include="detuple.fsi" />
+    <Compile Include="detuple.fs" />
+    <Compile Include="tlr.fsi" />
+    <Compile Include="tlr.fs" />
+    <Compile Include="fscopts.fsi" />
+    <Compile Include="fscopts.fs" />
+    <Compile Include="IncrementalBuild.fsi" />
+    <Compile Include="IncrementalBuild.fs" />
+    <Compile Include="Reactor.fsi" />
+    <Compile Include="Reactor.fs" />
+    <Compile Include="service.fsi" />
+    <Compile Include="service.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="FSharp.PowerPack">
+      <HintPath>C:\Program Files\FSharpPowerPack-1.9.9.9\bin\FSharp.PowerPack.dll</HintPath>
+    </Reference>
+    <Reference Include="ISymWrapper" />
+    <Reference Include="Microsoft.Build.Engine" />
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Tasks.v4.0" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" />
+    <Reference Include="mscorlib" />
+    <Reference Include="FSharp.Core" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+  </ItemGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
