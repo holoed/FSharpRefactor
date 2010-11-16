@@ -203,6 +203,7 @@
     <Compile Include="ilwrite.fs" />
     <Compile Include="fsc.fs" />
     <Compile Include="fscmain.fs" />
+    <EmbeddedResource Include="FSStrings.resx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.PowerPack">
