@@ -6,7 +6,7 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{3a2627b6-4909-4820-9a25-df6bc99a12a7}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>Language</RootNamespace>
     <AssemblyName>FSharpCompiler</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
@@ -202,6 +202,7 @@
     <Compile Include="ilwrite.fsi" />
     <Compile Include="ilwrite.fs" />
     <Compile Include="fsc.fs" />
+    <Compile Include="fscmain.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.PowerPack">
