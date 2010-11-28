@@ -24,6 +24,7 @@ open System.Runtime.CompilerServices
 do ()
 
 [<assembly:InternalsVisibleTo("FSharpCompiler.Tests")>]
+[<assembly:InternalsVisibleTo("FSharpCompilerExt")>]
 do ()
 
 [<EntryPoint>]

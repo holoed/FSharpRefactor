@@ -50,6 +50,16 @@
     <Content Include="test.fs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Ast\Ast.fsproj">
+      <Name>Ast</Name>
+      <Project>{82d936e2-ab11-4afa-9a8b-5c0a97c54f2c}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\FSharpCompilerExt\FSharpCompilerExt.fsproj">
+      <Name>FSharpCompilerExt</Name>
+      <Project>{6c7c81da-105a-407f-a8ae-72ea4ac2a221}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />
     <Reference Include="System" />
