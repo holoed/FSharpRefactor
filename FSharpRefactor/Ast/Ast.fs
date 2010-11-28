@@ -36,6 +36,7 @@ type Literal
    | Integer of  int         // integer literal
    | Float  of  float        // floating point literal   
    | Double of double 
+   | Unit
 
 type Pat =
     | PVar of string
