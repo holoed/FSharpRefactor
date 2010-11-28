@@ -43,9 +43,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{F763C0B0
 		Microsoft.FSharpCompiler.Sources\FsSrGen.exe.config = Microsoft.FSharpCompiler.Sources\FsSrGen.exe.config
 	EndProjectSection
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharpCompiler.Tests", "FSharpCompiler.Tests\FSharpCompiler.Tests.fsproj", "{0ED3BC43-C68B-4FD1-A229-4058F3595361}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 11
+		SccNumberOfProjects = 12
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs02
 		SccLocalPath0 = .
@@ -89,6 +91,10 @@ Global
 		SccProjectTopLevelParentUniqueName10 = FSharpRefactor.sln
 		SccProjectName10 = Microsoft.FSharpCompiler.Sources/FSharpCompiler
 		SccLocalPath10 = Microsoft.FSharpCompiler.Sources\\FSharpCompiler
+		SccProjectUniqueName11 = FSharpCompiler.Tests\\FSharpCompiler.Tests.fsproj
+		SccProjectTopLevelParentUniqueName11 = FSharpRefactor.sln
+		SccProjectName11 = FSharpCompiler.Tests
+		SccLocalPath11 = FSharpCompiler.Tests
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -199,6 +205,16 @@ Global
 		{3A2627B6-4909-4820-9A25-DF6BC99A12A7}.Release|Mixed Platforms.Build.0 = Release|x86
 		{3A2627B6-4909-4820-9A25-DF6BC99A12A7}.Release|x86.ActiveCfg = Release|x86
 		{3A2627B6-4909-4820-9A25-DF6BC99A12A7}.Release|x86.Build.0 = Release|x86
+		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Debug|x86.ActiveCfg = Debug|x86
+		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Debug|x86.Build.0 = Debug|x86
+		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Release|Any CPU.ActiveCfg = Release|x86
+		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Release|Mixed Platforms.Build.0 = Release|x86
+		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Release|x86.ActiveCfg = Release|x86
+		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -215,5 +231,6 @@ Global
 		{8ACE5128-E5AE-448B-B5EF-D52118547294} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
 		{3A2627B6-4909-4820-9A25-DF6BC99A12A7} = {FDE3D566-DF9B-44DB-862C-8C5568EB4993}
 		{F763C0B0-C2B9-48A7-84CB-65C1FF235730} = {FDE3D566-DF9B-44DB-862C-8C5568EB4993}
+		{0ED3BC43-C68B-4FD1-A229-4058F3595361} = {FDE3D566-DF9B-44DB-862C-8C5568EB4993}
 	EndGlobalSection
 EndGlobal

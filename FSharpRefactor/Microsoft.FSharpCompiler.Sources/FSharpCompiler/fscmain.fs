@@ -23,6 +23,9 @@ open System.Runtime.CompilerServices
 [<Dependency("FSharp.Compiler",LoadHint.Always)>] 
 do ()
 
+[<assembly:InternalsVisibleTo("FSharpCompiler.Tests")>]
+do ()
+
 [<EntryPoint>]
 let main(argv) =
     use unwindBuildPhase = PushThreadBuildPhaseUntilUnwind (BuildPhase.Parameter)    
