@@ -32,9 +32,11 @@ let internal getDecls input =
 
     let (ModuleOrNamespace(_,_,x,_,_,_,_)) = (List.head synModuleOrNamspace) in x
 
-
-let internal patToAst x = match x with
-                          | SynPat.Named (_, x, _, _, _) -> Ast.PVar (x.idText)
+                               
+let rec internal patToAst x = match x with
+                              | SynPat.Named (_, x, _, _, _) -> Ast.PVar (x.idText)
+                              | SynPat.LongIdent (x::_, _, _, [y], _, _) -> Ast.PApp (Ast.PVar (x.idText), patToAst y)
+                              | SynPat.LongIdent (x::_, _, _, y1::y2::_, _, _) -> Ast.PApp(Ast.PApp (Ast.PVar (x.idText), patToAst y1), patToAst y2)
 
 let internal constToAst x = match x with
                             | SynConst.Int32 x -> Ast.Lit(Ast.Literal.Integer x)
@@ -42,6 +44,7 @@ let internal constToAst x = match x with
 
 let rec internal exprToAst x = match x with 
                                | SynExpr.Const(x, _) -> constToAst x
+                               | SynExpr.Ident(id) -> Ast.Var (id.idText)
                                | SynExpr.LetOrUse (_,_,xs,x,_) -> let (Let(j, k, _)) = bindingToAst (xs.Head)
                                                                   Let (j, k, x |> exprToAst)
 
