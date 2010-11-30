@@ -43,11 +43,22 @@ and internal patToAst x = match x with
 
 let internal constToAst x = match x with
                             | SynConst.Int32 x -> Ast.Lit(Ast.Literal.Integer x)
+                            | SynConst.Double x -> Ast.Lit(Ast.Literal.Float x)
                             | SynConst.Unit -> Ast.Lit(Ast.Literal.Unit)
+
+let internal spatToAst x = match x with
+                           | SynSimplePat.Id(ident, _, _, _, _) -> PVar ident.idText
+
+let internal spatsToAst x = match x with
+                            | SynSimplePats.SimplePats(xs, _) -> List.map (fun x -> spatToAst x) xs
+                   
 
 let rec internal exprToAst x = match x with 
                                | SynExpr.Const(x, _) -> constToAst x
                                | SynExpr.Ident(id) -> Ast.Var (id.idText)
+                               | SynExpr.App(_, x, y, _) -> Ast.App(exprToAst x, exprToAst y)
+                               | SynExpr.Paren(x, _) -> exprToAst x
+                               | SynExpr.Lambda(_,_,x,y,_) -> Ast.Lam(spatsToAst x, exprToAst y)
                                | SynExpr.LetOrUse (_,_,xs,x,_) -> let (Let(j, k, _)) = bindingToAst (xs.Head)
                                                                   Let (j, k, x |> exprToAst)
 
