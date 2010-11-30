@@ -31,4 +31,19 @@ type CompilerToAstTests() =
         Assert.IsTrue ([Let(PApp(PApp(PVar "f", PVar "x"), PVar "y"), Var "y", Lit(Unit)) ] = parse "let f x y = y")        
         Assert.IsTrue ([Let(PApp(PApp(PApp(PVar "f", PVar "x"), PVar "y"), PVar "z"), Var "z", Lit(Unit)) ] = parse "let f x y z = z")
    
+    [<Test>]
+    member this.NestedDecls() =
+     
+       let ret = parse ("let x = let y = 12  \n" +
+                        "        let z = 21  \n" +       
+                        "        z" )
+       Assert.IsTrue ([Let(PVar "x", Let (PVar "y",Lit (Integer 12),Let (PVar "z",Lit (Integer 21),Var "z")),  Lit Unit)] = ret)
         
+    [<Test>]
+    member this.NestedDeclsVsIn() =
+     
+       let ret = parse ("let x = let y = 12  \n" +
+                        "        let z = 21  \n" +       
+                        "        z" )
+       let ret2 = parse ("let x = let y = 12 in let z = 21 in z")
+       Assert.IsTrue ((ret = ret2))
