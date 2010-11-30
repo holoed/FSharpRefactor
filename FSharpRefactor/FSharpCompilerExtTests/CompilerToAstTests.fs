@@ -47,3 +47,54 @@ type CompilerToAstTests() =
                         "        z" )
        let ret2 = parse ("let x = let y = 12 in let z = 21 in z")
        Assert.IsTrue ((ret = ret2))
+
+    [<Test>]
+    member this.InfixApp() =
+        Assert.IsTrue ([App(App (Var "op_Addition", Var "x"), Var "y")] = parse "x + y")
+        Assert.IsTrue ([App(App (Var "op_Addition", App(App (Var "op_Addition", Var "x"), Var "y")), Var "z")] = parse "x + y + z")
+
+    [<Test>]
+    member this.InfixAppVsPrefixApp() =
+        Assert.IsTrue (parse "(+) x y" = parse "x + y")
+        Assert.IsTrue (parse "(+) ((+) x y) z" = parse "x + y + z")
+        Assert.IsTrue (parse "(+) ((+) ((+) x y) z) k" = parse "x + y + z + k")
+
+    [<Test>]
+    member this.ApplicationsAssociatesToTheLeft() =
+        Assert.IsTrue([(App(Var "f", Var "g"))] = parse "f g") 
+        Assert.IsTrue([(App(App(Var "f", Var "g"), Var "h"))] = parse "f g h")
+        Assert.IsTrue([(App(App(App(Var "f", Var "g"), Var "h"), Var "j"))] = parse "f g h j")
+
+    [<Test>]
+    member this.ParensToModifyAssociation() =
+        Assert.IsTrue([(App(Var "f", App(Var "g", Var "h")))] = parse "f (g h)")
+        Assert.IsTrue([(App(Var "f", App(Var "g", App(Var "h", Var "j"))))] = parse "f (g (h j))")
+
+    [<Test>]
+    member this.Currying() = 
+        let ret = parse "let squares = map square numbers"
+        Assert.IsTrue ([(Let (PVar "squares", App (App(Var "map", Var "square"), Var "numbers"),  Lit Unit))] = ret)
+
+    [<Test>]
+    member this.Integer() =
+        Assert.IsTrue([(Lit (Integer 42))] = parse "42") 
+        Assert.IsTrue([(Lit (Integer -42))] = parse "-42")
+
+    [<Test>]
+    member this.Float() =
+        Assert.IsTrue([(Lit (Float 0.05))] = parse "0.05")
+        Assert.IsTrue([(Lit (Float -12.5))] = parse "-12.5")
+        Assert.IsTrue([(Lit (Float 2.0015))] = parse "2.0015")
+
+    [<Test>]
+    member this.Lambdas() =
+        Assert.IsTrue([Lam([PVar "x"], Var "x")] = parse "fun x -> x") 
+        Assert.IsTrue([Lam([PVar "x"], Lam([PVar "y"], Var "y"))] = parse "fun x -> fun y -> y")
+        Assert.IsTrue([Lam([PVar "x"], Lam([PVar "y"], Lam([PVar "z"], Var "z")))] = parse "fun x -> fun y -> fun z -> z")
+
+    [<Test>]
+    member this.LambdasSugar() =        
+        Assert.IsTrue(parse "fun x y -> y" = parse "fun x -> fun y -> y")
+        Assert.IsTrue(parse "fun x y z -> z" = parse "fun x -> fun y -> fun z -> z")
+       
+        
