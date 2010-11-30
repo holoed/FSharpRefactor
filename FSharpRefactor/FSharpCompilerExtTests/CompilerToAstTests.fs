@@ -96,5 +96,51 @@ type CompilerToAstTests() =
     member this.LambdasSugar() =        
         Assert.IsTrue(parse "fun x y -> y" = parse "fun x -> fun y -> y")
         Assert.IsTrue(parse "fun x y z -> z" = parse "fun x -> fun y -> fun z -> z")
+
+    [<Test>]
+    member this.OffSideLocalDefinitions2() =
+        let k = [Let (PVar "z", 
+                                Let(PVar "x", 
+                                    Lit(Integer 12), 
+                                    Let(PVar "y", 
+                                        Lit(Integer 32), 
+                                        App(App (Var "op_Addition", Var "x"), Var "y"))), 
+                                Lit(Unit))]
+
+        let x = parse "let z = (let x = 12 in let y = 32 in x + y)"
+
+        let y = parse ("let z =       \n " + 
+                       "   let x = 12 \n " +
+                       "   let y = 32 \n " +
+                       "   x + y         ")             
+
+        Assert.IsTrue ( (k = x) )                                       
+        Assert.IsTrue ( (x = y) )
+
+
+    [<Test>]
+    member this.OffSideLocalDefinition3() =
+        
+        let x = parse ("let computeDerivative f x = \n" +
+                       "    let p1 = f (x - 0.05)   \n" +
+                       "    let p2 = f (x + 0.05)   \n" +
+                       "    (p2 - p1) / 0.1           ")
+                           
+        let y = [Let
+                   (PApp (PApp (PVar "computeDerivative",PVar "f"),PVar "x"),
+                    Let
+                      (PVar "p1",
+                       App (Var "f",App (App (Var "op_Subtraction",Var "x"),Lit (Float 0.05))),
+                       Let
+                         (PVar "p2",
+                          App (Var "f",App (App (Var "op_Addition",Var "x"),Lit (Float 0.05))),
+                          App
+                            (App
+                               (Var "op_Division",
+                                App (App (Var "op_Subtraction",Var "p2"),Var "p1")),
+                             Lit (Float 0.1)))),Lit Unit)]
+
+        Assert.IsTrue ( (x = y) )
+
        
         
