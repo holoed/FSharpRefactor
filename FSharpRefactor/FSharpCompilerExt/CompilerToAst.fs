@@ -32,11 +32,14 @@ let internal getDecls input =
 
     let (ModuleOrNamespace(_,_,x,_,_,_,_)) = (List.head synModuleOrNamspace) in x
 
+
+let rec internal buildPApp f xs = match xs with
+                                  | x::[] -> Ast.PApp (f, patToAst x)
+                                  | x::xs -> Ast.PApp(buildPApp f xs, patToAst x)
                                
-let rec internal patToAst x = match x with
+and internal patToAst x = match x with
                               | SynPat.Named (_, x, _, _, _) -> Ast.PVar (x.idText)
-                              | SynPat.LongIdent (x::_, _, _, [y], _, _) -> Ast.PApp (Ast.PVar (x.idText), patToAst y)
-                              | SynPat.LongIdent (x::_, _, _, y1::y2::_, _, _) -> Ast.PApp(Ast.PApp (Ast.PVar (x.idText), patToAst y1), patToAst y2)
+                              | SynPat.LongIdent (x::_, _, _, ys, _, _) -> buildPApp (Ast.PVar (x.idText)) (List.rev ys)
 
 let internal constToAst x = match x with
                             | SynConst.Int32 x -> Ast.Lit(Ast.Literal.Integer x)
