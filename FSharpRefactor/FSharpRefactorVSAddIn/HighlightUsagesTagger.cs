@@ -46,9 +46,7 @@ namespace FSharpRefactorVSAddIn
 
         // The current request, from the last cursor movement or view render
         private SnapshotPoint RequestedPoint { get; set; }
-
-        #region ITagger<HighlightUsagesTag> Members
-
+   
         public IEnumerable<ITagSpan<HighlightUsagesTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
             if (CurrentWord == null)
@@ -84,8 +82,6 @@ namespace FSharpRefactorVSAddIn
         }
 
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
-
-        #endregion
 
         private void ViewLayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
         {
@@ -173,6 +169,8 @@ namespace FSharpRefactorVSAddIn
                                };
 
             wordSpans.AddRange(TextSearchService.FindAll(findData));
+
+            //TODO: Filter the wordSpans to only the ones that represent the same identifier according to the F# AST
 
             // If we are still up-to-date (another change hasn't happened yet), do a real update
             if (currentRequest == RequestedPoint)
