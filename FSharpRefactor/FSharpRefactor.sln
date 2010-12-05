@@ -5,13 +5,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AddIn", "AddIn", "{16F57F9B
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AddIn.Tests", "AddIn.Tests", "{364B9413-FB7F-4C8F-971C-D22B1BF7C228}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Parser", "Parser\Parser.fsproj", "{AE4A60AC-D526-4EF4-A747-6BF0450C884B}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ParserTests", "ParserTests\ParserTests.fsproj", "{8BA55EA0-C94C-4C26-A4E8-DB782C097577}"
-EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Ast", "Ast\Ast.fsproj", "{82D936E2-AB11-4AFA-9A8B-5C0A97C54F2C}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ParserTestsRunner", "ParserTestsRunner\ParserTestsRunner.fsproj", "{CA3FDA39-FDB0-44AF-A6F1-0B7B5E60F8B0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThirdParty", "ThirdParty", "{DCAECB19-042A-4DD3-9C3B-2965E9FAD41F}"
 	ProjectSection(SolutionItems) = preProject
@@ -19,14 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThirdParty", "ThirdParty", 
 		ThirdParty\nunit.framework.dll = ThirdParty\nunit.framework.dll
 		ThirdParty\nunit.framework.xml = ThirdParty\nunit.framework.xml
 	EndProjectSection
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TypeInference", "TypeInference\TypeInference.fsproj", "{B167829D-330D-46E5-A849-6D3ED448738B}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TypeInferenceTests", "TypeInferenceTests\TypeInferenceTests.fsproj", "{B803C2D8-D172-40B0-9AE8-CAC7A2614D11}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DeSugaring", "DeSugaring\DeSugaring.fsproj", "{D2B02E7C-1F2F-4043-BA0E-20EF34C557D7}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DeSugaringTests", "DeSugaringTests\DeSugaringTests.fsproj", "{8ACE5128-E5AE-448B-B5EF-D52118547294}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "PrettyPrinter", "PrettyPrinter\PrettyPrinter.fsproj", "{8C623567-EF7D-4473-B87A-ACF38BAF06A2}"
 EndProject
@@ -53,7 +39,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSharpRefactorVSAddIn", "FS
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 15
+		SccNumberOfProjects = 8
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs02
 		SccLocalPath0 = .
@@ -61,58 +47,30 @@ Global
 		SccProjectTopLevelParentUniqueName1 = FSharpRefactor.sln
 		SccProjectName1 = Ast
 		SccLocalPath1 = Ast
-		SccProjectUniqueName2 = Parser\\Parser.fsproj
+		SccProjectUniqueName2 = PrettyPrinter\\PrettyPrinter.fsproj
 		SccProjectTopLevelParentUniqueName2 = FSharpRefactor.sln
-		SccProjectName2 = Parser
-		SccLocalPath2 = Parser
-		SccProjectUniqueName3 = ParserTests\\ParserTests.fsproj
+		SccProjectName2 = PrettyPrinter
+		SccLocalPath2 = PrettyPrinter
+		SccProjectUniqueName3 = Microsoft.FSharpCompiler.Sources\\FSharpCompiler\\FSharpCompiler.fsproj
 		SccProjectTopLevelParentUniqueName3 = FSharpRefactor.sln
-		SccProjectName3 = ParserTests
-		SccLocalPath3 = ParserTests
-		SccProjectUniqueName4 = ParserTestsRunner\\ParserTestsRunner.fsproj
+		SccProjectName3 = Microsoft.FSharpCompiler.Sources/FSharpCompiler
+		SccLocalPath3 = Microsoft.FSharpCompiler.Sources\\FSharpCompiler
+		SccProjectUniqueName4 = FSharpCompiler.Tests\\FSharpCompiler.Tests.fsproj
 		SccProjectTopLevelParentUniqueName4 = FSharpRefactor.sln
-		SccProjectName4 = ParserTestsRunner
-		SccLocalPath4 = ParserTestsRunner
-		SccProjectUniqueName5 = TypeInference\\TypeInference.fsproj
+		SccProjectName4 = FSharpCompiler.Tests
+		SccLocalPath4 = FSharpCompiler.Tests
+		SccProjectUniqueName5 = FSharpCompilerExt\\FSharpCompilerExt.fsproj
 		SccProjectTopLevelParentUniqueName5 = FSharpRefactor.sln
-		SccProjectName5 = TypeInference
-		SccLocalPath5 = TypeInference
-		SccProjectUniqueName6 = TypeInferenceTests\\TypeInferenceTests.fsproj
+		SccProjectName5 = FSharpCompilerExt
+		SccLocalPath5 = FSharpCompilerExt
+		SccProjectUniqueName6 = FSharpCompilerExtTests\\FSharpCompilerExtTests.fsproj
 		SccProjectTopLevelParentUniqueName6 = FSharpRefactor.sln
-		SccProjectName6 = TypeInferenceTests
-		SccLocalPath6 = TypeInferenceTests
-		SccProjectUniqueName7 = DeSugaring\\DeSugaring.fsproj
+		SccProjectName6 = FSharpCompilerExtTests
+		SccLocalPath6 = FSharpCompilerExtTests
+		SccProjectUniqueName7 = FSharpRefactorVSAddIn\\FSharpRefactorVSAddIn.csproj
 		SccProjectTopLevelParentUniqueName7 = FSharpRefactor.sln
-		SccProjectName7 = DeSugaring
-		SccLocalPath7 = DeSugaring
-		SccProjectUniqueName8 = DeSugaringTests\\DeSugaringTests.fsproj
-		SccProjectTopLevelParentUniqueName8 = FSharpRefactor.sln
-		SccProjectName8 = DeSugaringTests
-		SccLocalPath8 = DeSugaringTests
-		SccProjectUniqueName9 = PrettyPrinter\\PrettyPrinter.fsproj
-		SccProjectTopLevelParentUniqueName9 = FSharpRefactor.sln
-		SccProjectName9 = PrettyPrinter
-		SccLocalPath9 = PrettyPrinter
-		SccProjectUniqueName10 = Microsoft.FSharpCompiler.Sources\\FSharpCompiler\\FSharpCompiler.fsproj
-		SccProjectTopLevelParentUniqueName10 = FSharpRefactor.sln
-		SccProjectName10 = Microsoft.FSharpCompiler.Sources/FSharpCompiler
-		SccLocalPath10 = Microsoft.FSharpCompiler.Sources\\FSharpCompiler
-		SccProjectUniqueName11 = FSharpCompiler.Tests\\FSharpCompiler.Tests.fsproj
-		SccProjectTopLevelParentUniqueName11 = FSharpRefactor.sln
-		SccProjectName11 = FSharpCompiler.Tests
-		SccLocalPath11 = FSharpCompiler.Tests
-		SccProjectUniqueName12 = FSharpCompilerExt\\FSharpCompilerExt.fsproj
-		SccProjectTopLevelParentUniqueName12 = FSharpRefactor.sln
-		SccProjectName12 = FSharpCompilerExt
-		SccLocalPath12 = FSharpCompilerExt
-		SccProjectUniqueName13 = FSharpCompilerExtTests\\FSharpCompilerExtTests.fsproj
-		SccProjectTopLevelParentUniqueName13 = FSharpRefactor.sln
-		SccProjectName13 = FSharpCompilerExtTests
-		SccLocalPath13 = FSharpCompilerExtTests
-		SccProjectUniqueName14 = FSharpRefactorVSAddIn\\FSharpRefactorVSAddIn.csproj
-		SccProjectTopLevelParentUniqueName14 = FSharpRefactor.sln
-		SccProjectName14 = FSharpRefactorVSAddIn
-		SccLocalPath14 = FSharpRefactorVSAddIn
+		SccProjectName7 = FSharpRefactorVSAddIn
+		SccLocalPath7 = FSharpRefactorVSAddIn
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,26 +81,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AE4A60AC-D526-4EF4-A747-6BF0450C884B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AE4A60AC-D526-4EF4-A747-6BF0450C884B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AE4A60AC-D526-4EF4-A747-6BF0450C884B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{AE4A60AC-D526-4EF4-A747-6BF0450C884B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{AE4A60AC-D526-4EF4-A747-6BF0450C884B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{AE4A60AC-D526-4EF4-A747-6BF0450C884B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AE4A60AC-D526-4EF4-A747-6BF0450C884B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AE4A60AC-D526-4EF4-A747-6BF0450C884B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{AE4A60AC-D526-4EF4-A747-6BF0450C884B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{AE4A60AC-D526-4EF4-A747-6BF0450C884B}.Release|x86.ActiveCfg = Release|Any CPU
-		{8BA55EA0-C94C-4C26-A4E8-DB782C097577}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8BA55EA0-C94C-4C26-A4E8-DB782C097577}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8BA55EA0-C94C-4C26-A4E8-DB782C097577}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{8BA55EA0-C94C-4C26-A4E8-DB782C097577}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{8BA55EA0-C94C-4C26-A4E8-DB782C097577}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{8BA55EA0-C94C-4C26-A4E8-DB782C097577}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8BA55EA0-C94C-4C26-A4E8-DB782C097577}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8BA55EA0-C94C-4C26-A4E8-DB782C097577}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{8BA55EA0-C94C-4C26-A4E8-DB782C097577}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{8BA55EA0-C94C-4C26-A4E8-DB782C097577}.Release|x86.ActiveCfg = Release|Any CPU
 		{82D936E2-AB11-4AFA-9A8B-5C0A97C54F2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{82D936E2-AB11-4AFA-9A8B-5C0A97C54F2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82D936E2-AB11-4AFA-9A8B-5C0A97C54F2C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -153,56 +91,6 @@ Global
 		{82D936E2-AB11-4AFA-9A8B-5C0A97C54F2C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{82D936E2-AB11-4AFA-9A8B-5C0A97C54F2C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{82D936E2-AB11-4AFA-9A8B-5C0A97C54F2C}.Release|x86.ActiveCfg = Release|Any CPU
-		{CA3FDA39-FDB0-44AF-A6F1-0B7B5E60F8B0}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{CA3FDA39-FDB0-44AF-A6F1-0B7B5E60F8B0}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{CA3FDA39-FDB0-44AF-A6F1-0B7B5E60F8B0}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{CA3FDA39-FDB0-44AF-A6F1-0B7B5E60F8B0}.Debug|x86.ActiveCfg = Debug|x86
-		{CA3FDA39-FDB0-44AF-A6F1-0B7B5E60F8B0}.Debug|x86.Build.0 = Debug|x86
-		{CA3FDA39-FDB0-44AF-A6F1-0B7B5E60F8B0}.Release|Any CPU.ActiveCfg = Release|x86
-		{CA3FDA39-FDB0-44AF-A6F1-0B7B5E60F8B0}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{CA3FDA39-FDB0-44AF-A6F1-0B7B5E60F8B0}.Release|Mixed Platforms.Build.0 = Release|x86
-		{CA3FDA39-FDB0-44AF-A6F1-0B7B5E60F8B0}.Release|x86.ActiveCfg = Release|x86
-		{CA3FDA39-FDB0-44AF-A6F1-0B7B5E60F8B0}.Release|x86.Build.0 = Release|x86
-		{B167829D-330D-46E5-A849-6D3ED448738B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B167829D-330D-46E5-A849-6D3ED448738B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B167829D-330D-46E5-A849-6D3ED448738B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{B167829D-330D-46E5-A849-6D3ED448738B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{B167829D-330D-46E5-A849-6D3ED448738B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B167829D-330D-46E5-A849-6D3ED448738B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B167829D-330D-46E5-A849-6D3ED448738B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B167829D-330D-46E5-A849-6D3ED448738B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{B167829D-330D-46E5-A849-6D3ED448738B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{B167829D-330D-46E5-A849-6D3ED448738B}.Release|x86.ActiveCfg = Release|Any CPU
-		{B803C2D8-D172-40B0-9AE8-CAC7A2614D11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B803C2D8-D172-40B0-9AE8-CAC7A2614D11}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B803C2D8-D172-40B0-9AE8-CAC7A2614D11}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{B803C2D8-D172-40B0-9AE8-CAC7A2614D11}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{B803C2D8-D172-40B0-9AE8-CAC7A2614D11}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B803C2D8-D172-40B0-9AE8-CAC7A2614D11}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B803C2D8-D172-40B0-9AE8-CAC7A2614D11}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B803C2D8-D172-40B0-9AE8-CAC7A2614D11}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{B803C2D8-D172-40B0-9AE8-CAC7A2614D11}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{B803C2D8-D172-40B0-9AE8-CAC7A2614D11}.Release|x86.ActiveCfg = Release|Any CPU
-		{D2B02E7C-1F2F-4043-BA0E-20EF34C557D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D2B02E7C-1F2F-4043-BA0E-20EF34C557D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D2B02E7C-1F2F-4043-BA0E-20EF34C557D7}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{D2B02E7C-1F2F-4043-BA0E-20EF34C557D7}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{D2B02E7C-1F2F-4043-BA0E-20EF34C557D7}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D2B02E7C-1F2F-4043-BA0E-20EF34C557D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D2B02E7C-1F2F-4043-BA0E-20EF34C557D7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D2B02E7C-1F2F-4043-BA0E-20EF34C557D7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{D2B02E7C-1F2F-4043-BA0E-20EF34C557D7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{D2B02E7C-1F2F-4043-BA0E-20EF34C557D7}.Release|x86.ActiveCfg = Release|Any CPU
-		{8ACE5128-E5AE-448B-B5EF-D52118547294}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8ACE5128-E5AE-448B-B5EF-D52118547294}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8ACE5128-E5AE-448B-B5EF-D52118547294}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{8ACE5128-E5AE-448B-B5EF-D52118547294}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{8ACE5128-E5AE-448B-B5EF-D52118547294}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{8ACE5128-E5AE-448B-B5EF-D52118547294}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8ACE5128-E5AE-448B-B5EF-D52118547294}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8ACE5128-E5AE-448B-B5EF-D52118547294}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{8ACE5128-E5AE-448B-B5EF-D52118547294}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{8ACE5128-E5AE-448B-B5EF-D52118547294}.Release|x86.ActiveCfg = Release|Any CPU
 		{8C623567-EF7D-4473-B87A-ACF38BAF06A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8C623567-EF7D-4473-B87A-ACF38BAF06A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C623567-EF7D-4473-B87A-ACF38BAF06A2}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -268,17 +156,10 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{AE4A60AC-D526-4EF4-A747-6BF0450C884B} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
 		{82D936E2-AB11-4AFA-9A8B-5C0A97C54F2C} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
-		{B167829D-330D-46E5-A849-6D3ED448738B} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
-		{D2B02E7C-1F2F-4043-BA0E-20EF34C557D7} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
 		{8C623567-EF7D-4473-B87A-ACF38BAF06A2} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
 		{6C7C81DA-105A-407F-A8AE-72EA4AC2A221} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
 		{344F923E-2D66-4377-A027-20DE99760865} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
-		{8BA55EA0-C94C-4C26-A4E8-DB782C097577} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
-		{CA3FDA39-FDB0-44AF-A6F1-0B7B5E60F8B0} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
-		{B803C2D8-D172-40B0-9AE8-CAC7A2614D11} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
-		{8ACE5128-E5AE-448B-B5EF-D52118547294} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
 		{7ABC590B-AA0D-4162-868E-DAB318847717} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
 		{3A2627B6-4909-4820-9A25-DF6BC99A12A7} = {FDE3D566-DF9B-44DB-862C-8C5568EB4993}
 		{F763C0B0-C2B9-48A7-84CB-65C1FF235730} = {FDE3D566-DF9B-44DB-862C-8C5568EB4993}

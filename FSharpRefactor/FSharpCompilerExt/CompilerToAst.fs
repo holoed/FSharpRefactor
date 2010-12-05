@@ -32,14 +32,16 @@ let internal getDecls input =
 
     let (ModuleOrNamespace(_,_,x,_,_,_,_)) = (List.head synModuleOrNamspace) in x
 
+let internal mkSrcLoc (r: Microsoft.FSharp.Compiler.Range.range)  = 
+    { srcFilename = r.FileName; srcLine = { startLine = r.StartLine; endLine = r.EndLine }; srcColumn = { startColumn = r.StartColumn; endColumn = r.EndColumn } }
 
 let rec internal buildPApp f xs = match xs with
                                   | x::[] -> Ast.PApp (f, patToAst x)
                                   | x::xs -> Ast.PApp(buildPApp f xs, patToAst x)
                                
 and internal patToAst x = match x with
-                              | SynPat.Named (_, x, _, _, _) -> Ast.PVar (x.idText)
-                              | SynPat.LongIdent (x::_, _, _, ys, _, _) -> buildPApp (Ast.PVar (x.idText)) (List.rev ys)
+                              | SynPat.Named (_, x, _, _, _) -> Ast.PVar (x.idText, mkSrcLoc x.idRange)
+                              | SynPat.LongIdent (x::_, _, _, ys, _, _) -> buildPApp (Ast.PVar (x.idText, mkSrcLoc x.idRange)) (List.rev ys)
 
 let internal constToAst x = match x with
                             | SynConst.Int32 x -> Ast.Lit(Ast.Literal.Integer x)
@@ -47,7 +49,7 @@ let internal constToAst x = match x with
                             | SynConst.Unit -> Ast.Lit(Ast.Literal.Unit)
 
 let internal spatToAst x = match x with
-                           | SynSimplePat.Id(ident, _, _, _, _) -> PVar ident.idText
+                           | SynSimplePat.Id(ident, _, _, _, _) -> PVar (ident.idText, mkSrcLoc (ident.idRange))
 
 let internal spatsToAst x = match x with
                             | SynSimplePats.SimplePats(xs, _) -> List.map (fun x -> spatToAst x) xs
@@ -55,7 +57,7 @@ let internal spatsToAst x = match x with
 
 let rec internal exprToAst x = match x with 
                                | SynExpr.Const(x, _) -> constToAst x
-                               | SynExpr.Ident(id) -> Ast.Var (id.idText)
+                               | SynExpr.Ident(id) -> Ast.Var (id.idText, mkSrcLoc id.idRange)
                                | SynExpr.App(_, x, y, _) -> Ast.App(exprToAst x, exprToAst y)
                                | SynExpr.Paren(x, _) -> exprToAst x
                                | SynExpr.Lambda(_,_,x,y,_) -> Ast.Lam(spatsToAst x, exprToAst y)

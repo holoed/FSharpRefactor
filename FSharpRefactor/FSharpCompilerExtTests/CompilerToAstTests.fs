@@ -6,12 +6,35 @@ open NUnit.Framework
 open Ast
 open CompilerToAst
 open System.IO
+open AstCatamorphisms
 
-let parse s = 
-        File.WriteAllText("test.fs", s)
-        let path = sprintf "%s\\%s" (Directory.GetCurrentDirectory()) "test.fs" 
+let path = sprintf "%s\\%s" (Directory.GetCurrentDirectory()) "test.fs" 
+
+let stripPos exp =  let foldPat p = foldPat (fun (s,l) -> PVar s) (fun l r -> PApp(l,r)) (fun x -> PLit x) p
+                    foldExp (fun (s, l) -> Var s) 
+                            (fun ps b -> Lam(List.map (fun p -> foldPat p) ps, b)) 
+                            (fun x y -> App (x, y))
+                            (fun op x y -> InfixApp (x, op, y))
+                            (fun p e1 e2 -> Let (foldPat p, e1, e2))
+                            (fun x -> Lit x)
+                            (fun e t -> WithTy (e,t))
+                     exp
+let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
+
+
+let parseWithPos s = 
+        File.WriteAllText("test.fs", s)        
         let [xs:_] = parseToAst [path]
-        xs
+        xs 
+
+let parse s = s |> parseWithPos |> stripAllPos
+
+let loc (cs,ce,ls,le) = { srcFilename = path; srcLine = { startLine = ls; endLine = le }; srcColumn = { startColumn = cs; endColumn = ce } }
+
+let toS x = sprintf "%A" x
+
+let AssertAreEqual x y = Assert.AreEqual(toS x, toS y)
+
 
 [<TestFixture>]
 type CompilerToAstTests() =
@@ -142,5 +165,38 @@ type CompilerToAstTests() =
 
         Assert.IsTrue ( (x = y) )
 
+    [<Test>]
+    member this.SimpleDeclsWithPos() =        
+        AssertAreEqual [Let(PVar ("x", loc (4,5,1,1)), Lit(Integer 42), Lit(Unit))]  (parseWithPos "let x = 42")
+        AssertAreEqual [Let(PVar ("x", loc (4,5,1,1)), Lit(Integer 42), Lit(Unit)); Let(PVar ("x", loc (4,5,2,2)), Lit(Integer 24), Lit(Unit))] (parseWithPos "let x = 42\nlet x = 24")
+
        
+    [<Test>]
+    member this.FunctionsDeclsWithPos() =        
+        AssertAreEqual [Let(PApp(PVar ("f", loc (4,5,1,1)), PVar ("x", loc (6,7,1,1))), Var ("x", loc (10,11,1,1)), Lit(Unit)) ]  (parseWithPos "let f x = x")
+        AssertAreEqual [Let(PApp(PApp(PVar ("f", loc (4,5,1,1)), PVar ("x", loc (6,7,1,1))), PVar ("y", loc (8,9,1,1))), Var ("y", loc (12,13,1,1)), Lit(Unit)) ] (parseWithPos "let f x y = y")        
+        AssertAreEqual [Let(PApp(PApp(PApp(PVar ("f", loc (4,5,1,1)), PVar ("x", loc (6,7,1,1))), PVar ("y", loc (8,9,1,1))), PVar ("z", loc (10,11,1,1))), Var ("z", loc (14,15,1,1)), Lit(Unit)) ] (parseWithPos "let f x y z = z")
         
+    [<Test>]
+    member this.OffSideLocalDefinitionWithPos() =
+        
+        let x = parseWithPos ("let computeDerivative f x = \n" +
+                              "    let p1 = f (x - 0.05)   \n" +
+                              "    let p2 = f (x + 0.05)   \n" +
+                              "    (p2 - p1) / 0.1           ")
+                           
+        let y = [Let
+                   (PApp (PApp (PVar ("computeDerivative", loc (4,21,1,1)),PVar ("f", loc (22,23,1,1))),PVar ("x", loc (24,25,1,1))),
+                    Let
+                      (PVar ("p1", loc (8,10,2,2)),
+                       App (Var ("f", loc (13,14,2,2)),App (App (Var ("op_Subtraction", loc (18,19,2,2)),Var ("x", loc (16,17,2,2))),Lit (Float 0.05))),
+                       Let
+                         (PVar ("p2", loc (8,10,3,3)),
+                          App (Var ("f", loc (13,14,3,3)),App (App (Var ("op_Addition", loc (18,19,3,3)),Var ("x", loc (16,17,3,3))),Lit (Float 0.05))),
+                          App
+                            (App
+                               (Var ("op_Division", loc (14,15,4,4)),
+                                App (App (Var ("op_Subtraction", loc (8,9,4,4)),Var ("p2", loc (5,7,4,4))),Var ("p1", loc (10,12,4,4)))),
+                             Lit (Float 0.1)))),Lit Unit)]
+
+        AssertAreEqual y x
