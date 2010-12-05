@@ -38,19 +38,25 @@ type Literal
    | Double of double 
    | Unit
 
-type Pat =
-    | PVar of string
-    | PApp of Pat * Pat
-    | PLit of Literal    
-    | PWithTy of Pat * Type
+type SrcCol = { startColumn : int; endColumn : int }
 
-type Exp 
-    = Var      of String               // variable    
-    | Lam      of Pat list * Exp       // lambda abstraction
-    | App      of Exp * Exp            // application    
-    | InfixApp of Exp * String * Exp   // infix application
-    | Let      of Pat * Exp * Exp      // local definition    
-    | Lit      of Literal              // literal 
-    | WithTy   of Exp * Type
+type SrcLine = { startLine : int; endLine : int }
+
+type SrcLoc = { srcFilename : string; srcLine : SrcLine; srcColumn : SrcCol }     
+
+type Pat<'a> =
+    | PVar of 'a
+    | PApp of Pat<'a> * Pat<'a>
+    | PLit of Literal    
+    | PWithTy of Pat<'a> * Type
+
+type Exp<'a> 
+    = Var      of 'a                           // variable    
+    | Lam      of Pat<'a> list * Exp<'a>       // lambda abstraction
+    | App      of Exp<'a> * Exp<'a>            // application    
+    | InfixApp of Exp<'a> * String * Exp<'a>   // infix application
+    | Let      of Pat<'a> * Exp<'a> * Exp<'a>  // local definition    
+    | Lit      of Literal                      // literal 
+    | WithTy   of Exp<'a> * Type
 
 
