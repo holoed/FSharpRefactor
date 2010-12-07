@@ -13,17 +13,14 @@ module AstCatamorphisms
 
 open Ast
 
-let foldExp varF lamF appF infixF letF litF withTyF exp =
+let foldExp varF lamF appF letF litF withTyF exp =
   let rec Loop e cont =
       match e with
       | Var x -> cont (varF x)
       | Lam (x, body) -> Loop body (fun bodyAcc -> cont (lamF x bodyAcc))
       | App (l, r) -> Loop l (fun lAcc ->
                       Loop r (fun rAcc ->
-                      cont (appF lAcc rAcc)))
-      | InfixApp (l, op, r) -> Loop l (fun lAcc ->
-                               Loop r (fun rAcc ->
-                               cont (infixF op lAcc rAcc)))
+                      cont (appF lAcc rAcc)))     
       | Let (p, e1, e2) -> Loop e1 (fun e1Acc ->
                            Loop e2 (fun e2Acc ->
                            cont (letF p e1Acc e2Acc)))

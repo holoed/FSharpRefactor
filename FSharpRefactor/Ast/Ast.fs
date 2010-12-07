@@ -54,7 +54,6 @@ type Exp<'a>
     = Var      of 'a                           // variable    
     | Lam      of Pat<'a> list * Exp<'a>       // lambda abstraction
     | App      of Exp<'a> * Exp<'a>            // application    
-    | InfixApp of Exp<'a> * String * Exp<'a>   // infix application
     | Let      of Pat<'a> * Exp<'a> * Exp<'a>  // local definition    
     | Lit      of Literal                      // literal 
     | WithTy   of Exp<'a> * Type

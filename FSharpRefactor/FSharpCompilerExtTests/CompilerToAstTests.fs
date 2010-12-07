@@ -14,7 +14,6 @@ let stripPos exp =  let foldPat p = foldPat (fun (s,l) -> PVar s) (fun l r -> PA
                     foldExp (fun (s, l) -> Var s) 
                             (fun ps b -> Lam(List.map (fun p -> foldPat p) ps, b)) 
                             (fun x y -> App (x, y))
-                            (fun op x y -> InfixApp (x, op, y))
                             (fun p e1 e2 -> Let (foldPat p, e1, e2))
                             (fun x -> Lit x)
                             (fun e t -> WithTy (e,t))
