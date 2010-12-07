@@ -37,9 +37,13 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharpCompilerExtTests", "F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSharpRefactorVSAddIn", "FSharpRefactorVSAddIn\FSharpRefactorVSAddIn.csproj", "{344F923E-2D66-4377-A027-20DE99760865}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharpRefactor", "FSharpRefactor\FSharpRefactor.fsproj", "{23C87110-7BF5-4E92-A91C-61E8E63F5947}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharpRefactorTests", "FSharpRefactorTests\FSharpRefactorTests.fsproj", "{A6CA343D-D9EA-4798-970A-AB4CBAC8EEF6}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 8
+		SccNumberOfProjects = 10
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs02
 		SccLocalPath0 = .
@@ -71,6 +75,14 @@ Global
 		SccProjectTopLevelParentUniqueName7 = FSharpRefactor.sln
 		SccProjectName7 = FSharpRefactorVSAddIn
 		SccLocalPath7 = FSharpRefactorVSAddIn
+		SccProjectUniqueName8 = FSharpRefactor\\FSharpRefactor.fsproj
+		SccProjectTopLevelParentUniqueName8 = FSharpRefactor.sln
+		SccProjectName8 = FSharpRefactor
+		SccLocalPath8 = FSharpRefactor
+		SccProjectUniqueName9 = FSharpRefactorTests\\FSharpRefactorTests.fsproj
+		SccProjectTopLevelParentUniqueName9 = FSharpRefactor.sln
+		SccProjectName9 = FSharpRefactorTests
+		SccLocalPath9 = FSharpRefactorTests
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -151,6 +163,26 @@ Global
 		{344F923E-2D66-4377-A027-20DE99760865}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{344F923E-2D66-4377-A027-20DE99760865}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{344F923E-2D66-4377-A027-20DE99760865}.Release|x86.ActiveCfg = Release|Any CPU
+		{23C87110-7BF5-4E92-A91C-61E8E63F5947}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23C87110-7BF5-4E92-A91C-61E8E63F5947}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23C87110-7BF5-4E92-A91C-61E8E63F5947}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{23C87110-7BF5-4E92-A91C-61E8E63F5947}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{23C87110-7BF5-4E92-A91C-61E8E63F5947}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{23C87110-7BF5-4E92-A91C-61E8E63F5947}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23C87110-7BF5-4E92-A91C-61E8E63F5947}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23C87110-7BF5-4E92-A91C-61E8E63F5947}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{23C87110-7BF5-4E92-A91C-61E8E63F5947}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{23C87110-7BF5-4E92-A91C-61E8E63F5947}.Release|x86.ActiveCfg = Release|Any CPU
+		{A6CA343D-D9EA-4798-970A-AB4CBAC8EEF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6CA343D-D9EA-4798-970A-AB4CBAC8EEF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6CA343D-D9EA-4798-970A-AB4CBAC8EEF6}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A6CA343D-D9EA-4798-970A-AB4CBAC8EEF6}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A6CA343D-D9EA-4798-970A-AB4CBAC8EEF6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A6CA343D-D9EA-4798-970A-AB4CBAC8EEF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6CA343D-D9EA-4798-970A-AB4CBAC8EEF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6CA343D-D9EA-4798-970A-AB4CBAC8EEF6}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A6CA343D-D9EA-4798-970A-AB4CBAC8EEF6}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A6CA343D-D9EA-4798-970A-AB4CBAC8EEF6}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -160,7 +192,9 @@ Global
 		{8C623567-EF7D-4473-B87A-ACF38BAF06A2} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
 		{6C7C81DA-105A-407F-A8AE-72EA4AC2A221} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
 		{344F923E-2D66-4377-A027-20DE99760865} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
+		{23C87110-7BF5-4E92-A91C-61E8E63F5947} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
 		{7ABC590B-AA0D-4162-868E-DAB318847717} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
+		{A6CA343D-D9EA-4798-970A-AB4CBAC8EEF6} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
 		{3A2627B6-4909-4820-9A25-DF6BC99A12A7} = {FDE3D566-DF9B-44DB-862C-8C5568EB4993}
 		{F763C0B0-C2B9-48A7-84CB-65C1FF235730} = {FDE3D566-DF9B-44DB-862C-8C5568EB4993}
 		{0ED3BC43-C68B-4FD1-A229-4058F3595361} = {FDE3D566-DF9B-44DB-862C-8C5568EB4993}
