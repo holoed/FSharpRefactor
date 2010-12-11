@@ -61,12 +61,23 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Exp<'a>> =
                      (fun x y -> state { let! x' = x
                                          let! y' = y
                                          return App (x', y') })
-                     (fun p e1 e2 -> state { do! execute (enterScope) p
-                                             let! p'  = foldPat p
-                                             let! e1' = e1                                             
-                                             do! execute (exitScope) p                                             
-                                             let! e2' = e2                                             
-                                             return Let (p', e1', e2') })
+                     (fun p e1 e2 -> state { match p with
+                                             |PVar _ ->                                                 
+                                                 let! p'  = foldPat p
+                                                 do! execute (enterScope) p
+                                                 let! e1' = e1                                             
+                                                 do! execute (exitScope) p                                             
+                                                 let! e2' = e2                                             
+                                                 return Let (p', e1', e2') 
+                                             |PApp (l, r) ->                                                 
+                                                 let! p'  = foldPat p
+                                                 do! execute (enterScope) r
+                                                 let! e1' = e1                                             
+                                                 do! execute (exitScope) r 
+                                                 do! execute (enterScope) l                                            
+                                                 let! e2' = e2             
+                                                 do! execute (exitScope) l                                 
+                                                 return Let (p', e1', e2') })
                      (fun x -> state { return Lit x })
                      (fun e t -> state { let! e' = e
                                          return WithTy (e', t) })
