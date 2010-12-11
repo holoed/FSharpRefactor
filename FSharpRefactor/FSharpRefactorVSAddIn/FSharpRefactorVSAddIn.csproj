@@ -90,6 +90,24 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ast\Ast.fsproj">
+      <Project>{82D936E2-AB11-4AFA-9A8B-5C0A97C54F2C}</Project>
+      <Name>Ast</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FSharpCompilerExt\FSharpCompilerExt.fsproj">
+      <Project>{6C7C81DA-105A-407F-A8AE-72EA4AC2A221}</Project>
+      <Name>FSharpCompilerExt</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FSharpRefactor\FSharpRefactor.fsproj">
+      <Project>{23C87110-7BF5-4E92-A91C-61E8E63F5947}</Project>
+      <Name>FSharpRefactor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.FSharpCompiler.Sources\FSharpCompiler\FSharpCompiler.fsproj">
+      <Project>{3A2627B6-4909-4820-9A25-DF6BC99A12A7}</Project>
+      <Name>FSharpCompiler</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\VSSDK\Microsoft.VsSDK.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

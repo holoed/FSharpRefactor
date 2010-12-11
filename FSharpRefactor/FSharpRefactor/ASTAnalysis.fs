@@ -97,6 +97,6 @@ let getAllReferences (SymbolTable(table)) (pos:SrcLoc) =
     
        
 // Exp<'a> list -> SrcLoc -> Exp<string * SrcLoc> list                
-let findAllReferences (exps:Exp<'a> list) (pos:SrcLoc) = 
+let findAllReferences (pos:SrcLoc) (exps:Exp<'a> list) = 
         let symbolTable = buildSymbolTable exps
         getAllReferences symbolTable pos

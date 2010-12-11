@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThirdParty", "ThirdParty", 
 		ThirdParty\license.txt = ThirdParty\license.txt
 		ThirdParty\nunit.framework.dll = ThirdParty\nunit.framework.dll
 		ThirdParty\nunit.framework.xml = ThirdParty\nunit.framework.xml
+		ThirdParty\VsSDK_sfx.zip = ThirdParty\VsSDK_sfx.zip
 	EndProjectSection
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "PrettyPrinter", "PrettyPrinter\PrettyPrinter.fsproj", "{8C623567-EF7D-4473-B87A-ACF38BAF06A2}"

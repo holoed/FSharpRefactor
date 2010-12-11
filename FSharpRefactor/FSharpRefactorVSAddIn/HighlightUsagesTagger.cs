@@ -170,11 +170,36 @@ namespace FSharpRefactorVSAddIn
 
             wordSpans.AddRange(TextSearchService.FindAll(findData));
 
-            //TODO: Filter the wordSpans to only the ones that represent the same identifier according to the F# AST
 
-            // If we are still up-to-date (another change hasn't happened yet), do a real update
+            // If we are still up-to-date (another change hasn't happened yet), do a real update))
             if (currentRequest == RequestedPoint)
-                SynchronousUpdate(currentRequest, new NormalizedSnapshotSpanCollection(wordSpans), currentWord);
+            {
+                lock (_updateLock)
+                {
+                    var allText = currentWord.Snapshot.GetText();
+                    var pos = GetPosition(currentWord);
+                    var references = FSharpRefactor.findAllReferences(allText, pos);
+                    var foundUsages = wordSpans.Where(x => ReferencesContains(references, x)).ToList();
+
+                    SynchronousUpdate(currentRequest, new NormalizedSnapshotSpanCollection(foundUsages), currentWord);
+                }
+            }
+        }
+
+        private static bool ReferencesContains(IEnumerable<Tuple<int, int, int, int>> references, SnapshotSpan currentWord)
+        {
+            return references.Any(x =>Equals(x , GetPosition(currentWord)));
+        }
+
+        private static Tuple<int, int, int, int> GetPosition(SnapshotSpan currentWord)
+        {
+            var lineStart = currentWord.Snapshot.GetLineNumberFromPosition(currentWord.Start.Position) + 1;
+            var lineEnd = currentWord.Snapshot.GetLineNumberFromPosition(currentWord.End.Position) + 1;
+            var startLine = currentWord.Snapshot.GetLineFromPosition(currentWord.Start.Position);
+            var endLine = currentWord.Snapshot.GetLineFromPosition(currentWord.End.Position);
+            var colStart = currentWord.Start.Position - startLine.Start.Position;
+            var colEnd = currentWord.End.Position - endLine.Start.Position;
+            return Tuple.Create(colStart, colEnd, lineStart, lineEnd);
         }
 
         /// <summary>
