@@ -1,43 +1,51 @@
 ﻿module ASTAnalysis
 
 open Ast
+open StateMonad
 open AstCatamorphisms
+open PurelyFunctionalDataStructures
 
-//let findPos exp pos =  
-//        let foldPat p = foldPat (fun (s,l) -> if (l = pos) then [Var (s,l)] else []) (fun l r -> l @ r) (fun x -> []) p
-//        foldExp (fun (s, l) -> if (l = pos) then [Var (s,l)] else [])
-//                (fun ps b -> (List.concat (List.map (fun p -> foldPat p) ps)) @ b)
-//                (fun x y -> x @ y)
-//                (fun p e1 e2 -> (foldPat p) @ e1 @ e2)
-//                (fun x -> [])
-//                (fun e t -> e)
-//         exp
+type OpenScopes = OpenScopes of Map<string, Stack<SrcLoc list>>
+type SymbolTable = SymbolTable of Map<string, SrcLoc list list>
 
-let rec findIdents exp w =
-    let foldPat p = foldPat (fun (s,l) -> if (s = w) then [Var (s,l)] else []) (fun l r -> l @ r) (fun x -> []) p
-    match exp with
-    | Var (s,l)  -> if (s = w) then [exp] else []
-    | Lam (ps,b) -> (List.concat (List.map (fun p -> foldPat p) ps)) @ (findIdents b w)
-    | App (l,r)  -> (findIdents l w) @ (findIdents r w)
-    | Let (p, e1, e2) -> if (List.isEmpty (foldPat p)) then 
-                             (findIdents e1 w) @ (findIdents e2 w) 
-                            else []   
-    | Lit _ -> []
-    | WithTy (e, t) -> (findIdents e w)
+//Exp<'a> -> State<(OpenScopes * SymbolTable), Exp<'a>>
+let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Exp<'a>> = 
+        let foldPat p = foldPatState (fun x -> state { return PVar x }) 
+                                     (fun l r -> state { let! l' = l
+                                                         let! r' = r
+                                                         return PApp (l', r') }) 
+                                                   (fun x -> state { return PLit x }) p
+        foldExpState (fun x -> state { return Var x })
+                     (fun ps b -> state { let! ps' = mmap (fun p -> state { return! foldPat p }) ps
+                                          let! b' = b
+                                          return Lam (ps', b') })
+                     (fun x y -> state { let! x' = x
+                                         let! y' = y
+                                         return App (x', y') })
+                     (fun p e1 e2 -> state { let! p'  = foldPat p
+                                             let! e1' = e1
+                                             let! e2' = e2
+                                             return Let (p', e1', e2') })
+                     (fun x -> state { return Lit x })
+                     (fun e t -> state { let! e' = e
+                                         return WithTy (e', t) })
+         exp
 
-let rec findPos exp pos =
-    let foldPat p = foldPat (fun (s,l) -> if (l = pos) then [Var(s,l)] else []) (fun l r -> l @ r) (fun x -> []) p
-    match exp with
-    | Var (s,l)  -> if (l = pos) then [exp] else []
-    | Lam (ps,b) -> (List.concat (List.map (fun p -> foldPat p) ps)) @ (findPos b pos)
-    | App (l,r)  -> (findPos l pos) @ (findPos r pos)
-    | Let (p, e1, e2) -> let xs = foldPat p
-                         if (List.isEmpty xs) then (findPos e1 pos) @ (findPos e2 pos)
-                         else
-                            xs @ List.concat (List.map (fun (Var (s,l)) -> (findIdents e1 s) @ (findIdents e2 s)) xs)
-    | Lit _ -> []
-    | WithTy (e, t) -> (findPos e pos)
-    
+// Exp<'a> list -> State<(OpenScopes * SymbolTable), Exp<'a> list>
+let rec buildSymbolTable' (exps:Exp<'a> list) = 
+    state { return! mmap (fun exp -> buildSymbolTable'' exp) exps }
+               
+// Exp<'a> list -> SymbolTable
+let buildSymbolTable exps = 
+    let openScopes = OpenScopes(Map.empty)
+    let symbolTable = SymbolTable(Map.empty)
+    let (scopes, table) = executeGetState (buildSymbolTable' exps) (openScopes, symbolTable)
+    table
 
-let findAllReferences exps pos = 
-        List.fold (fun acc exp -> acc @ (findPos exp pos)) [] exps
+// SymbolTable -> Exp<string * SrcLoc>
+let getAllReferences (table:SymbolTable) = [Var ("x", {srcFilename = "test.fs"; srcLine = {startLine = 1; endLine = 1;}; srcColumn = {startColumn = 4; endColumn = 5;}})]
+       
+// Exp<'a> list -> SrcLoc -> Exp<string * SrcLoc> list                
+let findAllReferences (exps:Exp<'a> list) (pos:SrcLoc) = 
+        let symbolTable = buildSymbolTable exps
+        getAllReferences symbolTable
