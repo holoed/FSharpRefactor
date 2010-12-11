@@ -8,6 +8,14 @@ open PurelyFunctionalDataStructures
 type OpenScopes = OpenScopes of Map<string, Stack<SrcLoc list>>
 type SymbolTable = SymbolTable of Map<string, SrcLoc list list>
 
+let addUsage (s,l) = state { let! (OpenScopes(map), table) = getState 
+                             if (map.ContainsKey s) then
+                                 let scopes = map.[s]
+                                 let (xs,xxs) = pop scopes
+                                 let instances = push xxs (l::xs)
+                                 let newMap = map.Remove(s).Add(s, instances)
+                                 do! setState(OpenScopes(newMap), table)
+                                 return () }
 
 let enterScope (s,l) = state { let! (OpenScopes(map), table) = getState 
                                let newMap = if (not (map.ContainsKey s)) then 
@@ -32,7 +40,7 @@ let exitScope (s,l) = state { let! (OpenScopes(map), SymbolTable(table)) = getSt
 
 let execute action p = foldPatState (fun (s:string,l:SrcLoc) -> state { do! action (s,l)
                                                                         return () }) 
-                                    (fun l r -> state { let! l' = l
+                                    (fun l r -> state { //let! l' = l
                                                         let! r' = r
                                                         return () }) 
                                     (fun x -> state { return () }) p
@@ -45,7 +53,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Exp<'a>> =
                                                          let! r' = r
                                                          return PApp (l', r') }) 
                                                    (fun x -> state { return PLit x }) p
-        foldExpState (fun x -> state { return Var x })
+        foldExpState (fun x -> state { do! addUsage x
+                                       return Var x })
                      (fun ps b -> state { let! ps' = mmap (fun p -> state { return! foldPat p }) ps
                                           let! b' = b
                                           return Lam (ps', b') })
@@ -54,9 +63,9 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Exp<'a>> =
                                          return App (x', y') })
                      (fun p e1 e2 -> state { do! execute (enterScope) p
                                              let! p'  = foldPat p
-                                             let! e1' = e1
-                                             let! e2' = e2
-                                             do! execute (exitScope) p
+                                             let! e1' = e1                                             
+                                             do! execute (exitScope) p                                             
+                                             let! e2' = e2                                             
                                              return Let (p', e1', e2') })
                      (fun x -> state { return Lit x })
                      (fun e t -> state { let! e' = e
