@@ -43,6 +43,16 @@ type ASTAnalysisTests() =
     member this.``Find usages of x given its definition bound in g in sample 1``() =
         let ast = parseWithPos sample1
         AssertAreEqual [Var ("x", loc(20,21,1,1));Var ("x", loc(16,17,1,1))] (findAllReferences ast (loc(16,17,1,1)))
+ 
+    [<Test>]
+    member this.``Find usages of function g given its definition in sample 1``() =
+        let ast = parseWithPos sample1
+        AssertAreEqual [Var ("g", loc(10,11,2,2));Var ("g", loc(14,15,1,1))] (findAllReferences ast (loc(14,15,1,1)))
+
+    [<Test>]
+    member this.``Find definition of function g given its usage in sample 1``() =
+        let ast = parseWithPos sample1
+        AssertAreEqual [Var ("g", loc(10,11,2,2));Var ("g", loc(14,15,1,1))] (findAllReferences ast (loc(10,11,2,2)))
 
        
 
