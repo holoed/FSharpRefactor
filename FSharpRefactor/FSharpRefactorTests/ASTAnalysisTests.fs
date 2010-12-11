@@ -24,6 +24,8 @@ type ASTAnalysisTests() =
                  //0123456789012345678901
     let sample1 = "let f x = let g x = x  \n" +  
                   "          g x"
+                 //012345678901234
+    let sample2 = "let f x y = x y"         
 
     [<Test>]
     member this.``Find definition of x bound in f given its usage in sample 1``() =
@@ -67,6 +69,14 @@ type ASTAnalysisTests() =
         let ast = parseWithPos sample1
         AssertAreEqual [Var ("g", loc(10,11,2,2));Var ("g", loc(14,15,1,1))] (findAllReferences (loc(10,11,2,2)) ast)
 
-       
+    [<Test>]
+    member this.``Find usage of x given its definition in sample 2`` () =
+        let ast = parseWithPos sample2
+        AssertAreEqual [Var ("x", loc(12,13,1,1));Var ("x", loc(6,7,1,1))] (findAllReferences (loc(6,7,1,1)) ast)       
+
+    [<Test>]
+    member this.``Find usage of y given its definition in sample 2`` () =
+        let ast = parseWithPos sample2
+        AssertAreEqual [Var ("y", loc(14,15,1,1));Var ("y", loc(8,9,1,1))] (findAllReferences (loc(8,9,1,1)) ast)       
 
 
