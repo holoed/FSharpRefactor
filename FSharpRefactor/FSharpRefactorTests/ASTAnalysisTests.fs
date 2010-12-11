@@ -42,7 +42,7 @@ type ASTAnalysisTests() =
     [<Ignore("Work in progress..")>]
     member this.``Find usages of x given its definition bound in g in sample 1``() =
         let ast = parseWithPos sample1
-        AssertAreEqual [Var ("x", loc(14,15,1,1));Var ("x", loc(20,21,1,1))] (findAllReferences ast (loc(14,15,1,1)))
+        AssertAreEqual [Var ("x", loc(16,17,1,1));Var ("x", loc(20,21,1,1))] (findAllReferences ast (loc(16,17,1,1)))
 
     [<Test>]
     [<Ignore("Work in progress..")>]

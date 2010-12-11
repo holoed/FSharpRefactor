@@ -1,31 +1,14 @@
 ﻿module PurelyFunctionalDataStructures
 
 exception Empty
-exception Subscript
 
-type 'a Stack = Nil | Cons of 'a * 'a Stack
+type Stack<'a> = Stack of 'a list
 
-let empty = Nil
+let empty = Stack []
 
-let isEmpty = function
-    | Nil -> true
-    | _ -> false
+let push (Stack xs) x = Stack(x::xs)
 
-let head = function
-    | Nil -> raise Empty
-    | Cons(x, s) -> x
-    
-let tail = function
-    | Nil -> raise Empty
-    | Cons(x, s) -> s
+let pop (Stack xs) = match xs with
+                     | x::xs -> (x, Stack(xs))
+                     | [] -> raise Empty
 
-let rec (-||-) xs ys =
-    if isEmpty xs then
-        ys
-    else
-        Cons(head xs, tail xs -||- ys)
-
-let rec update = function
-    | Nil, i, y -> raise Subscript
-    | xs, 0, y -> Cons(y, tail(xs))
-    | xs, i, y -> Cons(head(xs), update(tail(xs), i-1, y))
