@@ -15,8 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThirdParty", "ThirdParty", 
 		ThirdParty\VsSDK_sfx.zip = ThirdParty\VsSDK_sfx.zip
 	EndProjectSection
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "PrettyPrinter", "PrettyPrinter\PrettyPrinter.fsproj", "{8C623567-EF7D-4473-B87A-ACF38BAF06A2}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.FSharp.Compiler.Sources", "Microsoft.FSharp.Compiler.Sources", "{FDE3D566-DF9B-44DB-862C-8C5568EB4993}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharpCompiler", "Microsoft.FSharpCompiler.Sources\FSharpCompiler\FSharpCompiler.fsproj", "{3A2627B6-4909-4820-9A25-DF6BC99A12A7}"
@@ -44,7 +42,7 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharpRefactorTests", "FSha
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 10
+		SccNumberOfProjects = 9
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs02
 		SccLocalPath0 = .
@@ -52,38 +50,34 @@ Global
 		SccProjectTopLevelParentUniqueName1 = FSharpRefactor.sln
 		SccProjectName1 = Ast
 		SccLocalPath1 = Ast
-		SccProjectUniqueName2 = PrettyPrinter\\PrettyPrinter.fsproj
+		SccProjectUniqueName2 = Microsoft.FSharpCompiler.Sources\\FSharpCompiler\\FSharpCompiler.fsproj
 		SccProjectTopLevelParentUniqueName2 = FSharpRefactor.sln
-		SccProjectName2 = PrettyPrinter
-		SccLocalPath2 = PrettyPrinter
-		SccProjectUniqueName3 = Microsoft.FSharpCompiler.Sources\\FSharpCompiler\\FSharpCompiler.fsproj
+		SccProjectName2 = Microsoft.FSharpCompiler.Sources/FSharpCompiler
+		SccLocalPath2 = Microsoft.FSharpCompiler.Sources\\FSharpCompiler
+		SccProjectUniqueName3 = FSharpCompiler.Tests\\FSharpCompiler.Tests.fsproj
 		SccProjectTopLevelParentUniqueName3 = FSharpRefactor.sln
-		SccProjectName3 = Microsoft.FSharpCompiler.Sources/FSharpCompiler
-		SccLocalPath3 = Microsoft.FSharpCompiler.Sources\\FSharpCompiler
-		SccProjectUniqueName4 = FSharpCompiler.Tests\\FSharpCompiler.Tests.fsproj
+		SccProjectName3 = FSharpCompiler.Tests
+		SccLocalPath3 = FSharpCompiler.Tests
+		SccProjectUniqueName4 = FSharpCompilerExt\\FSharpCompilerExt.fsproj
 		SccProjectTopLevelParentUniqueName4 = FSharpRefactor.sln
-		SccProjectName4 = FSharpCompiler.Tests
-		SccLocalPath4 = FSharpCompiler.Tests
-		SccProjectUniqueName5 = FSharpCompilerExt\\FSharpCompilerExt.fsproj
+		SccProjectName4 = FSharpCompilerExt
+		SccLocalPath4 = FSharpCompilerExt
+		SccProjectUniqueName5 = FSharpCompilerExtTests\\FSharpCompilerExtTests.fsproj
 		SccProjectTopLevelParentUniqueName5 = FSharpRefactor.sln
-		SccProjectName5 = FSharpCompilerExt
-		SccLocalPath5 = FSharpCompilerExt
-		SccProjectUniqueName6 = FSharpCompilerExtTests\\FSharpCompilerExtTests.fsproj
+		SccProjectName5 = FSharpCompilerExtTests
+		SccLocalPath5 = FSharpCompilerExtTests
+		SccProjectUniqueName6 = FSharpRefactorVSAddIn\\FSharpRefactorVSAddIn.csproj
 		SccProjectTopLevelParentUniqueName6 = FSharpRefactor.sln
-		SccProjectName6 = FSharpCompilerExtTests
-		SccLocalPath6 = FSharpCompilerExtTests
-		SccProjectUniqueName7 = FSharpRefactorVSAddIn\\FSharpRefactorVSAddIn.csproj
+		SccProjectName6 = FSharpRefactorVSAddIn
+		SccLocalPath6 = FSharpRefactorVSAddIn
+		SccProjectUniqueName7 = FSharpRefactor\\FSharpRefactor.fsproj
 		SccProjectTopLevelParentUniqueName7 = FSharpRefactor.sln
-		SccProjectName7 = FSharpRefactorVSAddIn
-		SccLocalPath7 = FSharpRefactorVSAddIn
-		SccProjectUniqueName8 = FSharpRefactor\\FSharpRefactor.fsproj
+		SccProjectName7 = FSharpRefactor
+		SccLocalPath7 = FSharpRefactor
+		SccProjectUniqueName8 = FSharpRefactorTests\\FSharpRefactorTests.fsproj
 		SccProjectTopLevelParentUniqueName8 = FSharpRefactor.sln
-		SccProjectName8 = FSharpRefactor
-		SccLocalPath8 = FSharpRefactor
-		SccProjectUniqueName9 = FSharpRefactorTests\\FSharpRefactorTests.fsproj
-		SccProjectTopLevelParentUniqueName9 = FSharpRefactor.sln
-		SccProjectName9 = FSharpRefactorTests
-		SccLocalPath9 = FSharpRefactorTests
+		SccProjectName8 = FSharpRefactorTests
+		SccLocalPath8 = FSharpRefactorTests
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -104,16 +98,6 @@ Global
 		{82D936E2-AB11-4AFA-9A8B-5C0A97C54F2C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{82D936E2-AB11-4AFA-9A8B-5C0A97C54F2C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{82D936E2-AB11-4AFA-9A8B-5C0A97C54F2C}.Release|x86.ActiveCfg = Release|Any CPU
-		{8C623567-EF7D-4473-B87A-ACF38BAF06A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8C623567-EF7D-4473-B87A-ACF38BAF06A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8C623567-EF7D-4473-B87A-ACF38BAF06A2}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{8C623567-EF7D-4473-B87A-ACF38BAF06A2}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{8C623567-EF7D-4473-B87A-ACF38BAF06A2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{8C623567-EF7D-4473-B87A-ACF38BAF06A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8C623567-EF7D-4473-B87A-ACF38BAF06A2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8C623567-EF7D-4473-B87A-ACF38BAF06A2}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{8C623567-EF7D-4473-B87A-ACF38BAF06A2}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{8C623567-EF7D-4473-B87A-ACF38BAF06A2}.Release|x86.ActiveCfg = Release|Any CPU
 		{3A2627B6-4909-4820-9A25-DF6BC99A12A7}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{3A2627B6-4909-4820-9A25-DF6BC99A12A7}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{3A2627B6-4909-4820-9A25-DF6BC99A12A7}.Debug|Mixed Platforms.Build.0 = Debug|x86
@@ -190,7 +174,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{82D936E2-AB11-4AFA-9A8B-5C0A97C54F2C} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
-		{8C623567-EF7D-4473-B87A-ACF38BAF06A2} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
 		{6C7C81DA-105A-407F-A8AE-72EA4AC2A221} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
 		{344F923E-2D66-4377-A027-20DE99760865} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
 		{23C87110-7BF5-4E92-A91C-61E8E63F5947} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
