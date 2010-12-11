@@ -38,14 +38,6 @@ let exitScope (s,l) = state { let! (OpenScopes(map), SymbolTable(table)) = getSt
                               do! setState(OpenScopes(newMap), SymbolTable(newTable))
                               return () }
 
-let execute action p = foldPatState (fun (s:string,l:SrcLoc) -> state { do! action (s,l)
-                                                                        return () }) 
-                                    (fun l r -> state { //let! l' = l
-                                                        let! r' = r
-                                                        return () }) 
-                                    (fun x -> state { return () }) p
-
-
 //Exp<'a> -> State<(OpenScopes * SymbolTable), Exp<'a>>
 let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Exp<'a>> = 
         let foldPat p = foldPatState (fun x -> state { return PVar x }) 
@@ -62,21 +54,21 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Exp<'a>> =
                                          let! y' = y
                                          return App (x', y') })
                      (fun p e1 e2 -> state { match p with
-                                             |PVar _ ->                                                 
-                                                 let! p'  = foldPat p
-                                                 do! execute (enterScope) p
-                                                 let! e1' = e1                                             
-                                                 do! execute (exitScope) p                                             
-                                                 let! e2' = e2                                             
+                                             |PVar (s,l) ->                                                 
+                                                 let! p'  = foldPat p                                                 
+                                                 let! e1' = e1       
+                                                 do! enterScope (s,l)    // ----------------------------------------------------                                               
+                                                 let! e2' = e2           // let x = x in x Only "let x" and "in x" refer to the same identifier.
+                                                 do! exitScope (s,l)     // ----------------------------------------------------  
                                                  return Let (p', e1', e2') 
-                                             |PApp (l, r) ->                                                 
+                                             |PApp (PVar(sf,lf), PVar(sx, lx)) ->                                                 
                                                  let! p'  = foldPat p
-                                                 do! execute (enterScope) r
-                                                 let! e1' = e1                                             
-                                                 do! execute (exitScope) r 
-                                                 do! execute (enterScope) l                                            
-                                                 let! e2' = e2             
-                                                 do! execute (exitScope) l                                 
+                                                 do! enterScope (sx, lx) // ----------------------------------------------------
+                                                 let! e1' = e1           // function variables scope (like the x in let f x = x)                                  
+                                                 do! exitScope (sx, lx)  // ----------------------------------------------------
+                                                 do! enterScope (sf, lf) // ----------------------------------------------------                                           
+                                                 let! e2' = e2           // function name scope (like the f in let f x = x)  
+                                                 do! exitScope (sf, lf)  // ----------------------------------------------------                               
                                                  return Let (p', e1', e2') })
                      (fun x -> state { return Lit x })
                      (fun e t -> state { let! e' = e

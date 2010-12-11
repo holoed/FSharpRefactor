@@ -27,12 +27,14 @@ type ASTAnalysisTests() =
     [<Test>]
     member this.``Find definition of x given its usage in sample 0`` () =
         let ast = parseWithPos sample0
-        AssertAreEqual [Var ("x", loc(8,9,1,1));Var ("x", loc(4,5,1,1))] (findAllReferences ast (loc(8,9,1,1)))
+        // The result is empty because the x in the body is not defined.
+        AssertAreEqual [] (findAllReferences ast (loc(8,9,1,1)))
 
     [<Test>]
     member this.``Find usage of x given its definition in sample 0`` () =
         let ast = parseWithPos sample0
-        AssertAreEqual [Var ("x", loc(8,9,1,1));Var ("x", loc(4,5,1,1))] (findAllReferences ast (loc(4,5,1,1)))
+        // The result is only the definition because the x in the body is not the same identifier.
+        AssertAreEqual [Var ("x", loc(4,5,1,1))] (findAllReferences ast (loc(4,5,1,1)))
 
     [<Test>]
     member this.``Find usages of x given its definition bound in f in sample 1``() =
