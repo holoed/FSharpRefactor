@@ -58,6 +58,7 @@ let internal constToAst x = match x with
                             | SynConst.Int32 x -> Ast.Lit(Ast.Literal.Integer x)
                             | SynConst.Double x -> Ast.Lit(Ast.Literal.Float x)
                             | SynConst.Unit -> Ast.Lit(Ast.Literal.Unit)
+                            | SynConst.String (x, _) -> Ast.Lit(Ast.Literal.String x)
 
 let internal spatToAst x = match x with
                            | SynSimplePat.Id(ident, _, _, _, _) -> PVar (ident.idText, mkSrcLoc (ident.idRange))
@@ -67,6 +68,7 @@ let internal spatsToAst x = match x with
                    
 
 let rec internal exprToAst x = match x with 
+                               | SynExpr.Tuple(exprs, _) -> Ast.Tuple(List.map exprToAst exprs)
                                | SynExpr.Const(x, _) -> constToAst x
                                | SynExpr.Ident(id) -> Ast.Var (id.idText, mkSrcLoc id.idRange)
                                | SynExpr.App(_, x, y, _) -> Ast.App(exprToAst x, exprToAst y)
