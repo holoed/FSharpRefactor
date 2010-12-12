@@ -57,5 +57,6 @@ type Exp<'a>
     | Let      of Pat<'a> * Exp<'a> * Exp<'a>  // local definition    
     | Lit      of Literal                      // literal 
     | WithTy   of Exp<'a> * Type
+    | Tuple    of Exp<'a> list
 
 
