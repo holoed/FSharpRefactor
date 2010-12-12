@@ -111,6 +111,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Exp<'a>> =
                  (fun x -> state { return Lit x })
                  (fun e t -> state { let! e' = e
                                      return WithTy (e', t) })
+                 (fun es -> state { let! es' = mmap (fun e -> state { return! e }) es
+                                    return Tuple es' })
         exp
 
 // Exp<'a> list -> State<(OpenScopes * SymbolTable), Exp<'a> list>
