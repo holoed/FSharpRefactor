@@ -23,3 +23,5 @@ let pop (Stack xs) = match xs with
                      | x::xs -> (x, Stack(xs))
                      | [] -> raise Empty
 
+let isEmpty (Stack xs) = List.isEmpty xs
+

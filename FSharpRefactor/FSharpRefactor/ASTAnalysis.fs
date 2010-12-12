@@ -49,6 +49,20 @@ let exitScope (s,l) = state { let! (OpenScopes(map), SymbolTable(table)) = getSt
                               do! setState(OpenScopes(newMap), SymbolTable(newTable))
                               return () }
 
+let exitGlobalScope = state { let! (OpenScopes(map), SymbolTable(table)) = getState 
+                              let scopesList = map |> Map.toList |> List.filter (fun (_,scopes) -> not (isEmpty scopes))
+                              let! _ = mmap (fun (s,scopes) ->
+                                                  state { let! (_, SymbolTable(table)) = getState 
+                                                          let (x,xs) = pop scopes
+                                                          let newTable = if (not (table.ContainsKey s)) then 
+                                                                                  table.Add (s, [x]) 
+                                                                         else        
+                                                                                  let ys = table.[s]
+                                                                                  table.Remove(s).Add(s, x::ys)
+                                                          do! setState(OpenScopes(Map.empty), SymbolTable(newTable))
+                                                          return () }) scopesList
+                              return () }
+
 let execute action p = foldPatState (fun (s:string,l:SrcLoc) -> state { do! action (s,l)
                                                                         return () }) 
                                     (fun l r -> state { let! l' = l
@@ -91,7 +105,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Exp<'a>> =
                                              let! _ = mmap (fun x -> execute exitScope x) vars  // ----------------------------------------------------
                                              do! enterScope (sf, lf)     // ----------------------------------------------------                                           
                                              let! e2' = e2               // function name scope (like the f in let f x = x)  
-                                             do! exitScope (sf, lf)      // ----------------------------------------------------                               
+                                             if (e2' <> (Lit Unit)) then
+                                                do! exitScope (sf, lf)      // ----------------------------------------------------                               
                                              return Let (p', e1', e2') })
                  (fun x -> state { return Lit x })
                  (fun e t -> state { let! e' = e
@@ -100,7 +115,9 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Exp<'a>> =
 
 // Exp<'a> list -> State<(OpenScopes * SymbolTable), Exp<'a> list>
 let rec buildSymbolTable' (exps:Exp<'a> list) = 
-    state { return! mmap (fun exp -> buildSymbolTable'' exp) exps }
+    state { let! ret = mmap (fun exp -> buildSymbolTable'' exp) exps
+            do! exitGlobalScope
+            return ret }
                
 // Exp<'a> list -> SymbolTable
 let buildSymbolTable exps = 
