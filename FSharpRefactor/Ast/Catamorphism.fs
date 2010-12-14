@@ -15,7 +15,7 @@ open Ast
 open StateMonad
 open ContinuationMonad
 
-let foldExp varF lamF appF letF litF withTyF tupleF exp = 
+let foldExp varF lamF appF letF litF withTyF tupleF listF exp = 
       let rec Loop e = 
            cont { match e with
                   | Var x -> return (varF x)                  
@@ -31,7 +31,9 @@ let foldExp varF lamF appF letF litF withTyF tupleF exp =
                   | WithTy (e, t) -> let! eAcc = Loop e
                                      return withTyF eAcc t
                   | Tuple es -> let! esAcc = mmap (fun x -> Loop x) es
-                                return tupleF esAcc }
+                                return tupleF esAcc
+                  | List es -> let! esAcc = mmap (fun x -> Loop x) es
+                               return listF esAcc  }
       Loop exp (fun x -> x)
 
 let foldPat varF appF litF pat = 
@@ -44,7 +46,7 @@ let foldPat varF appF litF pat =
              | PLit x -> return litF x }
   Loop pat (fun x -> x)
 
-let foldExpState varF lamF appF letF litF withTyF tupleF exp =
+let foldExpState varF lamF appF letF litF withTyF tupleF listF exp =
   let rec Loop e =
           cont {  match e with
                   | Var x -> return state { return! varF x }
@@ -60,7 +62,9 @@ let foldExpState varF lamF appF letF litF withTyF tupleF exp =
                   | WithTy (e, t) -> let! eAcc = Loop e
                                      return state { return! (withTyF eAcc t)}  
                   | Tuple es -> let! esAcc = mmap (fun x -> Loop x) es
-                                return state { return! (tupleF esAcc) }  }
+                                return state { return! (tupleF esAcc) } 
+                  | List es -> let! esAcc = mmap (fun x -> Loop x) es
+                               return state { return! (listF esAcc) }  }
   Loop exp (fun x -> x)
 
 let foldPatState varF appF litF pat = 

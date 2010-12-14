@@ -58,5 +58,6 @@ type Exp<'a>
     | Lit      of Literal                      // literal 
     | WithTy   of Exp<'a> * Type
     | Tuple    of Exp<'a> list
+    | List     of Exp<'a> list
 
 

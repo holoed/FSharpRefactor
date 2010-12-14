@@ -27,6 +27,7 @@ let stripPos exp =  let foldPat p = foldPat (fun (s,l) -> PVar s) (fun l r -> PA
                             (fun x -> Lit x)
                             (fun e t -> WithTy (e,t))
                             (fun xs -> Tuple xs)
+                            (fun xs -> List xs)
                      exp
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
@@ -215,3 +216,8 @@ type CompilerToAstTests() =
        AssertAreEqual [Let(PVar "x", Tuple [Lit(Integer 42);Lit(Integer 24)], Lit(Unit))]  (parse "let x = (42, 24)")
        AssertAreEqual [Let(PVar "x", Tuple [Lit(Integer 42);Tuple [Lit(String "Hello"); Var "y"]], Lit(Unit))]  (parse "let x = (42, (\"Hello\", y))")
 
+    [<Test>]
+    member this.Lists() = 
+       AssertAreEqual [Let(PVar "x", List [Lit(Integer 42);Lit(Integer 24)], Lit(Unit))]  (parse "let x = [42; 24]")
+       AssertAreEqual [Let(PVar "x", List [Lit(Integer 42); Var "y"], Lit(Unit))]  (parse "let x = [42; y]")
+       AssertAreEqual [Let(PVar "x", List [Lit(Integer 42); List[Var "y"; Var "z"]], Lit(Unit))]  (parse "let x = [42; y; z]")
