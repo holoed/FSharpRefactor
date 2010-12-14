@@ -221,3 +221,8 @@ type CompilerToAstTests() =
        AssertAreEqual [Let(PVar "x", List [Lit(Integer 42);Lit(Integer 24)], Lit(Unit))]  (parse "let x = [42; 24]")
        AssertAreEqual [Let(PVar "x", List [Lit(Integer 42); Var "y"], Lit(Unit))]  (parse "let x = [42; y]")
        AssertAreEqual [Let(PVar "x", List [Lit(Integer 42); List[Var "y"; Var "z"]], Lit(Unit))]  (parse "let x = [42; y; z]")
+
+    [<Test>]
+    member this.OptionType() =
+        AssertAreEqual [Let(PVar "x", App (Var "Some", Lit(Integer 42)), Lit(Unit))]  (parse "let x = Some 42")
+        AssertAreEqual [Let(PVar "x", Var "None", Lit(Unit))]  (parse "let x = None")
