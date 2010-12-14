@@ -68,6 +68,9 @@ let internal spatsToAst x = match x with
                    
 
 let rec internal exprToAst x = match x with 
+                               | SynExpr.Seq(_, _, e1, e2, _) -> Ast.List [exprToAst e1; exprToAst e2]
+                               | SynExpr.CompExpr(_, _, expr, _) -> exprToAst expr
+                               | SynExpr.ArrayOrListOfSeqExpr(_, expr, _) -> exprToAst expr
                                | SynExpr.Tuple(exprs, _) -> Ast.Tuple(List.map exprToAst exprs)
                                | SynExpr.Const(x, _) -> constToAst x
                                | SynExpr.Ident(id) -> Ast.Var (id.idText, mkSrcLoc id.idRange)
