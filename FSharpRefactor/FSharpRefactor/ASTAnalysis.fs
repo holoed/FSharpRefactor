@@ -96,7 +96,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Exp<'a>> =
                                              let! e1' = e1       
                                              do! enterScope (s,l)    // ----------------------------------------------------                                               
                                              let! e2' = e2           // let x = x in x Only "let x" and "in x" refer to the same identifier.
-                                             do! exitScope (s,l)     // ----------------------------------------------------  
+                                             if (e2' <> (Lit Unit)) then
+                                                do! exitScope (s,l)  // ----------------------------------------------------  
                                              return Let (p', e1', e2') 
                                          | PVar (sf,lf), vars ->                                                 
                                              let! p'  = foldPat p
