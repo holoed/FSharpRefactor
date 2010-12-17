@@ -13,23 +13,6 @@ module Ast
 
 open System
 
-type Type
-    = TyLam of Type * Type
-    | TyVar of string
-    | TyCon of string * Type list
-    with override this.ToString() = 
-            match this with
-            | TyLam (t1, t2) -> sprintf "(%s -> %s)" (t1.ToString()) (t2.ToString())
-            | TyVar a -> a
-            | TyCon (s, ts) -> s
-
-let tyInteger = TyCon("int", [])
-let tyDouble = TyCon("double", [])
-let tyFloat = TyCon("float", [])
-let tyChar = TyCon("char", [])
-let tyString = TyCon("string", [])
-let tyNum = TyVar "num"
-
 type Literal
    = Char  of  char          // character literal
    | String of string        // string literal
@@ -48,7 +31,6 @@ type Pat<'a> =
     | PVar of 'a
     | PApp of Pat<'a> * Pat<'a>
     | PLit of Literal    
-    | PWithTy of Pat<'a> * Type
 
 type Exp<'a> 
     = Var      of 'a                           // variable    
@@ -56,8 +38,13 @@ type Exp<'a>
     | App      of Exp<'a> * Exp<'a>            // application    
     | Let      of Pat<'a> * Exp<'a> * Exp<'a>  // local definition    
     | Lit      of Literal                      // literal 
-    | WithTy   of Exp<'a> * Type
     | Tuple    of Exp<'a> list
     | List     of Exp<'a> list
 
+type TypeDef<'a> = DisUnion of string * 'a list
+
+type Decl<'a>
+    = Exp of Exp<'a>
+    | Types of TypeDef<'a> list
+    
 

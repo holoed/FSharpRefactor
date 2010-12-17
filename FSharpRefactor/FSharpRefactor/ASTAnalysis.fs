@@ -73,7 +73,7 @@ let execute action p = foldPatState (fun (s:string,l:SrcLoc) -> state { do! acti
 let flatPat p = foldPat (fun x -> [PVar x]) (fun l r -> l @ r) (fun x -> [PLit x]) p
 
 //Exp<'a> -> State<(OpenScopes * SymbolTable), Exp<'a>>
-let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Exp<'a>> = 
+let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Decl<'a>> = 
     let foldPat p = foldPatState (fun x -> state { return PVar x }) 
                                  (fun l r -> state { let! l' = l
                                                      let! r' = r
@@ -110,16 +110,20 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Exp<'a>> =
                                                 do! exitScope (sf, lf)      // ----------------------------------------------------                               
                                              return Let (p', e1', e2') })
                  (fun x -> state { return Lit x })
-                 (fun e t -> state { let! e' = e
-                                     return WithTy (e', t) })
                  (fun es -> state { let! es' = mmap (fun e -> state { return! e }) es
                                     return Tuple es' })
                  (fun es -> state { let! es' = mmap (fun e -> state { return! e }) es
                                     return List es' })
+                 (fun e -> state {  let! e' = e
+                                    return Exp e' })
+                 (fun xs -> state { let! xs' = mmap (fun x -> state { return! x }) xs
+                                    return Types xs' })
+                 (fun name cases -> state { let! _ = mmap (fun x -> enterScope x) cases
+                                            return DisUnion(name, cases) })
         exp
 
 // Exp<'a> list -> State<(OpenScopes * SymbolTable), Exp<'a> list>
-let rec buildSymbolTable' (exps:Exp<'a> list) = 
+let rec buildSymbolTable' (exps:Decl<'a> list) = 
     state { let! ret = mmap (fun exp -> buildSymbolTable'' exp) exps
             do! exitGlobalScope
             return ret }
@@ -142,6 +146,6 @@ let getAllReferences (SymbolTable(table)) (pos:SrcLoc) =
     
        
 // Exp<'a> list -> SrcLoc -> Exp<string * SrcLoc> list                
-let findAllReferences (pos:SrcLoc) (exps:Exp<'a> list) = 
+let findAllReferences (pos:SrcLoc) (exps:Decl<'a> list) = 
         let symbolTable = buildSymbolTable exps
         getAllReferences symbolTable pos
