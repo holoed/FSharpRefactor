@@ -19,7 +19,7 @@ open AstCatamorphisms
 
 let path = sprintf "%s\\%s" (Directory.GetCurrentDirectory()) "test.fs" 
 
-let stripPos decl =  let foldPat p = foldPat (fun (s,l) -> PVar s) (fun l r -> PApp(l,r)) (fun x -> PLit x) p
+let stripPos decl =  let foldPat p = foldPat (fun (s,l) -> PVar s) (fun l r -> PApp(l,r)) (fun x -> PLit x) (fun xs -> PTuple xs) p
                      foldExp (fun (s, l) -> Var s) 
                              (fun ps b -> Lam(List.map (fun p -> foldPat p) ps, b)) 
                              (fun x y -> App (x, y))
@@ -237,3 +237,7 @@ type CompilerToAstTests() =
     member this.DiscriminatedUnion() =
         let ast = parseTypes "type Exp = Var of string" |> List.concat
         AssertAreEqual [DisUnion("Exp", ["Var"])]  ast
+
+    [<Test>]
+    member this.TuplePattern() =
+        AssertAreEqual [Let(PApp(PVar "f", PTuple [PVar "x"; PVar "y"]), Var "x", Lit(Unit))]  (parse "let f (x,y) = x")
