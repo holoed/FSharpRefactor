@@ -32,6 +32,7 @@ type Pat<'a> =
     | PApp of Pat<'a> * Pat<'a>
     | PLit of Literal    
     | PTuple of Pat<'a> list
+    | PWild
 
 type Exp<'a> 
     = Var      of 'a                           // variable    

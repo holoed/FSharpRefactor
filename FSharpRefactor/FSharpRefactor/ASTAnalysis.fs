@@ -69,9 +69,10 @@ let execute action p = foldPatState (fun (s:string,l:SrcLoc) -> state { do! acti
                                                         let! r' = r
                                                         return () }) 
                                     (fun x -> state { return () })
-                                    (fun xs -> state { return () }) p
+                                    (fun xs -> state { return () }) 
+                                    (fun () -> state { return () }) p
 
-let flatPat p = foldPat (fun x -> [PVar x]) (fun l r -> l @ r) (fun x -> [PLit x]) (fun xs -> List.concat xs) p
+let flatPat p = foldPat (fun x -> [PVar x]) (fun l r -> l @ r) (fun x -> [PLit x]) (fun xs -> List.concat xs) (fun () -> []) p
 
 //Exp<'a> -> State<(OpenScopes * SymbolTable), Exp<'a>>
 let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Decl<'a>> = 
@@ -81,7 +82,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Decl<'a>> =
                                                      return PApp (l', r') }) 
                                  (fun x -> state { return PLit x })
                                  (fun es ->  state { let! es' = mmap (fun e -> state { return! e }) es
-                                                     return PTuple es' }) p
+                                                     return PTuple es' })
+                                 (fun () -> state { return PWild } ) p
     foldExpState (fun x -> state { do! addUsage x
                                    return Var x })
                  (fun ps b -> state { let! ps' = mmap (fun p -> state { return! foldPat p }) ps
