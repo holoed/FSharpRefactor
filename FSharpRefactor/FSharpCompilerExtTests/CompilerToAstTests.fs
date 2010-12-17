@@ -19,25 +19,31 @@ open AstCatamorphisms
 
 let path = sprintf "%s\\%s" (Directory.GetCurrentDirectory()) "test.fs" 
 
-let stripPos exp =  let foldPat p = foldPat (fun (s,l) -> PVar s) (fun l r -> PApp(l,r)) (fun x -> PLit x) p
-                    foldExp (fun (s, l) -> Var s) 
-                            (fun ps b -> Lam(List.map (fun p -> foldPat p) ps, b)) 
-                            (fun x y -> App (x, y))
-                            (fun p e1 e2 -> Let (foldPat p, e1, e2))
-                            (fun x -> Lit x)
-                            (fun e t -> WithTy (e,t))
-                            (fun xs -> Tuple xs)
-                            (fun xs -> List xs)
-                     exp
+let stripPos decl =  let foldPat p = foldPat (fun (s,l) -> PVar s) (fun l r -> PApp(l,r)) (fun x -> PLit x) p
+                     foldExp (fun (s, l) -> Var s) 
+                             (fun ps b -> Lam(List.map (fun p -> foldPat p) ps, b)) 
+                             (fun x y -> App (x, y))
+                             (fun p e1 e2 -> Let (foldPat p, e1, e2))
+                             (fun x -> Lit x)
+                             (fun xs -> Tuple xs)
+                             (fun xs -> List xs)
+                             (fun x -> Exp x)
+                             (fun xs -> Types xs)
+                             (fun name cases -> DisUnion (name, List.map (fun (s,l) -> s) cases))
+                             decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
 
-let parseWithPos s = 
+let parseWithPosDecl s = 
         File.WriteAllText("test.fs", s)        
         let [xs:_] = parseToAst [path]
         xs 
 
-let parse s = s |> parseWithPos |> stripAllPos
+let parse s = s |> parseWithPosDecl |> stripAllPos |> List.map (fun (Exp x) -> x)
+
+let parseWithPos s = s |> parseWithPosDecl |> List.map (fun (Exp x) -> x)
+
+let parseTypes s = s |> parseWithPosDecl |> stripAllPos |> List.map (fun (Types xs) -> xs)
 
 let loc (cs,ce,ls,le) = { srcFilename = path; srcLine = { startLine = ls; endLine = le }; srcColumn = { startColumn = cs; endColumn = ce } }
 
@@ -226,3 +232,8 @@ type CompilerToAstTests() =
     member this.OptionType() =
         AssertAreEqual [Let(PVar "x", App (Var "Some", Lit(Integer 42)), Lit(Unit))]  (parse "let x = Some 42")
         AssertAreEqual [Let(PVar "x", Var "None", Lit(Unit))]  (parse "let x = None")
+         
+    [<Test>]
+    member this.DiscriminatedUnion() =
+        let ast = parseTypes "type Exp = Var of string" |> List.concat
+        AssertAreEqual [DisUnion("Exp", ["Var"])]  ast

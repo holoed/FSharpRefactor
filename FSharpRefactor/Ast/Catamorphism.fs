@@ -15,26 +15,36 @@ open Ast
 open StateMonad
 open ContinuationMonad
 
-let foldExp varF lamF appF letF litF withTyF tupleF listF exp = 
-      let rec Loop e = 
+let foldExp varF lamF appF letF litF tupleF listF expF typesF unionF decl = 
+      let rec LoopExp e = 
            cont { match e with
                   | Var x -> return (varF x)                  
-                  | Lam (p, body) -> let! bodyAcc = Loop body
+                  | Lam (p, body) -> let! bodyAcc = LoopExp body
                                      return lamF p bodyAcc
-                  | App (l, r) -> let! lAcc = Loop l
-                                  let! rAcc = Loop r
+                  | App (l, r) -> let! lAcc = LoopExp l
+                                  let! rAcc = LoopExp r
                                   return appF lAcc rAcc                  
-                  | Let (p, e1, e2) -> let! e1Acc = Loop e1
-                                       let! e2Acc = Loop e2
+                  | Let (p, e1, e2) -> let! e1Acc = LoopExp e1
+                                       let! e2Acc = LoopExp e2
                                        return letF p e1Acc e2Acc
                   | Lit x -> return litF x
-                  | WithTy (e, t) -> let! eAcc = Loop e
-                                     return withTyF eAcc t
-                  | Tuple es -> let! esAcc = mmap (fun x -> Loop x) es
+                 
+                  | Tuple es -> let! esAcc = mmap (fun x -> LoopExp x) es
                                 return tupleF esAcc
-                  | List es -> let! esAcc = mmap (fun x -> Loop x) es
+                  | List es -> let! esAcc = mmap (fun x -> LoopExp x) es
                                return listF esAcc  }
-      Loop exp (fun x -> x)
+      let rec LoopTypes t = 
+           cont { match t with
+                  | DisUnion (name, cases) -> return (unionF name cases)  }
+
+      let rec LoopDecl e = 
+           cont { match e with
+                  | Exp x -> let! x' = LoopExp x
+                             return expF x' 
+                  | Types xs -> let! xsAcc = mmap (fun x -> LoopTypes x) xs
+                                return typesF xsAcc }
+      LoopDecl decl (fun x -> x)
+      
 
 let foldPat varF appF litF pat = 
   let rec Loop e =
@@ -46,26 +56,36 @@ let foldPat varF appF litF pat =
              | PLit x -> return litF x }
   Loop pat (fun x -> x)
 
-let foldExpState varF lamF appF letF litF withTyF tupleF listF exp =
-  let rec Loop e =
+let foldExpState varF lamF appF letF litF tupleF listF expF typesF unionF  decl =
+  let rec LoopExp e =
           cont {  match e with
                   | Var x -> return state { return! varF x }
-                  | Lam (x, body) -> let! bodyAcc = Loop body
+                  | Lam (x, body) -> let! bodyAcc = LoopExp body
                                      return  state { return! (lamF x bodyAcc) }
-                  | App (l, r) -> let! lAcc = Loop l
-                                  let! rAcc = Loop r
+                  | App (l, r) -> let! lAcc = LoopExp l
+                                  let! rAcc = LoopExp r
                                   return state { return! (appF lAcc rAcc) }     
-                  | Let (p, e1, e2) -> let! e1Acc = Loop e1
-                                       let! e2Acc = Loop e2
+                  | Let (p, e1, e2) -> let! e1Acc = LoopExp e1
+                                       let! e2Acc = LoopExp e2
                                        return state { return! (letF p e1Acc e2Acc)}
                   | Lit x -> return state { return! (litF x)}
-                  | WithTy (e, t) -> let! eAcc = Loop e
-                                     return state { return! (withTyF eAcc t)}  
-                  | Tuple es -> let! esAcc = mmap (fun x -> Loop x) es
+                
+                  | Tuple es -> let! esAcc = mmap (fun x -> LoopExp x) es
                                 return state { return! (tupleF esAcc) } 
-                  | List es -> let! esAcc = mmap (fun x -> Loop x) es
+                  | List es -> let! esAcc = mmap (fun x -> LoopExp x) es
                                return state { return! (listF esAcc) }  }
-  Loop exp (fun x -> x)
+
+  let rec LoopTypes t = 
+           cont { match t with
+                  | DisUnion (name, cases) -> return state { return! (unionF name cases) }  }
+
+  let rec LoopDecl e = 
+           cont { match e with
+                  | Exp x -> let! x' = LoopExp x
+                             return state { return! (expF x') } 
+                  | Types xs -> let! xsAcc = mmap (fun x -> LoopTypes x) xs
+                                return state { return! typesF xsAcc } }
+  LoopDecl decl (fun x -> x)
 
 let foldPatState varF appF litF pat = 
   let rec Loop e =

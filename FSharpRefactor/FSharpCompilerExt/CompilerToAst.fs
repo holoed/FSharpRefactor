@@ -81,11 +81,25 @@ let rec internal exprToAst x = match x with
                                                                   Let (j, k, x |> exprToAst)
 
 and internal bindingToAst x = match x with
-                     | SynBinding.Binding(_,_,_,_,_,_,_,name,_,expr,_,_) -> Ast.Let((patToAst name), (exprToAst expr), Ast.Lit(Ast.Literal.Unit))
+                              | SynBinding.Binding(_,_,_,_,_,_,_,name,_,expr,_,_) -> Ast.Let((patToAst name), (exprToAst expr), Ast.Lit(Ast.Literal.Unit))
+
+and internal unionCasesToAst x = match x with
+                                 | SynUnionCase.UnionCase(_,x,_,_,_,_) -> (x.idText, mkSrcLoc x.idRange)
+
+and internal simpleTypeRepToAst x = match x with
+                                    | SynTypeDefnSimpleRepr.Union(_, xs, _) -> fun name -> TypeDef.DisUnion (name, List.map (fun x -> unionCasesToAst x) xs)
+
+and internal typeRepToAst x = match x with
+                              | SynTypeDefnRepr.Simple(x, _) -> fun name -> simpleTypeRepToAst x name
+
+and internal typeToAst x = match x with
+                           | SynTypeDefn.TypeDefn(SynComponentInfo.ComponentInfo(_,_,_,ident,_,_,_,_) , x, _,_) -> typeRepToAst x ((List.head ident).idText)
+
 
 let internal declToAst x = match x with
-                  | SynModuleDecl.Let (_,xs,_) -> xs |> List.head |> bindingToAst
-                  | SynModuleDecl.DoExpr (_,x,_) -> exprToAst x
+                  | SynModuleDecl.Let (_,xs,_) -> xs |> List.head |> bindingToAst |> Decl.Exp
+                  | SynModuleDecl.DoExpr (_,x,_) -> x |> exprToAst |> Decl.Exp
+                  | SynModuleDecl.Types (xs, _) -> xs |> List.map(fun x -> typeToAst x) |> Decl.Types
 
 let rec internal declsToAst xs = List.map (fun x -> declToAst x) xs
 
