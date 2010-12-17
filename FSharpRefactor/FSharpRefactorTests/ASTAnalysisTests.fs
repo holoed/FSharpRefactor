@@ -43,6 +43,9 @@ type ASTAnalysisTests() =
     let sample8 = "type Exp = Var of string\n" + 
                   "let exp = Var(\"x\")   " 
 
+                 //0123456789012345678
+    let sample9 = "let f (x, y) = x"
+
     [<Test>]
     member this.``Find definition of x bound in f given its usage in sample 1``() =
         let ast = parseWithPosDecl sample1
@@ -155,3 +158,12 @@ type ASTAnalysisTests() =
         let ast = parseWithPosDecl sample8
         AssertAreEqual [Var ("Var", loc(10,13,2,2));Var ("Var", loc(11,14,1,1))] (findAllReferences (loc(10,13,2,2)) ast) 
 
+    [<Test>]
+    member this.``Find usage of x given its definition in sample 9`` () =
+        let ast = parseWithPosDecl sample9
+        AssertAreEqual [Var ("x", loc(15,16,1,1));Var ("x", loc(7,8,1,1))] (findAllReferences (loc(7,8,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find definition of x given its usage in sample 9`` () =
+        let ast = parseWithPosDecl sample9
+        AssertAreEqual [Var ("x", loc(15,16,1,1));Var ("x", loc(7,8,1,1))] (findAllReferences (loc(15,16,1,1)) ast) 

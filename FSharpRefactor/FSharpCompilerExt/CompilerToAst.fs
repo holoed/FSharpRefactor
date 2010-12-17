@@ -53,6 +53,8 @@ let rec internal buildPApp f xs = match xs with
 and internal patToAst x = match x with
                               | SynPat.Named (_, x, _, _, _) -> Ast.PVar (x.idText, mkSrcLoc x.idRange)
                               | SynPat.LongIdent (x::_, _, _, ys, _, _) -> buildPApp (Ast.PVar (x.idText, mkSrcLoc x.idRange)) (List.rev ys)
+                              | SynPat.Paren(x, _) -> patToAst x
+                              | SynPat.Tuple(xs, _) ->  PTuple(List.map patToAst xs)
 
 let internal constToAst x = match x with
                             | SynConst.Int32 x -> Ast.Lit(Ast.Literal.Integer x)
