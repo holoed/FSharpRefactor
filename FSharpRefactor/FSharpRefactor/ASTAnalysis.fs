@@ -75,7 +75,7 @@ let execute action p = foldPatState (fun (s:string,l:SrcLoc) -> state { do! acti
 let flatPat p = foldPat (fun x -> [PVar x]) (fun l r -> l @ r) (fun x -> [PLit x]) (fun xs -> List.concat xs) (fun () -> []) p
 
 //Exp<'a> -> State<(OpenScopes * SymbolTable), Exp<'a>>
-let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Decl<'a>> = 
+let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Prog<'a>> = 
     let foldPat p = foldPatState (fun x -> state { return PVar x }) 
                                  (fun l r -> state { let! l' = l
                                                      let! r' = r
@@ -136,20 +136,20 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Decl<'a>> =
         exp
 
 // Exp<'a> list -> State<(OpenScopes * SymbolTable), Exp<'a> list>
-let rec buildSymbolTable' (exps:Decl<'a> list) = 
-    state { let! ret = mmap (fun exp -> buildSymbolTable'' exp) exps
+let rec buildSymbolTable' progs = 
+    state { let! ret = mmap (fun prog -> buildSymbolTable'' prog) progs
             do! exitGlobalScope
             return ret }
                
 // Exp<'a> list -> SymbolTable
-let buildSymbolTable exps = 
+let buildSymbolTable progs = 
     let openScopes = OpenScopes(Map.empty)
     let symbolTable = SymbolTable(Map.empty)
-    let (scopes, table) = executeGetState (buildSymbolTable' exps) (openScopes, symbolTable)
+    let (scopes, table) = executeGetState (buildSymbolTable' progs) (openScopes, symbolTable)
     table
 
 // SymbolTable -> Exp<string * SrcLoc>
-let getAllReferences (SymbolTable(table)) (pos:SrcLoc) = 
+let getAllReferences (SymbolTable(table)) pos = 
         let data = Map.toList table
         [ for (s,xxs) in data do
             for xs in xxs do
@@ -159,6 +159,6 @@ let getAllReferences (SymbolTable(table)) (pos:SrcLoc) =
     
        
 // Exp<'a> list -> SrcLoc -> Exp<string * SrcLoc> list                
-let findAllReferences (pos:SrcLoc) (exps:Decl<'a> list) = 
-        let symbolTable = buildSymbolTable exps
+let findAllReferences pos progs = 
+        let symbolTable = buildSymbolTable progs
         getAllReferences symbolTable pos

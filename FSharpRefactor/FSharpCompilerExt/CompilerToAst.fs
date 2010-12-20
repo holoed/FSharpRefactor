@@ -105,9 +105,9 @@ and internal typeToAst x = match x with
 
 
 let internal declToAst x = match x with
-                  | SynModuleDecl.Let (_,xs,_) -> xs |> List.head |> bindingToAst |> Decl.Exp
-                  | SynModuleDecl.DoExpr (_,x,_) -> x |> exprToAst |> Decl.Exp
-                  | SynModuleDecl.Types (xs, _) -> xs |> List.map(fun x -> typeToAst x) |> Decl.Types
+                  | SynModuleDecl.Let (_,xs,_) -> xs |> List.head |> bindingToAst |> Prog.Exp
+                  | SynModuleDecl.DoExpr (_,x,_) -> x |> exprToAst |> Prog.Exp
+                  | SynModuleDecl.Types (xs, _) -> xs |> List.map(fun x -> typeToAst x) |> Prog.Types
 
 let rec internal declsToAst xs = List.map (fun x -> declToAst x) xs
 
