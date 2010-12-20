@@ -15,7 +15,7 @@ open Ast
 open StateMonad
 open ContinuationMonad
      
-let foldExpState varF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF decl =
+let foldExpState varF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF decl =
   let rec LoopExp e =
           cont {  match e with
                   | Var x -> return state { return! varF x }
@@ -35,7 +35,12 @@ let foldExpState varF lamF appF letF litF tupleF listF expF typesF unionF matchF
                                return state { return! (listF esAcc) }  
                   | Match (e, cs) -> let! eAcc = LoopExp e
                                      let! csAcc = mmap (fun x -> LoopClauses x) cs
-                                     return state { return! (matchF eAcc csAcc)  } }
+                                     return state { return! (matchF eAcc csAcc)  } 
+                  | ForEach (p, e1, e2) -> let! e1Acc = LoopExp e1
+                                           let! e2Acc = LoopExp e2
+                                           return state { return! (forEachF p e1Acc e2Acc)} 
+                  | YieldOrReturn e -> let! eAcc = LoopExp e
+                                       return state { return! (yieldOrRetF eAcc)} }
       and LoopClauses c =
                 cont { match c with
                        | Clause(p, e) ->let! eAcc = LoopExp e
@@ -77,8 +82,7 @@ let foldPat varF appF litF tupleF wildF pat =
                                      (fun () -> state { return wildF () }) pat) ()
                                       
 
-let foldExp varF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF decl =       
-
+let foldExp varF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF decl =       
      StateMonad.execute (foldExpState  (fun x -> state { return varF x })
                                        (fun ps b -> state { let! b' = b
                                                             return lamF ps b' })
@@ -102,7 +106,12 @@ let foldExp varF lamF appF letF litF tupleF listF expF typesF unionF matchF clau
                                                             let! cs' = StateMonad.mmap (fun c -> state { return! c }) cs
                                                             return matchF e' cs'})
                                        (fun p e -> state { let! e' = e  
-                                                           return clauseF p e' })  decl) ()
+                                                           return clauseF p e' })
+                                       (fun p e1 e2 -> state { let! e1' = e1
+                                                               let! e2' = e2
+                                                               return forEachF p e1' e2' })
+                                       (fun e -> state { let! e' = e  
+                                                         return yieldOrRetF e' }) decl) ()
                               
                                 
 
