@@ -30,6 +30,8 @@ let stripPos decl =  let foldPat p = foldPat (fun (s,l) -> PVar s) (fun l r -> P
                              (fun x -> Exp x)
                              (fun xs -> Types xs)
                              (fun name cases -> DisUnion (name, List.map (fun (s,l) -> s) cases))
+                             (fun e cs -> Match(e, cs))
+                             (fun p e -> Clause(foldPat p, e))
                              decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
@@ -245,3 +247,11 @@ type CompilerToAstTests() =
     [<Test>]
     member this.WildPattern() =
         AssertAreEqual [Let(PWild, Var "x", Lit(Unit))]  (parse "let _ = x")
+
+    [<Test>]
+    member this.SimplePatternMatching() =
+        AssertAreEqual [Let(PApp(PVar "f", PVar "x"), Match(Var "x", [Clause(PLit(Bool(true)), Lit(Integer 42))]), Lit(Unit))]  (parse "let f x = match x with True -> 42")
+
+    [<Test>]
+    member this.SimplePatternMatchingWithTuplePattern() =
+        AssertAreEqual [Let(PApp(PVar "f", PVar "p"), Match(Var "p", [Clause(PTuple [PVar "x"; PVar "y"], Var "x")]), Lit(Unit))]  (parse "let f p = match p with (x,y) -> x")

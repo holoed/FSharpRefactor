@@ -125,6 +125,14 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Decl<'a>> =
                                     return Types xs' })
                  (fun name cases -> state { let! _ = mmap (fun x -> enterScope x) cases
                                             return DisUnion(name, cases) })
+                 (fun e cs -> state { let! e' = e
+                                      let! cs' = mmap (fun c -> state { return! c }) cs
+                                      return Match(e', cs')})
+                 (fun p e -> state { let vars = flatPat p
+                                     let! _ = mmap (fun x -> execute enterScope x) vars 
+                                     let! e' = e
+                                     let! _ = mmap (fun x -> execute exitScope x) vars 
+                                     return Clause(p, e') })
         exp
 
 // Exp<'a> list -> State<(OpenScopes * SymbolTable), Exp<'a> list>
