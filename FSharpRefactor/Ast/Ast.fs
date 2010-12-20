@@ -49,7 +49,7 @@ and Clause<'a> = Clause of Pat<'a> * Exp<'a>
 
 type TypeDef<'a> = DisUnion of string * 'a list
 
-type Decl<'a>
+type Prog<'a>
     = Exp of Exp<'a>
     | Types of TypeDef<'a> list
     
