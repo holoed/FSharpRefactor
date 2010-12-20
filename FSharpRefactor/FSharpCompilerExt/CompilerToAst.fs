@@ -95,6 +95,8 @@ and internal exprToAst x =
                     | SynExpr.Lambda(_,_,x,y,_) -> Ast.Lam(spatsToAst x, exprToAst y)
                     | SynExpr.LetOrUse (_,_,xs,x,_) -> let (Let(j, k, _)) = bindingToAst (xs.Head)
                                                        Let (j, k, x |> exprToAst)
+                    | SynExpr.ForEach (_,_,pat,e1,e2,_) -> Ast.ForEach (patToAst pat, exprToAst e1, exprToAst e2)
+                    | SynExpr.YieldOrReturn (_, e, _) -> Ast.YieldOrReturn (exprToAst e)
 
 and internal bindingToAst x = 
                     match x with

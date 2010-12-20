@@ -44,6 +44,8 @@ type Exp<'a>
     | Tuple    of Exp<'a> list
     | List     of Exp<'a> list
     | Match    of Exp<'a> * Clause<'a> list
+    | ForEach  of Pat<'a> * Exp<'a> * Exp<'a>
+    | YieldOrReturn of Exp<'a>
 
 and Clause<'a> = Clause of Pat<'a> * Exp<'a>
 

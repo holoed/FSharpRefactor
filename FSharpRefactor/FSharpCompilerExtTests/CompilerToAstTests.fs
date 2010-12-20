@@ -32,6 +32,8 @@ let stripPos decl =  let foldPat p = foldPat (fun (s,l) -> PVar s) (fun l r -> P
                              (fun name cases -> DisUnion (name, List.map (fun (s,l) -> s) cases))
                              (fun e cs -> Match(e, cs))
                              (fun p e -> Clause(foldPat p, e))
+                             (fun p e1 e2 -> ForEach (foldPat p, e1, e2))
+                             (fun e -> YieldOrReturn e)
                              decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
@@ -255,3 +257,11 @@ type CompilerToAstTests() =
     [<Test>]
     member this.SimplePatternMatchingWithTuplePattern() =
         AssertAreEqual [Let(PApp(PVar "f", PVar "p"), Match(Var "p", [Clause(PTuple [PVar "x"; PVar "y"], Var "x")]), Lit(Unit))]  (parse "let f p = match p with (x,y) -> x")
+
+    [<Test>]
+    member this.SimpleSeqComprehension() =        
+        AssertAreEqual [Let(PVar "xs", App (Var "seq",App (App (Var "op_Range",Lit (Integer 1)),Lit (Integer 10))), Lit Unit)] (parse "let xs = seq { 1..10 }")
+
+    [<Test>]
+    member this.SimpleSeqComprehensionWithForIn() =
+        AssertAreEqual [Let(PVar "xs", App (Var "seq",ForEach(PVar "i", App (App (Var "op_Range",Lit (Integer 1)), Lit (Integer 5)), YieldOrReturn (Var "i"))), Lit Unit)] (parse "let xs = seq { for i in 1..5 do yield i }")
