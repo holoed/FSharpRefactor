@@ -19,6 +19,7 @@ type Literal
    | Integer of  int         // integer literal
    | Float  of  float        // floating point literal   
    | Double of double 
+   | Bool of bool
    | Unit
 
 type SrcCol = { startColumn : int; endColumn : int }
@@ -42,6 +43,9 @@ type Exp<'a>
     | Lit      of Literal                      // literal 
     | Tuple    of Exp<'a> list
     | List     of Exp<'a> list
+    | Match    of Exp<'a> * Clause<'a> list
+
+and Clause<'a> = Clause of Pat<'a> * Exp<'a>
 
 type TypeDef<'a> = DisUnion of string * 'a list
 

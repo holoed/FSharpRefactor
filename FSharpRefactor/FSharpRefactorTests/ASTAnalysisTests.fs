@@ -48,6 +48,8 @@ type ASTAnalysisTests() =
 
     let sample10 = "let f (x, _) = x"
 
+    let sample11 = "let f p = match p with (x,y) -> x"
+
     [<Test>]
     member this.``Find definition of x bound in f given its usage in sample 1``() =
         let ast = parseWithPosDecl sample1
@@ -179,3 +181,8 @@ type ASTAnalysisTests() =
     member this.``Find definition of x given its usage in sample 10`` () =
         let ast = parseWithPosDecl sample10
         AssertAreEqual [Var ("x", loc(15,16,1,1));Var ("x", loc(7,8,1,1))] (findAllReferences (loc(15,16,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find usage of x given its definition in sample 11`` () =
+        let ast = parseWithPosDecl sample11
+        AssertAreEqual [Var ("x", loc(32,33,1,1));Var ("x", loc(24,25,1,1))] (findAllReferences (loc(24,25,1,1)) ast) 

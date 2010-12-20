@@ -48,11 +48,13 @@ let internal mkSrcLoc (r: Microsoft.FSharp.Compiler.Range.range)  =
 
 let rec internal buildPApp f xs = match xs with
                                   | x::[] -> Ast.PApp (f, patToAst x)
-                                  | x::xs -> Ast.PApp(buildPApp f xs, patToAst x)
+                                  | x::xs' -> Ast.PApp(buildPApp f xs', patToAst x)
                                
 and internal patToAst x = match x with
                               | SynPat.Named (_, x, _, _, _) -> Ast.PVar (x.idText, mkSrcLoc x.idRange)
-                              | SynPat.LongIdent (x::_, _, _, ys, _, _) -> buildPApp (Ast.PVar (x.idText, mkSrcLoc x.idRange)) (List.rev ys)
+                              | SynPat.LongIdent (x::_, _, _, ys, _, _) -> match ys with
+                                                                           | [] when x.idText = "True" -> PLit(Literal.Bool(true))
+                                                                           | _ -> buildPApp (Ast.PVar (x.idText, mkSrcLoc x.idRange)) (List.rev ys)
                               | SynPat.Paren(x, _) -> patToAst x
                               | SynPat.Tuple(xs, _) ->  PTuple(List.map patToAst xs)
                               | SynPat.Wild _ -> Pat.PWild
@@ -69,8 +71,11 @@ let internal spatToAst x = match x with
 let internal spatsToAst x = match x with
                             | SynSimplePats.SimplePats(xs, _) -> List.map (fun x -> spatToAst x) xs
                    
+let rec internal clauseToAst c = match c with
+                                 | SynMatchClause.Clause(pat,_,expr,_,_) -> Ast.Clause(patToAst pat, exprToAst expr)
 
-let rec internal exprToAst x = match x with 
+and internal exprToAst x = match x with 
+                               | SynExpr.Match(_,e,cs,_,_) -> Ast.Match(exprToAst e, List.map (fun c -> clauseToAst c) cs)
                                | SynExpr.Seq(_, _, e1, e2, _) -> Ast.List [exprToAst e1; exprToAst e2]
                                | SynExpr.CompExpr(_, _, expr, _) -> exprToAst expr
                                | SynExpr.ArrayOrListOfSeqExpr(_, expr, _) -> exprToAst expr
