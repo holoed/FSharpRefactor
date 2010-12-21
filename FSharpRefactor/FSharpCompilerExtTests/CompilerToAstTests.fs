@@ -37,6 +37,7 @@ let stripPos decl =  let foldPat p = foldPat (fun (s,l) -> PVar s) (fun l r -> P
                              (fun e -> YieldOrReturn e)
                              (fun n ms -> NestedModule (n,ms))
                              (fun s -> Open s)
+                             (fun e1 e2 e3 -> IfThenElse(e1, e2, e3))
                              decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
@@ -291,4 +292,9 @@ type CompilerToAstTests() =
     [<Test>]
     member this.NestedModule() =
         AssertAreEqual [NestedModule (["MyModule"], [Exp (Let (PVar "x",Lit (Integer 42),Lit Unit))])]  (parseModule "module MyModule = let x = 42")
-        
+
+    [<Test>]
+    member this.IfThenElse() =
+        AssertAreEqual 
+            [Let(PApp(PVar "fac", PVar "n"), IfThenElse(App(App (Var "op_Equality", Var "n"), Lit(Integer 0)), Lit(Integer 1), Some (App(App( Var "op_Multiply", Var "n"), App (Var "fac", App (App (Var "op_Subtraction",Var "n"),Lit (Integer 1)))))), Lit(Unit))]  
+            (parse "let rec fac n = if n = 0 then 1 else n * fac (n - 1)")

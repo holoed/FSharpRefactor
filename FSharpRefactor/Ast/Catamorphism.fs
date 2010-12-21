@@ -15,7 +15,7 @@ open Ast
 open StateMonad
 open ContinuationMonad
      
-let foldExpState varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF decl =
+let foldExpState varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF ifThenElseF decl =
   let rec LoopExp e =
           cont {  match e with
                   | Var x -> return state { return! varF x }
@@ -42,7 +42,12 @@ let foldExpState varF longVarF lamF appF letF litF tupleF listF expF typesF unio
                                            let! e2Acc = LoopExp e2
                                            return state { return! (forEachF p e1Acc e2Acc)} 
                   | YieldOrReturn e -> let! eAcc = LoopExp e
-                                       return state { return! (yieldOrRetF eAcc)} }
+                                       return state { return! (yieldOrRetF eAcc)} 
+                  | IfThenElse (e1, e2, e3) -> let! e1Acc = LoopExp e1
+                                               let! e2Acc = LoopExp e2
+                                               let! e3Acc = match e3 with 
+                                                            | Some e3' -> LoopExp e3'                                                            
+                                               return state { return! ifThenElseF e1Acc e2Acc (Some e3Acc) } }
       and LoopClauses c =
                 cont { match c with
                        | Clause(p, e) ->let! eAcc = LoopExp e
@@ -87,7 +92,7 @@ let foldPat varF appF litF tupleF wildF pat =
                                      (fun () -> state { return wildF () }) pat) ()
                                       
 
-let foldExp varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF decl =       
+let foldExp varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF ifThenElseF decl =       
      StateMonad.execute (foldExpState  (fun x -> state { return varF x })
                                        (fun xs -> state { let! xs' = StateMonad.mmap (fun x -> state { return! x }) xs
                                                           return longVarF xs' })
@@ -121,7 +126,12 @@ let foldExp varF longVarF lamF appF letF litF tupleF listF expF typesF unionF ma
                                                          return yieldOrRetF e' })
                                        (fun n es -> state { let! es' = StateMonad.mmap (fun e -> state { return! e }) es
                                                             return moduleF n es' })
-                                       (fun s -> state { return openF s })  decl) ()
+                                       (fun s -> state { return openF s })
+                                       (fun e1 e2 e3 -> state { let! e1' = e1
+                                                                let! e2' = e2
+                                                                let! e3' = match e3 with
+                                                                           | Some x -> x
+                                                                return ifThenElseF e1' e2' (Some e3') })  decl) ()
                               
                                 
 

@@ -163,6 +163,11 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                  (fun n ms -> state { let! ms' = mmap (fun m -> state { return! m }) ms
                                       return NestedModule (n, ms') })
                  (fun s -> state { return Open s })
+                 (fun e1 e2 e3 -> state { let! e1' = e1
+                                          let! e2' = e2
+                                          let! e3' = match e3 with
+                                                     | Some x -> x
+                                          return IfThenElse(e1', e2', Some e3') })
         exp
 
 // Exp<'a> list -> State<(OpenScopes * SymbolTable), Exp<'a> list>
