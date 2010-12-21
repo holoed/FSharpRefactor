@@ -99,6 +99,7 @@ and internal exprToAst x =
                                                        Let (j, k, x |> exprToAst)
                     | SynExpr.ForEach (_,_,pat,e1,e2,_) -> Ast.ForEach (patToAst pat, exprToAst e1, exprToAst e2)
                     | SynExpr.YieldOrReturn (_, e, _) -> Ast.YieldOrReturn (exprToAst e)
+                    | SynExpr.IfThenElse (e1,e2,e3,_,_,_) -> Ast.IfThenElse (exprToAst e1, exprToAst e2, if (e3.IsSome) then Some (exprToAst (e3.Value)) else None)
 
 and internal bindingToAst x = 
                     match x with

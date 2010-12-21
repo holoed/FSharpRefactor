@@ -52,15 +52,8 @@ type ASTAnalysisTests() =
 
     let sample12 = "let xs = seq { for i in 1..5 do yield i }"
 
-    [<Test>]
-    member this.``Find definition of x bound in f given its usage in sample 1``() =
-        let ast = parseWithPosDecl sample1
-        AssertAreEqual [Var ("x", loc(12,13,2,2));Var ("x", loc(6,7,1,1))] (findAllReferences (loc(12,13,2,2)) ast)
+    let sample13 = "let f n x y = if n = 0 then x else y"
 
-    [<Test>]
-    member this.``Find definition of x bound in g given its usage in sample 1``() =
-        let ast = parseWithPosDecl sample1
-        AssertAreEqual [Var ("x", loc(20,21,1,1));Var ("x", loc(16,17,1,1))] (findAllReferences (loc(20,21,1,1)) ast)
 
     [<Test>]
     member this.``Find definition of x given its usage in sample 0`` () =
@@ -73,6 +66,16 @@ type ASTAnalysisTests() =
         let ast = parseWithPosDecl sample0
         // The result is only the definition because the x in the body is not the same identifier.
         AssertAreEqual [Var ("x", loc(4,5,1,1))] (findAllReferences (loc(4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find definition of x bound in f given its usage in sample 1``() =
+        let ast = parseWithPosDecl sample1
+        AssertAreEqual [Var ("x", loc(12,13,2,2));Var ("x", loc(6,7,1,1))] (findAllReferences (loc(12,13,2,2)) ast)
+
+    [<Test>]
+    member this.``Find definition of x bound in g given its usage in sample 1``() =
+        let ast = parseWithPosDecl sample1
+        AssertAreEqual [Var ("x", loc(20,21,1,1));Var ("x", loc(16,17,1,1))] (findAllReferences (loc(20,21,1,1)) ast)   
 
     [<Test>]
     member this.``Find usages of x given its definition bound in f in sample 1``() =
@@ -198,3 +201,23 @@ type ASTAnalysisTests() =
     member this.``Find definition of x given its usage in sample 12`` () =
         let ast = parseWithPosDecl sample12
         AssertAreEqual [Var ("i", loc(38,39,1,1));Var ("i", loc(19,20,1,1))] (findAllReferences (loc(38,39,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find usage of x given its definition in sample 13`` () =
+        let ast = parseWithPosDecl sample13
+        AssertAreEqual [Var ("x", loc(28,29,1,1));Var ("x", loc(8,9,1,1))] (findAllReferences (loc(8,9,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find definition of x given its usage in sample 13`` () =
+        let ast = parseWithPosDecl sample13
+        AssertAreEqual [Var ("x", loc(28,29,1,1));Var ("x", loc(8,9,1,1))] (findAllReferences (loc(28,29,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find usage of y given its definition in sample 13`` () =
+        let ast = parseWithPosDecl sample13
+        AssertAreEqual [Var ("y", loc(35,36,1,1));Var ("y", loc(10,11,1,1))] (findAllReferences (loc(10,11,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find definition of y given its usage in sample 13`` () =
+        let ast = parseWithPosDecl sample13
+        AssertAreEqual [Var ("y", loc(35,36,1,1));Var ("y", loc(10,11,1,1))] (findAllReferences (loc(35,36,1,1)) ast) 
