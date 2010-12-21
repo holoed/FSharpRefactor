@@ -37,6 +37,7 @@ type Pat<'a> =
 
 type Exp<'a> 
     = Var      of 'a                           // variable    
+    | LongVar of Exp<'a> list
     | Lam      of Pat<'a> list * Exp<'a>       // lambda abstraction
     | App      of Exp<'a> * Exp<'a>            // application    
     | Let      of Pat<'a> * Exp<'a> * Exp<'a>  // local definition    
@@ -51,8 +52,10 @@ and Clause<'a> = Clause of Pat<'a> * Exp<'a>
 
 type TypeDef<'a> = DisUnion of string * 'a list
 
-type Prog<'a>
+type Module<'a>
     = Exp of Exp<'a>
     | Types of TypeDef<'a> list
+    | NestedModule of string list * Module<'a> list
+    | Open of string list
     
 

@@ -68,6 +68,7 @@ let internal constToAst x =
                     | SynConst.Double x -> Ast.Lit(Ast.Literal.Float x)
                     | SynConst.Unit -> Ast.Lit(Ast.Literal.Unit)
                     | SynConst.String (x, _) -> Ast.Lit(Ast.Literal.String x)
+                    | SynConst.Char ch -> Ast.Lit(Ast.Literal.Char ch)
 
 let internal spatToAst x = 
                     match x with
@@ -90,6 +91,7 @@ and internal exprToAst x =
                     | SynExpr.Tuple(exprs, _) -> Ast.Tuple(List.map exprToAst exprs)
                     | SynExpr.Const(x, _) -> constToAst x
                     | SynExpr.Ident(id) -> Ast.Var (id.idText, mkSrcLoc id.idRange)
+                    | SynExpr.LongIdent(_, ids, _) -> Ast.LongVar (List.map (fun (id:Ident) -> Ast.Var (id.idText, mkSrcLoc id.idRange)) ids)
                     | SynExpr.App(_, x, y, _) -> Ast.App(exprToAst x, exprToAst y)
                     | SynExpr.Paren(x, _) -> exprToAst x
                     | SynExpr.Lambda(_,_,x,y,_) -> Ast.Lam(spatsToAst x, exprToAst y)
@@ -119,13 +121,15 @@ and internal typeToAst x =
                     | SynTypeDefn.TypeDefn(SynComponentInfo.ComponentInfo(_,_,_,ident,_,_,_,_) , x, _,_) -> typeRepToAst x ((List.head ident).idText)
 
 
-let internal declToAst x = 
+let rec internal declToAst x = 
                   match x with
-                  | SynModuleDecl.Let (_,xs,_) -> xs |> List.head |> bindingToAst |> Prog.Exp
-                  | SynModuleDecl.DoExpr (_,x,_) -> x |> exprToAst |> Prog.Exp
-                  | SynModuleDecl.Types (xs, _) -> xs |> List.map(fun x -> typeToAst x) |> Prog.Types
+                  | SynModuleDecl.Let (_,xs,_) -> xs |> List.head |> bindingToAst |> Ast.Module.Exp
+                  | SynModuleDecl.DoExpr (_,x,_) -> x |> exprToAst |> Ast.Module.Exp
+                  | SynModuleDecl.Types (xs, _) -> xs |> List.map(fun x -> typeToAst x) |> Ast.Module.Types
+                  | SynModuleDecl.NestedModule (SynComponentInfo.ComponentInfo(_,_,_,longId,_,_,_,_), xs, _, _) -> Ast.NestedModule (List.map (fun (x:Ident) -> x.idText) longId, declsToAst (Seq.toList xs))
+                  | SynModuleDecl.Open (xs, _) -> Ast.Open (List.map (fun (x:Ident) -> x.idText) xs)
 
-let rec internal declsToAst xs = List.map (fun x -> declToAst x) xs
+and internal declsToAst xs = List.map (fun x -> declToAst x) xs
 
 let parseToAst sourceFiles = sourceFiles |> parseFiles |> List.map (fun x -> x |> getDecls |> declsToAst)
 
