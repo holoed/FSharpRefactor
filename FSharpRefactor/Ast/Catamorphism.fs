@@ -15,10 +15,12 @@ open Ast
 open StateMonad
 open ContinuationMonad
      
-let foldExpState varF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF decl =
+let foldExpState varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF decl =
   let rec LoopExp e =
           cont {  match e with
                   | Var x -> return state { return! varF x }
+                  | LongVar xs -> let! xsAcc = mmap (fun x -> LoopExp x) xs
+                                  return state { return! longVarF xsAcc } 
                   | Lam (x, body) -> let! bodyAcc = LoopExp body
                                      return  state { return! (lamF x bodyAcc) }
                   | App (l, r) -> let! lAcc = LoopExp l
@@ -55,7 +57,10 @@ let foldExpState varF lamF appF letF litF tupleF listF expF typesF unionF matchF
                   | Exp x -> let! x' = LoopExp x
                              return state { return! (expF x') } 
                   | Types xs -> let! xsAcc = mmap (fun x -> LoopTypes x) xs
-                                return state { return! typesF xsAcc } }
+                                return state { return! typesF xsAcc } 
+                  | NestedModule (n, xs) ->  let! xsAcc = mmap (fun x -> LoopDecl x) xs
+                                             return state { return! moduleF n xsAcc } 
+                  | Open s -> return state { return! openF s } }
   LoopDecl decl (fun x -> x)
 
 let foldPatState varF appF litF tupleF wildF pat = 
@@ -82,8 +87,10 @@ let foldPat varF appF litF tupleF wildF pat =
                                      (fun () -> state { return wildF () }) pat) ()
                                       
 
-let foldExp varF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF decl =       
+let foldExp varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF decl =       
      StateMonad.execute (foldExpState  (fun x -> state { return varF x })
+                                       (fun xs -> state { let! xs' = StateMonad.mmap (fun x -> state { return! x }) xs
+                                                          return longVarF xs' })
                                        (fun ps b -> state { let! b' = b
                                                             return lamF ps b' })
                                        (fun x y -> state { let! x' = x
@@ -111,7 +118,10 @@ let foldExp varF lamF appF letF litF tupleF listF expF typesF unionF matchF clau
                                                                let! e2' = e2
                                                                return forEachF p e1' e2' })
                                        (fun e -> state { let! e' = e  
-                                                         return yieldOrRetF e' }) decl) ()
+                                                         return yieldOrRetF e' })
+                                       (fun n es -> state { let! es' = StateMonad.mmap (fun e -> state { return! e }) es
+                                                            return moduleF n es' })
+                                       (fun s -> state { return openF s })  decl) ()
                               
                                 
 

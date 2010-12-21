@@ -21,6 +21,7 @@ let path = sprintf "%s\\%s" (Directory.GetCurrentDirectory()) "test.fs"
 
 let stripPos decl =  let foldPat p = foldPat (fun (s,l) -> PVar s) (fun l r -> PApp(l,r)) (fun x -> PLit x) (fun xs -> PTuple xs) (fun () -> PWild) p
                      foldExp (fun (s, l) -> Var s) 
+                             (fun xs -> LongVar xs)
                              (fun ps b -> Lam(List.map (fun p -> foldPat p) ps, b)) 
                              (fun x y -> App (x, y))
                              (fun p e1 e2 -> Let (foldPat p, e1, e2))
@@ -34,6 +35,8 @@ let stripPos decl =  let foldPat p = foldPat (fun (s,l) -> PVar s) (fun l r -> P
                              (fun p e -> Clause(foldPat p, e))
                              (fun p e1 e2 -> ForEach (foldPat p, e1, e2))
                              (fun e -> YieldOrReturn e)
+                             (fun n ms -> NestedModule (n,ms))
+                             (fun s -> Open s)
                              decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
@@ -48,6 +51,8 @@ let parse s = s |> parseWithPosDecl |> stripAllPos |> List.map (fun (Exp x) -> x
 let parseWithPos s = s |> parseWithPosDecl |> List.map (fun (Exp x) -> x)
 
 let parseTypes s = s |> parseWithPosDecl |> stripAllPos |> List.map (fun (Types xs) -> xs)
+
+let parseModule s = s |> parseWithPosDecl |> stripAllPos
 
 let loc (cs,ce,ls,le) = { srcFilename = path; srcLine = { startLine = ls; endLine = le }; srcColumn = { startColumn = cs; endColumn = ce } }
 
@@ -128,6 +133,11 @@ type CompilerToAstTests() =
         Assert.IsTrue([(Lit (Float 0.05))] = parse "0.05")
         Assert.IsTrue([(Lit (Float -12.5))] = parse "-12.5")
         Assert.IsTrue([(Lit (Float 2.0015))] = parse "2.0015")
+
+    [<Test>]
+    member this.Char() =
+        Assert.IsTrue([(Lit (Char 'f'))] = parse "'f'")
+        Assert.IsTrue([(Lit (Char 'g'))] = parse "'g'")
 
     [<Test>]
     member this.Lambdas() =
@@ -265,3 +275,20 @@ type CompilerToAstTests() =
     [<Test>]
     member this.SimpleSeqComprehensionWithForIn() =
         AssertAreEqual [Let(PVar "xs", App (Var "seq",ForEach(PVar "i", App (App (Var "op_Range",Lit (Integer 1)), Lit (Integer 5)), YieldOrReturn (Var "i"))), Lit Unit)] (parse "let xs = seq { for i in 1..5 do yield i }")
+
+    [<Test>]
+    member this.OpenModule() = 
+        AssertAreEqual [Open ["System"]] (parseModule "open System")
+
+    [<Test>]
+    member this.OpenModules() = 
+        AssertAreEqual [Open ["System"]; Open ["System";"IO"]] (parseModule "open System\nopen System.IO")
+
+    [<Test>]
+    member this.ModuleQualifiedIdentifier() =
+        AssertAreEqual [Let(PVar "xs", App (LongVar [Var "List"; Var "head"],App (App (Var "op_Range",Lit (Integer 1)),Lit (Integer 5))), Lit Unit)] (parse "let xs = List.head [1..5]")
+
+    [<Test>]
+    member this.NestedModule() =
+        AssertAreEqual [NestedModule (["MyModule"], [Exp (Let (PVar "x",Lit (Integer 42),Lit Unit))])]  (parseModule "module MyModule = let x = 42")
+        
