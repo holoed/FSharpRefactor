@@ -221,3 +221,11 @@ type ASTAnalysisTests() =
     member this.``Find definition of y given its usage in sample 13`` () =
         let ast = parseWithPosDecl sample13
         AssertAreEqual [Var ("y", loc(35,36,1,1));Var ("y", loc(10,11,1,1))] (findAllReferences (loc(35,36,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find usages of f given its definition when LetRec and when is only Let`` () =
+        let ast    = parseWithPosDecl "let f x = f x"
+        let astRec = parseWithPosDecl "let rec f x = f x"
+        AssertAreEqual [Var ("f", loc(4,5,1,1))] (findAllReferences (loc(4,5,1,1)) ast)
+        AssertAreEqual [Var ("f", loc(14,15,1,1));Var ("f", loc(8,9,1,1))] (findAllReferences (loc(8,9,1,1)) astRec)
+

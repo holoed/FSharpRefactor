@@ -24,7 +24,7 @@ let stripPos decl =  let foldPat p = foldPat (fun (s,l) -> PVar s) (fun l r -> P
                              (fun xs -> LongVar xs)
                              (fun ps b -> Lam(List.map (fun p -> foldPat p) ps, b)) 
                              (fun x y -> App (x, y))
-                             (fun p e1 e2 -> Let (foldPat p, e1, e2))
+                             (fun isRec p e1 e2 -> Let(isRec, foldPat p, e1, e2))
                              (fun x -> Lit x)
                              (fun xs -> Tuple xs)
                              (fun xs -> List xs)
@@ -71,14 +71,14 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.SimpleDecls() =        
-        Assert.IsTrue ([Let(PVar "x", Lit(Integer 42), Lit(Unit))] = parse "let x = 42")
-        Assert.IsTrue ([Let(PVar "x", Lit(Integer 42), Lit(Unit)); Let(PVar "x", Lit(Integer 24), Lit(Unit))] = parse "let x = 42\nlet x = 24")
+        Assert.IsTrue ([Let(false,PVar "x", Lit(Integer 42), Lit(Unit))] = parse "let x = 42")
+        Assert.IsTrue ([Let(false,PVar "x", Lit(Integer 42), Lit(Unit)); Let(false,PVar "x", Lit(Integer 24), Lit(Unit))] = parse "let x = 42\nlet x = 24")
 
     [<Test>]
     member this.FunctionsDecls() =        
-        Assert.IsTrue ([Let(PApp(PVar "f", PVar "x"), Var "x", Lit(Unit)) ] = parse "let f x = x")
-        Assert.IsTrue ([Let(PApp(PApp(PVar "f", PVar "x"), PVar "y"), Var "y", Lit(Unit)) ] = parse "let f x y = y")        
-        Assert.IsTrue ([Let(PApp(PApp(PApp(PVar "f", PVar "x"), PVar "y"), PVar "z"), Var "z", Lit(Unit)) ] = parse "let f x y z = z")
+        Assert.IsTrue ([Let(false,PApp(PVar "f", PVar "x"), Var "x", Lit(Unit)) ] = parse "let f x = x")
+        Assert.IsTrue ([Let(false,PApp(PApp(PVar "f", PVar "x"), PVar "y"), Var "y", Lit(Unit)) ] = parse "let f x y = y")        
+        Assert.IsTrue ([Let(false,PApp(PApp(PApp(PVar "f", PVar "x"), PVar "y"), PVar "z"), Var "z", Lit(Unit)) ] = parse "let f x y z = z")
    
     [<Test>]
     member this.NestedDecls() =
@@ -86,7 +86,7 @@ type CompilerToAstTests() =
        let ret = parse ("let x = let y = 12  \n" +
                         "        let z = 21  \n" +       
                         "        z" )
-       Assert.IsTrue ([Let(PVar "x", Let (PVar "y",Lit (Integer 12),Let (PVar "z",Lit (Integer 21),Var "z")),  Lit Unit)] = ret)
+       Assert.IsTrue ([Let(false,PVar "x", Let(false,PVar "y",Lit (Integer 12),Let(false,PVar "z",Lit (Integer 21),Var "z")),  Lit Unit)] = ret)
         
     [<Test>]
     member this.NestedDeclsVsIn() =
@@ -122,7 +122,7 @@ type CompilerToAstTests() =
     [<Test>]
     member this.Currying() = 
         let ret = parse "let squares = map square numbers"
-        Assert.IsTrue ([(Let (PVar "squares", App (App(Var "map", Var "square"), Var "numbers"),  Lit Unit))] = ret)
+        Assert.IsTrue ([(Let(false,PVar "squares", App (App(Var "map", Var "square"), Var "numbers"),  Lit Unit))] = ret)
 
     [<Test>]
     member this.Integer() =
@@ -153,10 +153,10 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.OffSideLocalDefinitions2() =
-        let k = [Let (PVar "z", 
-                                Let(PVar "x", 
+        let k = [Let(false,PVar "z", 
+                                Let(false,PVar "x", 
                                     Lit(Integer 12), 
-                                    Let(PVar "y", 
+                                    Let(false,PVar "y", 
                                         Lit(Integer 32), 
                                         App(App (Var "op_Addition", Var "x"), Var "y"))), 
                                 Lit(Unit))]
@@ -181,12 +181,12 @@ type CompilerToAstTests() =
                        "    (p2 - p1) / 0.1           ")
                            
         let y = [Let
-                   (PApp (PApp (PVar "computeDerivative",PVar "f"),PVar "x"),
+                   (false,PApp (PApp (PVar "computeDerivative",PVar "f"),PVar "x"),
                     Let
-                      (PVar "p1",
+                      (false, PVar "p1",
                        App (Var "f",App (App (Var "op_Subtraction",Var "x"),Lit (Float 0.05))),
                        Let
-                         (PVar "p2",
+                         (false, PVar "p2",
                           App (Var "f",App (App (Var "op_Addition",Var "x"),Lit (Float 0.05))),
                           App
                             (App
@@ -198,15 +198,15 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.SimpleDeclsWithPos() =        
-        AssertAreEqual [Let(PVar ("x", loc (4,5,1,1)), Lit(Integer 42), Lit(Unit))]  (parseWithPos "let x = 42")
-        AssertAreEqual [Let(PVar ("x", loc (4,5,1,1)), Lit(Integer 42), Lit(Unit)); Let(PVar ("x", loc (4,5,2,2)), Lit(Integer 24), Lit(Unit))] (parseWithPos "let x = 42\nlet x = 24")
+        AssertAreEqual [Let(false,PVar ("x", loc (4,5,1,1)), Lit(Integer 42), Lit(Unit))]  (parseWithPos "let x = 42")
+        AssertAreEqual [Let(false,PVar ("x", loc (4,5,1,1)), Lit(Integer 42), Lit(Unit)); Let(false,PVar ("x", loc (4,5,2,2)), Lit(Integer 24), Lit(Unit))] (parseWithPos "let x = 42\nlet x = 24")
 
        
     [<Test>]
     member this.FunctionsDeclsWithPos() =        
-        AssertAreEqual [Let(PApp(PVar ("f", loc (4,5,1,1)), PVar ("x", loc (6,7,1,1))), Var ("x", loc (10,11,1,1)), Lit(Unit)) ]  (parseWithPos "let f x = x")
-        AssertAreEqual [Let(PApp(PApp(PVar ("f", loc (4,5,1,1)), PVar ("x", loc (6,7,1,1))), PVar ("y", loc (8,9,1,1))), Var ("y", loc (12,13,1,1)), Lit(Unit)) ] (parseWithPos "let f x y = y")        
-        AssertAreEqual [Let(PApp(PApp(PApp(PVar ("f", loc (4,5,1,1)), PVar ("x", loc (6,7,1,1))), PVar ("y", loc (8,9,1,1))), PVar ("z", loc (10,11,1,1))), Var ("z", loc (14,15,1,1)), Lit(Unit)) ] (parseWithPos "let f x y z = z")
+        AssertAreEqual [Let(false,PApp(PVar ("f", loc (4,5,1,1)), PVar ("x", loc (6,7,1,1))), Var ("x", loc (10,11,1,1)), Lit(Unit)) ]  (parseWithPos "let f x = x")
+        AssertAreEqual [Let(false,PApp(PApp(PVar ("f", loc (4,5,1,1)), PVar ("x", loc (6,7,1,1))), PVar ("y", loc (8,9,1,1))), Var ("y", loc (12,13,1,1)), Lit(Unit)) ] (parseWithPos "let f x y = y")        
+        AssertAreEqual [Let(false,PApp(PApp(PApp(PVar ("f", loc (4,5,1,1)), PVar ("x", loc (6,7,1,1))), PVar ("y", loc (8,9,1,1))), PVar ("z", loc (10,11,1,1))), Var ("z", loc (14,15,1,1)), Lit(Unit)) ] (parseWithPos "let f x y z = z")
         
     [<Test>]
     member this.OffSideLocalDefinitionWithPos() =
@@ -217,12 +217,12 @@ type CompilerToAstTests() =
                               "    (p2 - p1) / 0.1           ")
                            
         let y = [Let
-                   (PApp (PApp (PVar ("computeDerivative", loc (4,21,1,1)),PVar ("f", loc (22,23,1,1))),PVar ("x", loc (24,25,1,1))),
+                   (false, PApp (PApp (PVar ("computeDerivative", loc (4,21,1,1)),PVar ("f", loc (22,23,1,1))),PVar ("x", loc (24,25,1,1))),
                     Let
-                      (PVar ("p1", loc (8,10,2,2)),
+                      (false, PVar ("p1", loc (8,10,2,2)),
                        App (Var ("f", loc (13,14,2,2)),App (App (Var ("op_Subtraction", loc (18,19,2,2)),Var ("x", loc (16,17,2,2))),Lit (Float 0.05))),
                        Let
-                         (PVar ("p2", loc (8,10,3,3)),
+                         (false, PVar ("p2", loc (8,10,3,3)),
                           App (Var ("f", loc (13,14,3,3)),App (App (Var ("op_Addition", loc (18,19,3,3)),Var ("x", loc (16,17,3,3))),Lit (Float 0.05))),
                           App
                             (App
@@ -234,19 +234,19 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.Tuples() = 
-       AssertAreEqual [Let(PVar "x", Tuple [Lit(Integer 42);Lit(Integer 24)], Lit(Unit))]  (parse "let x = (42, 24)")
-       AssertAreEqual [Let(PVar "x", Tuple [Lit(Integer 42);Tuple [Lit(String "Hello"); Var "y"]], Lit(Unit))]  (parse "let x = (42, (\"Hello\", y))")
+       AssertAreEqual [Let(false,PVar "x", Tuple [Lit(Integer 42);Lit(Integer 24)], Lit(Unit))]  (parse "let x = (42, 24)")
+       AssertAreEqual [Let(false,PVar "x", Tuple [Lit(Integer 42);Tuple [Lit(String "Hello"); Var "y"]], Lit(Unit))]  (parse "let x = (42, (\"Hello\", y))")
 
     [<Test>]
     member this.Lists() = 
-       AssertAreEqual [Let(PVar "x", List [Lit(Integer 42);Lit(Integer 24)], Lit(Unit))]  (parse "let x = [42; 24]")
-       AssertAreEqual [Let(PVar "x", List [Lit(Integer 42); Var "y"], Lit(Unit))]  (parse "let x = [42; y]")
-       AssertAreEqual [Let(PVar "x", List [Lit(Integer 42); List[Var "y"; Var "z"]], Lit(Unit))]  (parse "let x = [42; y; z]")
+       AssertAreEqual [Let(false,PVar "x", List [Lit(Integer 42);Lit(Integer 24)], Lit(Unit))]  (parse "let x = [42; 24]")
+       AssertAreEqual [Let(false,PVar "x", List [Lit(Integer 42); Var "y"], Lit(Unit))]  (parse "let x = [42; y]")
+       AssertAreEqual [Let(false,PVar "x", List [Lit(Integer 42); List[Var "y"; Var "z"]], Lit(Unit))]  (parse "let x = [42; y; z]")
 
     [<Test>]
     member this.OptionType() =
-        AssertAreEqual [Let(PVar "x", App (Var "Some", Lit(Integer 42)), Lit(Unit))]  (parse "let x = Some 42")
-        AssertAreEqual [Let(PVar "x", Var "None", Lit(Unit))]  (parse "let x = None")
+        AssertAreEqual [Let(false,PVar "x", App (Var "Some", Lit(Integer 42)), Lit(Unit))]  (parse "let x = Some 42")
+        AssertAreEqual [Let(false,PVar "x", Var "None", Lit(Unit))]  (parse "let x = None")
          
     [<Test>]
     member this.DiscriminatedUnion() =
@@ -255,27 +255,27 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.TuplePattern() =
-        AssertAreEqual [Let(PApp(PVar "f", PTuple [PVar "x"; PVar "y"]), Var "x", Lit(Unit))]  (parse "let f (x,y) = x")
+        AssertAreEqual [Let(false,PApp(PVar "f", PTuple [PVar "x"; PVar "y"]), Var "x", Lit(Unit))]  (parse "let f (x,y) = x")
 
     [<Test>]
     member this.WildPattern() =
-        AssertAreEqual [Let(PWild, Var "x", Lit(Unit))]  (parse "let _ = x")
+        AssertAreEqual [Let(false,PWild, Var "x", Lit(Unit))]  (parse "let _ = x")
 
     [<Test>]
     member this.SimplePatternMatching() =
-        AssertAreEqual [Let(PApp(PVar "f", PVar "x"), Match(Var "x", [Clause(PLit(Bool(true)), Lit(Integer 42))]), Lit(Unit))]  (parse "let f x = match x with True -> 42")
+        AssertAreEqual [Let(false,PApp(PVar "f", PVar "x"), Match(Var "x", [Clause(PLit(Bool(true)), Lit(Integer 42))]), Lit(Unit))]  (parse "let f x = match x with True -> 42")
 
     [<Test>]
     member this.SimplePatternMatchingWithTuplePattern() =
-        AssertAreEqual [Let(PApp(PVar "f", PVar "p"), Match(Var "p", [Clause(PTuple [PVar "x"; PVar "y"], Var "x")]), Lit(Unit))]  (parse "let f p = match p with (x,y) -> x")
+        AssertAreEqual [Let(false,PApp(PVar "f", PVar "p"), Match(Var "p", [Clause(PTuple [PVar "x"; PVar "y"], Var "x")]), Lit(Unit))]  (parse "let f p = match p with (x,y) -> x")
 
     [<Test>]
     member this.SimpleSeqComprehension() =        
-        AssertAreEqual [Let(PVar "xs", App (Var "seq",App (App (Var "op_Range",Lit (Integer 1)),Lit (Integer 10))), Lit Unit)] (parse "let xs = seq { 1..10 }")
+        AssertAreEqual [Let(false,PVar "xs", App (Var "seq",App (App (Var "op_Range",Lit (Integer 1)),Lit (Integer 10))), Lit Unit)] (parse "let xs = seq { 1..10 }")
 
     [<Test>]
     member this.SimpleSeqComprehensionWithForIn() =
-        AssertAreEqual [Let(PVar "xs", App (Var "seq",ForEach(PVar "i", App (App (Var "op_Range",Lit (Integer 1)), Lit (Integer 5)), YieldOrReturn (Var "i"))), Lit Unit)] (parse "let xs = seq { for i in 1..5 do yield i }")
+        AssertAreEqual [Let(false,PVar "xs", App (Var "seq",ForEach(PVar "i", App (App (Var "op_Range",Lit (Integer 1)), Lit (Integer 5)), YieldOrReturn (Var "i"))), Lit Unit)] (parse "let xs = seq { for i in 1..5 do yield i }")
 
     [<Test>]
     member this.OpenModule() = 
@@ -287,14 +287,20 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.ModuleQualifiedIdentifier() =
-        AssertAreEqual [Let(PVar "xs", App (LongVar [Var "List"; Var "head"],App (App (Var "op_Range",Lit (Integer 1)),Lit (Integer 5))), Lit Unit)] (parse "let xs = List.head [1..5]")
+        AssertAreEqual [Let(false,PVar "xs", App (LongVar [Var "List"; Var "head"],App (App (Var "op_Range",Lit (Integer 1)),Lit (Integer 5))), Lit Unit)] (parse "let xs = List.head [1..5]")
 
     [<Test>]
     member this.NestedModule() =
-        AssertAreEqual [NestedModule (["MyModule"], [Exp (Let (PVar "x",Lit (Integer 42),Lit Unit))])]  (parseModule "module MyModule = let x = 42")
+        AssertAreEqual [NestedModule (["MyModule"], [Exp (Let(false,PVar "x",Lit (Integer 42),Lit Unit))])]  (parseModule "module MyModule = let x = 42")
 
     [<Test>]
     member this.IfThenElse() =
         AssertAreEqual 
-            [Let(PApp(PVar "fac", PVar "n"), IfThenElse(App(App (Var "op_Equality", Var "n"), Lit(Integer 0)), Lit(Integer 1), Some (App(App( Var "op_Multiply", Var "n"), App (Var "fac", App (App (Var "op_Subtraction",Var "n"),Lit (Integer 1)))))), Lit(Unit))]  
+            [Let(true,PApp(PVar "fac", PVar "n"), IfThenElse(App(App (Var "op_Equality", Var "n"), Lit(Integer 0)), Lit(Integer 1), Some (App(App( Var "op_Multiply", Var "n"), App (Var "fac", App (App (Var "op_Subtraction",Var "n"),Lit (Integer 1)))))), Lit(Unit))]  
             (parse "let rec fac n = if n = 0 then 1 else n * fac (n - 1)")
+
+    [<Test>]
+    member this.LetRec() =
+        let ast = parse "let rec f x = f x"
+        AssertAreEqual [Let(true, PApp(PVar "f", PVar "x"), App(Var "f", Var "x"),Lit Unit)] (parse "let rec f x = f x")
+        AssertAreEqual [Let(false, PApp(PVar "f", PVar "x"), App(Var "f", Var "x"),Lit Unit)] (parse "let f x = f x")

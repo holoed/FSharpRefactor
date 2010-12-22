@@ -95,15 +95,15 @@ and internal exprToAst x =
                     | SynExpr.App(_, x, y, _) -> Ast.App(exprToAst x, exprToAst y)
                     | SynExpr.Paren(x, _) -> exprToAst x
                     | SynExpr.Lambda(_,_,x,y,_) -> Ast.Lam(spatsToAst x, exprToAst y)
-                    | SynExpr.LetOrUse (_,_,xs,x,_) -> let (Let(j, k, _)) = bindingToAst (xs.Head)
-                                                       Let (j, k, x |> exprToAst)
+                    | SynExpr.LetOrUse (isRec,_,xs,x,_) -> let (Let(r, j, k, _)) = bindingToAst isRec (xs.Head)
+                                                           Let (r, j, k, x |> exprToAst)
                     | SynExpr.ForEach (_,_,pat,e1,e2,_) -> Ast.ForEach (patToAst pat, exprToAst e1, exprToAst e2)
                     | SynExpr.YieldOrReturn (_, e, _) -> Ast.YieldOrReturn (exprToAst e)
                     | SynExpr.IfThenElse (e1,e2,e3,_,_,_) -> Ast.IfThenElse (exprToAst e1, exprToAst e2, if (e3.IsSome) then Some (exprToAst (e3.Value)) else None)
 
-and internal bindingToAst x = 
+and internal bindingToAst isRec x = 
                     match x with
-                    | SynBinding.Binding(_,_,_,_,_,_,_,name,_,expr,_,_) -> Ast.Let((patToAst name), (exprToAst expr), Ast.Lit(Ast.Literal.Unit))
+                    | SynBinding.Binding(_,_,_,_,_,_,_,name,_,expr,_,_) -> Ast.Let(isRec, (patToAst name), (exprToAst expr), Ast.Lit(Ast.Literal.Unit))
 
 and internal unionCasesToAst x = 
                     match x with
@@ -124,7 +124,7 @@ and internal typeToAst x =
 
 let rec internal declToAst x = 
                   match x with
-                  | SynModuleDecl.Let (_,xs,_) -> xs |> List.head |> bindingToAst |> Ast.Module.Exp
+                  | SynModuleDecl.Let (isRec,xs,_) -> xs |> List.head |> (bindingToAst isRec) |> Ast.Module.Exp
                   | SynModuleDecl.DoExpr (_,x,_) -> x |> exprToAst |> Ast.Module.Exp
                   | SynModuleDecl.Types (xs, _) -> xs |> List.map(fun x -> typeToAst x) |> Ast.Module.Types
                   | SynModuleDecl.NestedModule (SynComponentInfo.ComponentInfo(_,_,_,longId,_,_,_,_), xs, _, _) -> Ast.NestedModule (List.map (fun (x:Ident) -> x.idText) longId, declsToAst (Seq.toList xs))

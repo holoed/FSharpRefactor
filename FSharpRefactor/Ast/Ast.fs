@@ -35,12 +35,14 @@ type Pat<'a> =
     | PTuple of Pat<'a> list
     | PWild
 
+type IsLetRec = bool
+
 type Exp<'a> 
     = Var      of 'a                           // variable    
     | LongVar of Exp<'a> list
     | Lam      of Pat<'a> list * Exp<'a>       // lambda abstraction
     | App      of Exp<'a> * Exp<'a>            // application    
-    | Let      of Pat<'a> * Exp<'a> * Exp<'a>  // local definition    
+    | Let      of IsLetRec * Pat<'a> * Exp<'a> * Exp<'a>  // local definition    
     | Lit      of Literal                      // literal 
     | Tuple    of Exp<'a> list
     | List     of Exp<'a> list

@@ -26,9 +26,9 @@ let foldExpState varF longVarF lamF appF letF litF tupleF listF expF typesF unio
                   | App (l, r) -> let! lAcc = LoopExp l
                                   let! rAcc = LoopExp r
                                   return state { return! (appF lAcc rAcc) }     
-                  | Let (p, e1, e2) -> let! e1Acc = LoopExp e1
-                                       let! e2Acc = LoopExp e2
-                                       return state { return! (letF p e1Acc e2Acc)}
+                  | Let (isRec, p, e1, e2) -> let! e1Acc = LoopExp e1
+                                              let! e2Acc = LoopExp e2
+                                              return state { return! (letF isRec p e1Acc e2Acc)}
                   | Lit x -> return state { return! (litF x)}
                 
                   | Tuple es -> let! esAcc = mmap (fun x -> LoopExp x) es
@@ -101,9 +101,9 @@ let foldExp varF longVarF lamF appF letF litF tupleF listF expF typesF unionF ma
                                        (fun x y -> state { let! x' = x
                                                            let! y' = y
                                                            return appF x' y' })
-                                       (fun p e1 e2 -> state { let! e1' = e1
-                                                               let! e2' = e2
-                                                               return letF p e1' e2' })
+                                       (fun isRec p e1 e2 -> state { let! e1' = e1
+                                                                     let! e2' = e2
+                                                                     return letF isRec p e1' e2' })
                                        (fun x -> state { return litF x })
                                        (fun es -> state { let! es' = StateMonad.mmap (fun e -> state { return! e }) es
                                                           return tupleF es' })
