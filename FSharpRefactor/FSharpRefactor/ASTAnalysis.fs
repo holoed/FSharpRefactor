@@ -95,28 +95,31 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                  (fun x y -> state { let! x' = x
                                      let! y' = y
                                      return App (x', y') })
-                 (fun p e1 e2 -> state { let flatpat = flatPat p
-                                         let boundName = List.head flatpat
-                                         let args = List.tail flatpat
-                                         match (boundName, args) with
-                                         | PVar (s,l), [] ->                                                 
-                                             let! p'  = foldPat p                                                 
-                                             let! e1' = e1       
-                                             do! enterScope (s,l)    // ----------------------------------------------------                                               
-                                             let! e2' = e2           // let x = x in x Only "let x" and "in x" refer to the same identifier.
-                                             if (e2' <> (Lit Unit)) then
-                                                do! exitScope (s,l)  // ----------------------------------------------------  
-                                             return Let (p', e1', e2') 
-                                         | PVar (sf,lf), vars ->                                                 
-                                             let! p'  = foldPat p
-                                             let! _ = mmap (fun x -> execute enterScope x) vars // ----------------------------------------------------
-                                             let! e1' = e1                                      // function variables scope (like the x in let f x = x)                                  
-                                             let! _ = mmap (fun x -> execute exitScope x) vars  // ----------------------------------------------------
-                                             do! enterScope (sf, lf)     // ----------------------------------------------------                                           
-                                             let! e2' = e2               // function name scope (like the f in let f x = x)  
-                                             if (e2' <> (Lit Unit)) then
-                                                do! exitScope (sf, lf)      // ----------------------------------------------------                               
-                                             return Let (p', e1', e2') })
+                 (fun isRec p e1 e2 -> state {   let flatpat = flatPat p
+                                                 let boundName = List.head flatpat
+                                                 let args = List.tail flatpat
+                                                 match (boundName, args) with
+                                                 | PVar (s,l), [] ->                                                 
+                                                     let! p'  = foldPat p                                                 
+                                                     let! e1' = e1       
+                                                     do! enterScope (s,l)    // ----------------------------------------------------                                               
+                                                     let! e2' = e2           // let x = x in x Only "let x" and "in x" refer to the same identifier.
+                                                     if (e2' <> (Lit Unit)) then
+                                                        do! exitScope (s,l)  // ----------------------------------------------------  
+                                                     return Let (isRec, p', e1', e2') 
+                                                 | PVar (sf,lf), vars ->                                                 
+                                                     let! p'  = foldPat p
+                                                     if isRec then 
+                                                         do! enterScope (sf, lf) 
+                                                     let! _ = mmap (fun x -> execute enterScope x) vars // ----------------------------------------------------
+                                                     let! e1' = e1                                      // function variables scope (like the x in let f x = x)                                  
+                                                     let! _ = mmap (fun x -> execute exitScope x) vars  // ----------------------------------------------------
+                                                     if (not isRec) then
+                                                         do! enterScope (sf, lf)     // ----------------------------------------------------                                           
+                                                     let! e2' = e2               // function name scope (like the f in let f x = x)  
+                                                     if (e2' <> (Lit Unit)) then
+                                                        do! exitScope (sf, lf)      // ----------------------------------------------------                               
+                                                     return Let (isRec, p', e1', e2') })
                  (fun x -> state { return Lit x })
                  (fun es -> state { let! es' = mmap (fun e -> state { return! e }) es
                                     return Tuple es' })
@@ -136,28 +139,28 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                      let! e' = e
                                      let! _ = mmap (fun x -> execute exitScope x) vars 
                                      return Clause(p, e') })
-                 (fun p e1 e2 -> state { let flatpat = flatPat p
-                                         let boundName = List.head flatpat
-                                         let args = List.tail flatpat
-                                         match (boundName, args) with
-                                         | PVar (s,l), [] ->                                                 
-                                             let! p'  = foldPat p                                                 
-                                             let! e1' = e1       
-                                             do! enterScope (s,l)    // ----------------------------------------------------                                               
-                                             let! e2' = e2           // let x = x in x Only "let x" and "in x" refer to the same identifier.
-                                             if (e2' <> (Lit Unit)) then
-                                                do! exitScope (s,l)  // ----------------------------------------------------  
-                                             return Let (p', e1', e2') 
-                                         | PVar (sf,lf), vars ->                                                 
-                                             let! p'  = foldPat p
-                                             let! _ = mmap (fun x -> execute enterScope x) vars // ----------------------------------------------------
-                                             let! e1' = e1                                      // function variables scope (like the x in let f x = x)                                  
-                                             let! _ = mmap (fun x -> execute exitScope x) vars  // ----------------------------------------------------
-                                             do! enterScope (sf, lf)     // ----------------------------------------------------                                           
-                                             let! e2' = e2               // function name scope (like the f in let f x = x)  
-                                             if (e2' <> (Lit Unit)) then
-                                                do! exitScope (sf, lf)      // ----------------------------------------------------                               
-                                             return ForEach (p', e1', e2') })
+                 (fun p e1 e2 -> state{ let flatpat = flatPat p
+                                        let boundName = List.head flatpat
+                                        let args = List.tail flatpat
+                                        match (boundName, args) with
+                                        | PVar (s,l), [] ->                                                 
+                                            let! p'  = foldPat p                                                 
+                                            let! e1' = e1       
+                                            do! enterScope (s,l)    // ----------------------------------------------------                                               
+                                            let! e2' = e2           // let x = x in x Only "let x" and "in x" refer to the same identifier.
+                                            if (e2' <> (Lit Unit)) then
+                                              do! exitScope (s,l)  // ----------------------------------------------------  
+                                            return ForEach (p', e1', e2') 
+                                        | PVar (sf,lf), vars ->                                                 
+                                            let! p'  = foldPat p
+                                            let! _ = mmap (fun x -> execute enterScope x) vars // ----------------------------------------------------
+                                            let! e1' = e1                                      // function variables scope (like the x in let f x = x)                                  
+                                            let! _ = mmap (fun x -> execute exitScope x) vars  // ----------------------------------------------------
+                                            do! enterScope (sf, lf)     // ----------------------------------------------------                                           
+                                            let! e2' = e2               // function name scope (like the f in let f x = x)  
+                                            if (e2' <> (Lit Unit)) then
+                                              do! exitScope (sf, lf)      // ----------------------------------------------------                               
+                                            return ForEach (p', e1', e2') })
                  (fun e -> state {  let! e' = e
                                     return YieldOrReturn e' })
                  (fun n ms -> state { let! ms' = mmap (fun m -> state { return! m }) ms
