@@ -19,7 +19,12 @@ open AstCatamorphisms
 
 let path = sprintf "%s\\%s" (Directory.GetCurrentDirectory()) "test.fs" 
 
-let stripPos decl =  let foldPat p = foldPat (fun (s,l) -> PVar s) (fun l r -> PApp(l,r)) (fun x -> PLit x) (fun xs -> PTuple xs) (fun () -> PWild) p
+let stripPos decl =  let foldPat p = foldPat (fun (s,l) -> PVar s) 
+                                             (fun l r -> PApp(l,r)) 
+                                             (fun x -> PLit x) 
+                                             (fun xs -> PTuple xs) 
+                                             (fun () -> PWild)
+                                             (fun xs -> PList xs) p
                      foldExp (fun (s, l) -> Var s) 
                              (fun xs -> LongVar xs)
                              (fun ps b -> Lam(List.map (fun p -> foldPat p) ps, b)) 
@@ -139,6 +144,11 @@ type CompilerToAstTests() =
     member this.Char() =
         Assert.IsTrue([(Lit (Char 'f'))] = parse "'f'")
         Assert.IsTrue([(Lit (Char 'g'))] = parse "'g'")
+
+    [<Test>]
+    member this.Bool() =
+        Assert.IsTrue([(Lit (Bool true))] = parse "true")
+        Assert.IsTrue([(Lit (Bool false))] = parse "false")
 
     [<Test>]
     member this.Lambdas() =
@@ -304,3 +314,13 @@ type CompilerToAstTests() =
         let ast = parse "let rec f x = f x"
         AssertAreEqual [Let(true, PApp(PVar "f", PVar "x"), App(Var "f", Var "x"),Lit Unit)] (parse "let rec f x = f x")
         AssertAreEqual [Let(false, PApp(PVar "f", PVar "x"), App(Var "f", Var "x"),Lit Unit)] (parse "let f x = f x")
+
+    [<Test>]
+    member this.ListInMatchPattern() =
+        AssertAreEqual [Let(false,PApp (PVar "f",PVar "p"),Match(Var "p",[Clause (PList [PVar "x"; PVar "y"],List [Var "x"; Var "y"])]), Lit Unit)] 
+                       (parse "let f p = match p with [x;y] -> [x;y]")
+
+    [<Test>]
+     member this.ListPatternInFunction() =
+        AssertAreEqual [Let(false,PApp (PVar "f", PList [PVar "x"; PVar "y"]), List [Var "x"; Var "y"], Lit Unit)] 
+                       (parse "let f [x;y] = [x;y]")

@@ -229,3 +229,10 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("f", loc(4,5,1,1))] (findAllReferences (loc(4,5,1,1)) ast)
         AssertAreEqual [Var ("f", loc(14,15,1,1));Var ("f", loc(8,9,1,1))] (findAllReferences (loc(8,9,1,1)) astRec)
 
+    [<Test>]
+    member this.``Find usages of x and y given their definition in List pattern`` () =
+        let ast = parseWithPosDecl "let f [x;y] = [x;y]"
+        AssertAreEqual [Var ("x", loc(15,16,1,1));Var ("x", loc(7,8,1,1))] (findAllReferences (loc(7,8,1,1)) ast)
+        AssertAreEqual [Var ("y", loc(17,18,1,1));Var ("y", loc(9,10,1,1))] (findAllReferences (loc(9,10,1,1)) ast)
+
+
