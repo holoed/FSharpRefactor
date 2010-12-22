@@ -68,7 +68,7 @@ let foldExpState varF longVarF lamF appF letF litF tupleF listF expF typesF unio
                   | Open s -> return state { return! openF s } }
   LoopDecl decl (fun x -> x)
 
-let foldPatState varF appF litF tupleF wildF pat = 
+let foldPatState varF appF litF tupleF wildF arrayOrListF pat = 
   let rec Loop e =
       cont {  match e with
               | PVar x -> return state { return! (varF x) }
@@ -78,10 +78,12 @@ let foldPatState varF appF litF tupleF wildF pat =
               | PLit x -> return state { return! (litF x) }
               | PTuple es -> let! esAcc = mmap (fun x -> Loop x) es
                              return state { return! (tupleF esAcc) } 
-              | PWild -> return state { return! wildF () } }
+              | PWild -> return state { return! wildF () } 
+              | PList es -> let! esAcc = mmap (fun x -> Loop x) es
+                            return state { return! (arrayOrListF esAcc) } }
   Loop pat (fun x -> x)
 
-let foldPat varF appF litF tupleF wildF pat = 
+let foldPat varF appF litF tupleF wildF arrayOrListF pat = 
     StateMonad.execute (foldPatState (fun x -> state { return varF x })
                                      (fun x y -> state { let! x' = x
                                                          let! y' = y
@@ -89,7 +91,9 @@ let foldPat varF appF litF tupleF wildF pat =
                                      (fun x -> state { return litF x })
                                      (fun es -> state { let! es' = StateMonad.mmap (fun e -> state { return! e }) es
                                                         return tupleF es' })
-                                     (fun () -> state { return wildF () }) pat) ()
+                                     (fun () -> state { return wildF () })
+                                     (fun es -> state { let! es' = StateMonad.mmap (fun e -> state { return! e }) es
+                                                        return arrayOrListF es' }) pat) ()
                                       
 
 let foldExp varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF ifThenElseF decl =       

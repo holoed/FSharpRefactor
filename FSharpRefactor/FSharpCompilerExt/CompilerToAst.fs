@@ -61,6 +61,7 @@ and internal patToAst x =
                     | SynPat.Paren(x, _) -> patToAst x
                     | SynPat.Tuple(xs, _) ->  PTuple(List.map patToAst xs)
                     | SynPat.Wild _ -> Pat.PWild
+                    | SynPat.ArrayOrList (_,xs,_) -> Ast.PList (List.map (fun x -> patToAst x) xs)
 
 let internal constToAst x =
                     match x with
@@ -69,6 +70,7 @@ let internal constToAst x =
                     | SynConst.Unit -> Ast.Lit(Ast.Literal.Unit)
                     | SynConst.String (x, _) -> Ast.Lit(Ast.Literal.String x)
                     | SynConst.Char ch -> Ast.Lit(Ast.Literal.Char ch)
+                    | SynConst.Bool b -> Ast.Lit (Ast.Literal.Bool b)
 
 let internal spatToAst x = 
                     match x with
@@ -86,6 +88,7 @@ and internal exprToAst x =
                     match x with 
                     | SynExpr.Match(_,e,cs,_,_) -> Ast.Match(exprToAst e, List.map (fun c -> clauseToAst c) cs)
                     | SynExpr.Seq(_, _, e1, e2, _) -> Ast.List [exprToAst e1; exprToAst e2]
+                    | SynExpr.ArrayOrList(_, xs, _) -> Ast.List (List.map (fun x -> exprToAst x) xs)
                     | SynExpr.CompExpr(_, _, expr, _) -> exprToAst expr
                     | SynExpr.ArrayOrListOfSeqExpr(_, expr, _) -> exprToAst expr
                     | SynExpr.Tuple(exprs, _) -> Ast.Tuple(List.map exprToAst exprs)

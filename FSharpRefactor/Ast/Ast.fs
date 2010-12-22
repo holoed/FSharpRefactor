@@ -34,6 +34,7 @@ type Pat<'a> =
     | PLit of Literal    
     | PTuple of Pat<'a> list
     | PWild
+    | PList of Pat<'a> list
 
 type IsLetRec = bool
 
