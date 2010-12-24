@@ -15,7 +15,7 @@ open Ast
 open StateMonad
 open ContinuationMonad
      
-let foldExpState varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF ifThenElseF decl =
+let foldExpState varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF ifThenElseF errorF decl =
   let rec LoopExp e =
           cont {  match e with
                   | Var x -> return state { return! varF x }
@@ -47,7 +47,8 @@ let foldExpState varF longVarF lamF appF letF litF tupleF listF expF typesF unio
                                                let! e2Acc = LoopExp e2
                                                let! e3Acc = match e3 with 
                                                             | Some e3' -> LoopExp e3'                                                            
-                                               return state { return! ifThenElseF e1Acc e2Acc (Some e3Acc) } }
+                                               return state { return! ifThenElseF e1Acc e2Acc (Some e3Acc) } 
+                  | ArbitraryAfterError -> return state { return! (errorF ()) } }
       and LoopClauses c =
                 cont { match c with
                        | Clause(p, e) ->let! eAcc = LoopExp e
@@ -59,8 +60,8 @@ let foldExpState varF longVarF lamF appF letF litF tupleF listF expF typesF unio
 
   let rec LoopDecl e = 
            cont { match e with
-                  | Exp x -> let! x' = LoopExp x
-                             return state { return! (expF x') } 
+                  | Exp xs -> let! xsAcc = mmap (fun x -> LoopExp x) xs
+                              return state { return! (expF xsAcc) } 
                   | Types xs -> let! xsAcc = mmap (fun x -> LoopTypes x) xs
                                 return state { return! typesF xsAcc } 
                   | NestedModule (n, xs) ->  let! xsAcc = mmap (fun x -> LoopDecl x) xs
@@ -96,7 +97,7 @@ let foldPat varF appF litF tupleF wildF arrayOrListF pat =
                                                         return arrayOrListF es' }) pat) ()
                                       
 
-let foldExp varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF ifThenElseF decl =       
+let foldExp varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF ifThenElseF errorF decl =       
      StateMonad.execute (foldExpState  (fun x -> state { return varF x })
                                        (fun xs -> state { let! xs' = StateMonad.mmap (fun x -> state { return! x }) xs
                                                           return longVarF xs' })
@@ -113,8 +114,8 @@ let foldExp varF longVarF lamF appF letF litF tupleF listF expF typesF unionF ma
                                                           return tupleF es' })
                                        (fun es -> state { let! es' = StateMonad.mmap (fun e -> state { return! e }) es
                                                           return listF es' })
-                                       (fun e -> state {  let! e' = e
-                                                          return expF e' })
+                                       (fun es -> state {  let! es' = StateMonad.mmap (fun e -> state { return! e }) es
+                                                           return expF es' })
                                        (fun xs -> state { let! xs' = StateMonad.mmap (fun x -> state { return! x }) xs  
                                                           return typesF xs' })
                                        (fun name cases -> state { return unionF name cases })
@@ -135,7 +136,8 @@ let foldExp varF longVarF lamF appF letF litF tupleF listF expF typesF unionF ma
                                                                 let! e2' = e2
                                                                 let! e3' = match e3 with
                                                                            | Some x -> x
-                                                                return ifThenElseF e1' e2' (Some e3') })  decl) ()
+                                                                return ifThenElseF e1' e2' (Some e3') }) 
+                                       (fun () -> state { return (errorF ()) })  decl) ()
                               
                                 
 

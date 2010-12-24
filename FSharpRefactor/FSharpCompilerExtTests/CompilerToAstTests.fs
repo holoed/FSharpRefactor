@@ -19,7 +19,8 @@ open AstCatamorphisms
 
 let path = sprintf "%s\\%s" (Directory.GetCurrentDirectory()) "test.fs" 
 
-let stripPos decl =  let foldPat p = foldPat (fun (s,l) -> PVar s) 
+let stripPos (decl:Module<'a*'b>) :Module<'a> = 
+                     let foldPat p = foldPat (fun (s,l) -> PVar s) 
                                              (fun l r -> PApp(l,r)) 
                                              (fun x -> PLit x) 
                                              (fun xs -> PTuple xs) 
@@ -33,7 +34,7 @@ let stripPos decl =  let foldPat p = foldPat (fun (s,l) -> PVar s)
                              (fun x -> Lit x)
                              (fun xs -> Tuple xs)
                              (fun xs -> List xs)
-                             (fun x -> Exp x)
+                             (fun xs -> Exp xs)
                              (fun xs -> Types xs)
                              (fun name cases -> DisUnion (name, List.map (fun (s,l) -> s) cases))
                              (fun e cs -> Match(e, cs))
@@ -43,7 +44,7 @@ let stripPos decl =  let foldPat p = foldPat (fun (s,l) -> PVar s)
                              (fun n ms -> NestedModule (n,ms))
                              (fun s -> Open s)
                              (fun e1 e2 e3 -> IfThenElse(e1, e2, e3))
-                             decl
+                             (fun () -> Ast.ArbitraryAfterError) decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
 
@@ -52,9 +53,9 @@ let parseWithPosDecl s =
         let [xs:_] = parseToAst [path]
         xs 
 
-let parse s = s |> parseWithPosDecl |> stripAllPos |> List.map (fun (Exp x) -> x)
+let parse s = s |> parseWithPosDecl |> stripAllPos |> List.map (fun (Exp xs) -> xs) |> List.concat
 
-let parseWithPos s = s |> parseWithPosDecl |> List.map (fun (Exp x) -> x)
+let parseWithPos s = s |> parseWithPosDecl |> List.map (fun (Exp xs) -> xs) |> List.concat
 
 let parseTypes s = s |> parseWithPosDecl |> stripAllPos |> List.map (fun (Types xs) -> xs)
 
@@ -76,8 +77,8 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.SimpleDecls() =        
-        Assert.IsTrue ([Let(false,PVar "x", Lit(Integer 42), Lit(Unit))] = parse "let x = 42")
-        Assert.IsTrue ([Let(false,PVar "x", Lit(Integer 42), Lit(Unit)); Let(false,PVar "x", Lit(Integer 24), Lit(Unit))] = parse "let x = 42\nlet x = 24")
+        AssertAreEqual [Let(false,PVar "x", Lit(Integer 42), Lit(Unit))] (parse "let x = 42")
+        AssertAreEqual [Let(false,PVar "x", Lit(Integer 42), Lit(Unit)); Let(false,PVar "x", Lit(Integer 24), Lit(Unit))] (parse "let x = 42\nlet x = 24")
 
     [<Test>]
     member this.FunctionsDecls() =        
@@ -301,7 +302,7 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.NestedModule() =
-        AssertAreEqual [NestedModule (["MyModule"], [Exp (Let(false,PVar "x",Lit (Integer 42),Lit Unit))])]  (parseModule "module MyModule = let x = 42")
+        AssertAreEqual [NestedModule (["MyModule"], [Exp [Let(false,PVar "x",Lit (Integer 42),Lit Unit)]])]  (parseModule "module MyModule = let x = 42")
 
     [<Test>]
     member this.IfThenElse() =
@@ -324,3 +325,7 @@ type CompilerToAstTests() =
      member this.ListPatternInFunction() =
         AssertAreEqual [Let(false,PApp (PVar "f", PList [PVar "x"; PVar "y"]), List [Var "x"; Var "y"], Lit Unit)] 
                        (parse "let f [x;y] = [x;y]")
+
+    [<Test>]
+    member this.ErrorRecovery() =
+         AssertAreEqual [Let(false, PApp(PVar "f", PVar "x"), ArbitraryAfterError, Lit Unit)] (parse "let f x = x +")
