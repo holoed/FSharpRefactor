@@ -133,8 +133,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                     return Tuple es' })
                  (fun es -> state { let! es' = mmap (fun e -> state { return! e }) es
                                     return List es' })
-                 (fun e -> state {  let! e' = e
-                                    return Exp e' })
+                 (fun es -> state {  let! es' = mmap (fun e -> state { return! e }) es
+                                     return Exp es' })
                  (fun xs -> state { let! xs' = mmap (fun x -> state { return! x }) xs
                                     return Types xs' })
                  (fun name cases -> state { let! _ = mmap (fun x -> enterScope x) cases
@@ -179,6 +179,7 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                           let! e3' = match e3 with
                                                      | Some x -> x
                                           return IfThenElse(e1', e2', Some e3') })
+                 (fun () -> state { return ArbitraryAfterError })
         exp
 
 // Exp<'a> list -> State<(OpenScopes * SymbolTable), Exp<'a> list>

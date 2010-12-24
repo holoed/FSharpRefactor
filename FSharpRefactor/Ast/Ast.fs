@@ -51,13 +51,14 @@ type Exp<'a>
     | ForEach  of Pat<'a> * Exp<'a> * Exp<'a>
     | YieldOrReturn of Exp<'a>
     | IfThenElse of Exp<'a> * Exp<'a> * Exp<'a> option
+    | ArbitraryAfterError
 
 and Clause<'a> = Clause of Pat<'a> * Exp<'a>
 
 type TypeDef<'a> = DisUnion of string * 'a list
 
 type Module<'a>
-    = Exp of Exp<'a>
+    = Exp of Exp<'a> list
     | Types of TypeDef<'a> list
     | NestedModule of string list * Module<'a> list
     | Open of string list

@@ -103,6 +103,7 @@ and internal exprToAst x =
                     | SynExpr.ForEach (_,_,pat,e1,e2,_) -> Ast.ForEach (patToAst pat, exprToAst e1, exprToAst e2)
                     | SynExpr.YieldOrReturn (_, e, _) -> Ast.YieldOrReturn (exprToAst e)
                     | SynExpr.IfThenElse (e1,e2,e3,_,_,_) -> Ast.IfThenElse (exprToAst e1, exprToAst e2, if (e3.IsSome) then Some (exprToAst (e3.Value)) else None)
+                    | SynExpr.ArbitraryAfterError _ -> Ast.ArbitraryAfterError
 
 and internal bindingToAst isRec x = 
                     match x with
@@ -127,8 +128,8 @@ and internal typeToAst x =
 
 let rec internal declToAst x = 
                   match x with
-                  | SynModuleDecl.Let (isRec,xs,_) -> xs |> List.head |> (bindingToAst isRec) |> Ast.Module.Exp
-                  | SynModuleDecl.DoExpr (_,x,_) -> x |> exprToAst |> Ast.Module.Exp
+                  | SynModuleDecl.Let (isRec,xs,_) ->  xs |> List.map (fun x -> x |> (bindingToAst isRec)) |> Ast.Module.Exp
+                  | SynModuleDecl.DoExpr (_,x,_) -> Ast.Module.Exp [x |> exprToAst] 
                   | SynModuleDecl.Types (xs, _) -> xs |> List.map(fun x -> typeToAst x) |> Ast.Module.Types
                   | SynModuleDecl.NestedModule (SynComponentInfo.ComponentInfo(_,_,_,longId,_,_,_,_), xs, _, _) -> Ast.NestedModule (List.map (fun (x:Ident) -> x.idText) longId, declsToAst (Seq.toList xs))
                   | SynModuleDecl.Open (xs, _) -> Ast.Open (List.map (fun (x:Ident) -> x.idText) xs)
