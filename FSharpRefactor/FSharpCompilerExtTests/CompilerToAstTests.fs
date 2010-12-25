@@ -45,6 +45,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                              (fun s -> Open s)
                              (fun e1 e2 e3 -> IfThenElse (e1, e2, e3))
                              (fun e1 es e3 -> DotIndexedSet (e1, es, e3))
+                             (fun e1 es -> DotIndexedGet (e1, es))
                              (fun () -> Ast.ArbitraryAfterError) decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
@@ -333,5 +334,10 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.DotIndexedSet() =
-        let ast = parse "twoDimensionalArray.[0, 1] <- 1.0"
-        AssertAreEqual [DotIndexedSet (Var "twoDimensionalArray", [Tuple [Lit (Integer 0); Lit (Integer 1)]], Lit (Float 1.0))] (parse "twoDimensionalArray.[0, 1] <- 1.0")
+        AssertAreEqual [DotIndexedSet (Var "twoDimensionalArray", [Tuple [Lit (Integer 0); Lit (Integer 1)]], Lit (Float 1.0))] 
+                       (parse "twoDimensionalArray.[0, 1] <- 1.0")
+
+    [<Test>]
+    member this.DotIndexedGet() =
+        AssertAreEqual [Let (false, PVar "x", DotIndexedGet (Var "twoDimensionalArray", [Tuple [Lit (Integer 0); Lit (Integer 1)]]), Lit Unit)] 
+                       (parse "let x = twoDimensionalArray.[0,1]")
