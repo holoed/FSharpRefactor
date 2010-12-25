@@ -183,6 +183,9 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                           let! es' = mmap (fun e -> state { return! e }) es
                                           let! e3' = e3
                                           return DotIndexedSet (e1', es', e3') })
+                 (fun e1 es -> state { let! e1' = e1
+                                       let! es' = mmap (fun e -> state { return! e }) es
+                                       return DotIndexedGet (e1', es') }) 
                  (fun () -> state { return ArbitraryAfterError })
         exp
 

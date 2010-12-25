@@ -15,7 +15,7 @@ open Ast
 open StateMonad
 open ContinuationMonad
      
-let foldExpState varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF ifThenElseF dotIndexedSetF errorF decl =
+let foldExpState varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF ifThenElseF dotIndexedSetF dotIndexedGetF errorF decl =
   let rec LoopExp e =
           cont {  match e with
                   | Var x -> return state { return! varF x }
@@ -52,6 +52,9 @@ let foldExpState varF longVarF lamF appF letF litF tupleF listF expF typesF unio
                                                   let! esAcc = mmap (fun x -> LoopExp x) es
                                                   let! e2Acc = LoopExp e3
                                                   return state { return! dotIndexedSetF e1Acc esAcc e2Acc }
+                  | DotIndexedGet (e1, es) -> let! e1Acc = LoopExp e1
+                                              let! esAcc = mmap (fun x -> LoopExp x) es
+                                              return state { return! dotIndexedGetF e1Acc esAcc }
                   | ArbitraryAfterError -> return state { return! (errorF ()) } }
       and LoopClauses c =
                 cont { match c with
@@ -101,7 +104,7 @@ let foldPat varF appF litF tupleF wildF arrayOrListF pat =
                                                         return arrayOrListF es' }) pat) ()
                                       
 
-let foldExp varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF ifThenElseF dotIndexedSetF errorF decl =       
+let foldExp varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF ifThenElseF dotIndexedSetF dotIndexedGetF errorF decl =       
      StateMonad.execute (foldExpState  (fun x -> state { return varF x })
                                        (fun xs -> state { let! xs' = StateMonad.mmap (fun x -> state { return! x }) xs
                                                           return longVarF xs' })
@@ -145,6 +148,9 @@ let foldExp varF longVarF lamF appF letF litF tupleF listF expF typesF unionF ma
                                                                 let! es' = StateMonad.mmap (fun e -> state { return! e }) es
                                                                 let! e3' = e3
                                                                 return dotIndexedSetF e1' es' e3' })
+                                       (fun e1 es -> state { let! e1' = e1
+                                                             let! es' = StateMonad.mmap (fun e -> state { return! e }) es
+                                                             return dotIndexedGetF e1' es' })
                                        (fun () -> state { return (errorF ()) })  decl) ()
                               
                                 
