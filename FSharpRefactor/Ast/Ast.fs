@@ -51,6 +51,7 @@ type Exp<'a>
     | ForEach  of Pat<'a> * Exp<'a> * Exp<'a>
     | YieldOrReturn of Exp<'a>
     | IfThenElse of Exp<'a> * Exp<'a> * Exp<'a> option
+    | DotIndexedSet of Exp<'a> * Exp<'a> list * Exp<'a>
     | ArbitraryAfterError
 
 and Clause<'a> = Clause of Pat<'a> * Exp<'a>

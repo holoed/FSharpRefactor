@@ -103,6 +103,7 @@ and internal exprToAst x =
                     | SynExpr.ForEach (_,_,pat,e1,e2,_) -> Ast.ForEach (patToAst pat, exprToAst e1, exprToAst e2)
                     | SynExpr.YieldOrReturn (_, e, _) -> Ast.YieldOrReturn (exprToAst e)
                     | SynExpr.IfThenElse (e1,e2,e3,_,_,_) -> Ast.IfThenElse (exprToAst e1, exprToAst e2, if (e3.IsSome) then Some (exprToAst (e3.Value)) else None)
+                    | SynExpr.DotIndexedSet (e1, es, e2, _, _) -> Ast.DotIndexedSet (exprToAst e1, List.map exprToAst es, exprToAst e2)
                     | SynExpr.ArbitraryAfterError _ -> Ast.ArbitraryAfterError
 
 and internal bindingToAst isRec x = 
