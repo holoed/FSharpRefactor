@@ -235,4 +235,10 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("x", loc(15,16,1,1));Var ("x", loc(7,8,1,1))] (findAllReferences (loc(7,8,1,1)) ast)
         AssertAreEqual [Var ("y", loc(17,18,1,1));Var ("y", loc(9,10,1,1))] (findAllReferences (loc(9,10,1,1)) ast)
 
+    [<Test>]
+    member this.``Find usages of x in array setter given its definition`` () =
+        let ast = parseWithPosDecl ("let x = 42              \n" + 
+                                    "myArray.[0, 1] <- x")
+        AssertAreEqual [Var ("x", loc(18,19,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc(4,5,1,1)) ast)
+
 
