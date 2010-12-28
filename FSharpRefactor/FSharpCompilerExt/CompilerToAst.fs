@@ -54,6 +54,7 @@ let rec internal buildPApp f xs =
                                
 and internal patToAst x = 
                     match x with
+                    | SynPat.Typed (pat, _, _) -> patToAst pat //TODO: Add support for Typed patterns in AST.
                     | SynPat.Named (_, x, _, _, _) -> Ast.PVar (x.idText, mkSrcLoc x.idRange)
                     | SynPat.LongIdent (x::_, _, _, ys, _, _) -> match ys with
                                                                  | [] when x.idText = "True" -> PLit(Literal.Bool(true))
@@ -78,11 +79,13 @@ let internal spatToAst x =
 
 let internal spatsToAst x = 
                     match x with
-                    | SynSimplePats.SimplePats(xs, _) -> List.map (fun x -> spatToAst x) xs
+                    | SynSimplePats.SimplePats(xs, _) -> List.map spatToAst xs
                    
 let rec internal clauseToAst c = 
                     match c with
                     | SynMatchClause.Clause(pat,_,expr,_,_) -> Ast.Clause(patToAst pat, exprToAst expr)
+
+and internal recordFieldInstToAst ((_,(x:Ident)), e) = ((x.idText, mkSrcLoc x.idRange), exprToAst e)
 
 and internal exprToAst x = 
                     match x with 
@@ -102,9 +105,10 @@ and internal exprToAst x =
                                                            Let (r, j, k, x |> exprToAst)
                     | SynExpr.ForEach (_,_,pat,e1,e2,_) -> Ast.ForEach (patToAst pat, exprToAst e1, exprToAst e2)
                     | SynExpr.YieldOrReturn (_, e, _) -> Ast.YieldOrReturn (exprToAst e)
-                    | SynExpr.IfThenElse (e1,e2,e3,_,_,_) -> Ast.IfThenElse (exprToAst e1, exprToAst e2, if (e3.IsSome) then Some (exprToAst (e3.Value)) else None)
+                    | SynExpr.IfThenElse (e1,e2,e3,_,_,_) -> Ast.IfThenElse (exprToAst e1, exprToAst e2, if (e3.IsSome) then Some (exprToAst (e3.Value)) else Option.None)
                     | SynExpr.DotIndexedSet (e1, es, e2, _, _) -> Ast.DotIndexedSet (exprToAst e1, List.map exprToAst es, exprToAst e2)
                     | SynExpr.DotIndexedGet (e1, es, _, _) -> Ast.DotIndexedGet (exprToAst e1, List.map exprToAst es)
+                    | SynExpr.Record (_,_,xs,_) -> Ast.Record (List.map recordFieldInstToAst xs)
                     | SynExpr.ArbitraryAfterError _ -> Ast.ArbitraryAfterError
 
 and internal bindingToAst isRec x = 
@@ -115,9 +119,15 @@ and internal unionCasesToAst x =
                     match x with
                     | SynUnionCase.UnionCase(_,x,_,_,_,_) -> (x.idText, mkSrcLoc x.idRange)
 
+and internal recordFieldsToAst x = 
+                    match x with
+                    | SynField.Field(_, _, identOption, _, _, _, _, _) -> Option.map (fun (x:Ident) -> (x.idText, mkSrcLoc x.idRange)) identOption
+
 and internal simpleTypeRepToAst x = 
                     match x with
-                    | SynTypeDefnSimpleRepr.Union(_, xs, _) -> fun name -> TypeDef.DisUnion (name, List.map (fun x -> unionCasesToAst x) xs)
+                    | SynTypeDefnSimpleRepr.Union (_, xs, _) -> fun name -> TypeDef.DisUnion (name, List.map unionCasesToAst xs)
+                    | SynTypeDefnSimpleRepr.Record (_, fields, _) -> fun name -> TypeDef.Record (name, List.map recordFieldsToAst fields)
+                    | SynTypeDefnSimpleRepr.None _ -> fun name -> TypeDef.None name
 
 and internal typeRepToAst x = 
                     match x with

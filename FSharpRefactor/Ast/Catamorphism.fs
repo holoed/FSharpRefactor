@@ -15,7 +15,32 @@ open Ast
 open StateMonad
 open ContinuationMonad
      
-let foldExpState varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF ifThenElseF dotIndexedSetF dotIndexedGetF errorF decl =
+let foldExpState varF 
+                 longVarF 
+                 lamF 
+                 appF 
+                 letF 
+                 litF 
+                 tupleF 
+                 listF 
+                 expF 
+                 typesF 
+                 unionF 
+                 matchF 
+                 clauseF 
+                 forEachF 
+                 yieldOrRetF 
+                 moduleF 
+                 openF 
+                 ifThenElseF 
+                 dotIndexedSetF 
+                 dotIndexedGetF 
+                 recordDefF
+                 recordInstF
+                 recordFieldInstF
+                 noneF
+                 errorF 
+                 decl =
   let rec LoopExp e =
           cont {  match e with
                   | Var x -> return state { return! varF x }
@@ -55,7 +80,14 @@ let foldExpState varF longVarF lamF appF letF litF tupleF listF expF typesF unio
                   | DotIndexedGet (e1, es) -> let! e1Acc = LoopExp e1
                                               let! esAcc = mmap (fun x -> LoopExp x) es
                                               return state { return! dotIndexedGetF e1Acc esAcc }
+                  | Exp.Record xs -> let! xsAcc = mmap (fun x -> LoopRecordInst x) xs
+                                     return state { return! recordInstF xsAcc }
                   | ArbitraryAfterError -> return state { return! (errorF ()) } }
+
+      and LoopRecordInst (n, e) = 
+                cont { let! eAcc = LoopExp e 
+                       return state { return! recordFieldInstF n eAcc } }
+                       
       and LoopClauses c =
                 cont { match c with
                        | Clause(p, e) ->let! eAcc = LoopExp e
@@ -63,7 +95,9 @@ let foldExpState varF longVarF lamF appF letF litF tupleF listF expF typesF unio
 
   let rec LoopTypes t = 
            cont { match t with
-                  | DisUnion (name, cases) -> return state { return! (unionF name cases) }  }
+                  | DisUnion (name, cases) -> return state { return! (unionF name cases) } 
+                  | Record (name, fields) -> return state { return! (recordDefF name fields) } 
+                  | None name -> return state { return! (noneF name) } }
 
   let rec LoopDecl e = 
            cont { match e with
@@ -104,7 +138,32 @@ let foldPat varF appF litF tupleF wildF arrayOrListF pat =
                                                         return arrayOrListF es' }) pat) ()
                                       
 
-let foldExp varF longVarF lamF appF letF litF tupleF listF expF typesF unionF matchF clauseF forEachF yieldOrRetF moduleF openF ifThenElseF dotIndexedSetF dotIndexedGetF errorF decl =       
+let foldExp varF 
+            longVarF 
+            lamF 
+            appF 
+            letF 
+            litF 
+            tupleF 
+            listF
+            expF 
+            typesF 
+            unionF 
+            matchF 
+            clauseF 
+            forEachF 
+            yieldOrRetF 
+            moduleF 
+            openF 
+            ifThenElseF 
+            dotIndexedSetF 
+            dotIndexedGetF 
+            recordDefF
+            recordInstF
+            recordFieldInstF
+            noneF
+            errorF 
+            decl =       
      StateMonad.execute (foldExpState  (fun x -> state { return varF x })
                                        (fun xs -> state { let! xs' = StateMonad.mmap (fun x -> state { return! x }) xs
                                                           return longVarF xs' })
@@ -151,6 +210,12 @@ let foldExp varF longVarF lamF appF letF litF tupleF listF expF typesF unionF ma
                                        (fun e1 es -> state { let! e1' = e1
                                                              let! es' = StateMonad.mmap (fun e -> state { return! e }) es
                                                              return dotIndexedGetF e1' es' })
+                                       (fun name fields -> state { return recordDefF name fields })
+                                       (fun fields -> state { let! fields' = StateMonad.mmap (fun e -> state { return! e }) fields
+                                                              return recordInstF fields' })
+                                       (fun n e -> state {  let! eAcc = e
+                                                            return recordFieldInstF n eAcc })
+                                       (fun name -> state { return noneF name })
                                        (fun () -> state { return (errorF ()) })  decl) ()
                               
                                 
