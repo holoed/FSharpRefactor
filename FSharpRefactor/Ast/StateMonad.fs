@@ -18,19 +18,12 @@ type State<'state, 'a> = State of ('state ->'a * 'state)
 let run (State f) s = f s
 
 type StateMonad() = 
-       member b.Bind(State m, f) = State (fun s -> let (v,s') = m s in
-                                                   let (State n) = f v in n s')                                                    
+       member b.Bind(State m, f) = State (fun s -> let (v,s') = m s in let (State n) = f v in n s')                                                    
        member b.Return x = State (fun s -> x, s)
-
        member b.ReturnFrom x = x
-
        member b.Zero () = State (fun s -> (), s)
-
        member b.Combine(r1, r2) = b.Bind(r1, fun () -> r2)
-
        member b.Delay f = State (fun s -> run (f()) s)
-
-
 
 let state = StateMonad()
 
@@ -56,3 +49,7 @@ let mmap f xs =
                        | [] -> return out
                      }
            MMap' (f, xs, [])
+
+let stateId x = state { return! x }
+
+let mmapId xs = mmap stateId xs
