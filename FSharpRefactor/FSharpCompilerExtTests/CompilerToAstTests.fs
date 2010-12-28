@@ -46,6 +46,10 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                              (fun e1 e2 e3 -> IfThenElse (e1, e2, e3))
                              (fun e1 es e3 -> DotIndexedSet (e1, es, e3))
                              (fun e1 es -> DotIndexedGet (e1, es))
+                             (fun name fields -> Record (name, List.map (fun x -> Option.map (fun (s,l) -> s) x) fields))
+                             (fun fields -> Exp.Record (List.map (fun ((s,l), e) -> (s,e)) fields))
+                             (fun n e -> (n, e)) 
+                             (fun name -> TypeDef.None name)
                              (fun () -> Ast.ArbitraryAfterError) decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
@@ -341,3 +345,13 @@ type CompilerToAstTests() =
     member this.DotIndexedGet() =
         AssertAreEqual [Let (false, PVar "x", DotIndexedGet (Var "twoDimensionalArray", [Tuple [Lit (Integer 0); Lit (Integer 1)]]), Lit Unit)] 
                        (parse "let x = twoDimensionalArray.[0,1]")
+
+    [<Test>]
+    member this.RecordTypeDef() =
+        let ast = parseTypes "type Point = { X : int; Y : int }" |> List.concat
+        AssertAreEqual [Record("Point", [Some "X"; Some "Y"])]  ast
+
+    [<Test>]
+    member this.RecordUsage() =
+        AssertAreEqual [Let (false, PVar "p", Exp.Record ["X", Lit(Integer 2); "Y", Lit(Integer 32)], Lit Unit)] 
+                       (parse "let p = { X = 2; Y = 32 }")

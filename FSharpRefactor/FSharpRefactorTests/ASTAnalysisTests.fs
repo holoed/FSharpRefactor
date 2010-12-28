@@ -247,4 +247,17 @@ type ASTAnalysisTests() =
                                     "let z = myArray.[0, x]")
         AssertAreEqual [Var ("x", loc(20,21,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc(4,5,1,1)) ast)
 
+    [<Test>]
+    member this.``Find usages of x and y given their definitions`` () = 
+        let ast = parseWithPosDecl ("let (x,y) = (12,42)    \n" +
+                                    "let p = (x, y) ")
+        AssertAreEqual [Var ("y", loc(12,13,2,2));Var ("y", loc(7,8,1,1))] (findAllReferences (loc (7,8,1,1)) ast)
+        AssertAreEqual [Var ("x", loc(9,10,2,2));Var ("x", loc(5,6,1,1))] (findAllReferences (loc (5,6,1,1)) ast)
 
+    [<Test>]
+    member this.``Find usages of x and y in record given their definitions`` () =
+        let ast = parseWithPosDecl ("let (x,y) = (12,42)    \n" +
+                                    "let p = { X = x; Y = y }")
+        AssertAreEqual [Var ("y", loc(21,22,2,2));Var ("y", loc(7,8,1,1))] (findAllReferences (loc (7,8,1,1)) ast)
+        AssertAreEqual [Var ("x", loc(14,15,2,2));Var ("x", loc(5,6,1,1))] (findAllReferences (loc (5,6,1,1)) ast)
+    

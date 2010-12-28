@@ -53,11 +53,15 @@ type Exp<'a>
     | IfThenElse of Exp<'a> * Exp<'a> * Exp<'a> option
     | DotIndexedSet of Exp<'a> * Exp<'a> list * Exp<'a>
     | DotIndexedGet of Exp<'a> * Exp<'a> list
+    | Record of ('a * Exp<'a>) list
     | ArbitraryAfterError
 
 and Clause<'a> = Clause of Pat<'a> * Exp<'a>
 
-type TypeDef<'a> = DisUnion of string * 'a list
+type TypeDef<'a> 
+    = DisUnion of string * 'a list
+    | Record of string * 'a option list
+    | None of string
 
 type Module<'a>
     = Exp of Exp<'a> list

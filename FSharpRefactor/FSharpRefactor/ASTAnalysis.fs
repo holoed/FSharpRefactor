@@ -103,22 +103,14 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                  (fun x y -> state { let! x' = x
                                      let! y' = y
                                      return App (x', y') })
-                 (fun isRec p e1 e2 -> state {   let flatpat = flatPat p
-                                                 let boundName = List.head flatpat
-                                                 let args = List.tail flatpat
-                                                 match (boundName, args) with
-                                                 | PVar (s,l), [] ->                                                 
-                                                     let! p'  = foldPat p                                                 
-                                                     let! e1' = e1       
-                                                     do! enterScope (s,l)    // ----------------------------------------------------                                               
-                                                     let! e2' = e2           // let x = x in x Only "let x" and "in x" refer to the same identifier.
-                                                     if (e2' <> (Lit Unit)) then
-                                                        do! exitScope (s,l)  // ----------------------------------------------------  
-                                                     return Let (isRec, p', e1', e2') 
-                                                 | PVar (sf,lf), vars ->                                                 
+                 (fun isRec p e1 e2 -> state { let flatpat = flatPat p
+                                               match p with   
+                                               | PApp(_, _) ->
+                                                     let (PVar (sf,lf)) = List.head flatpat
+                                                     let vars = List.tail flatpat                                                
                                                      let! p'  = foldPat p
                                                      if isRec then 
-                                                         do! enterScope (sf, lf) 
+                                                        do! enterScope (sf, lf) 
                                                      let! _ = mmap (fun x -> execute enterScope x) vars // ----------------------------------------------------
                                                      let! e1' = e1                                      // function variables scope (like the x in let f x = x)                                  
                                                      let! _ = mmap (fun x -> execute exitScope x) vars  // ----------------------------------------------------
@@ -127,7 +119,16 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                      let! e2' = e2               // function name scope (like the f in let f x = x)  
                                                      if (e2' <> (Lit Unit)) then
                                                         do! exitScope (sf, lf)      // ----------------------------------------------------                               
-                                                     return Let (isRec, p', e1', e2') })
+                                                     return Let (isRec, p', e1', e2') 
+                                                | _ ->
+                                                    let! p'  = foldPat p                                                 
+                                                    let! e1' = e1       
+                                                    let! _ = mmap (fun x -> execute enterScope x) flatpat                                            
+                                                    let! e2' = e2           // let x = x in x Only "let x" and "in x" refer to the same identifier.
+                                                    if (e2' <> (Lit Unit)) then
+                                                        let! _ = mmap (fun x -> execute exitScope x) flatpat  // ---------------------------------------------------- 
+                                                        do ()
+                                                    return Let (isRec, p', e1', e2') })
                  (fun x -> state { return Lit x })
                  (fun es -> state { let! es' = mmap (fun e -> state { return! e }) es
                                     return Tuple es' })
@@ -186,6 +187,12 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                  (fun e1 es -> state { let! e1' = e1
                                        let! es' = mmap (fun e -> state { return! e }) es
                                        return DotIndexedGet (e1', es') }) 
+                 (fun name fields -> state { return Record(name, fields) })
+                 (fun fields -> state { let! fields' = mmap (fun e -> state { return! e }) fields
+                                        return Exp.Record fields'})
+                 (fun n e -> state { let! eAcc = e
+                                     return (n, eAcc) })
+                 (fun name -> state { return None name })
                  (fun () -> state { return ArbitraryAfterError })
         exp
 
