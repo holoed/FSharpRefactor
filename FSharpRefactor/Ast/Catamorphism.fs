@@ -44,7 +44,7 @@ let foldExpState varF
   let rec LoopExp e =
           cont {  match e with
                   | Var x -> return state { return! varF x }
-                  | LongVar xs -> let! xsAcc = mmap (fun x -> LoopExp x) xs
+                  | LongVar xs -> let! xsAcc = mmap LoopExp xs
                                   return state { return! longVarF xsAcc } 
                   | Lam (x, body) -> let! bodyAcc = LoopExp body
                                      return  state { return! (lamF x bodyAcc) }
@@ -56,12 +56,12 @@ let foldExpState varF
                                               return state { return! (letF isRec p e1Acc e2Acc)}
                   | Lit x -> return state { return! (litF x)}
                 
-                  | Tuple es -> let! esAcc = mmap (fun x -> LoopExp x) es
+                  | Tuple es -> let! esAcc = mmap LoopExp es
                                 return state { return! (tupleF esAcc) } 
-                  | List es -> let! esAcc = mmap (fun x -> LoopExp x) es
+                  | List es -> let! esAcc = mmap LoopExp es
                                return state { return! (listF esAcc) }  
                   | Match (e, cs) -> let! eAcc = LoopExp e
-                                     let! csAcc = mmap (fun x -> LoopClauses x) cs
+                                     let! csAcc = mmap  LoopClauses cs
                                      return state { return! (matchF eAcc csAcc)  } 
                   | ForEach (p, e1, e2) -> let! e1Acc = LoopExp e1
                                            let! e2Acc = LoopExp e2
@@ -74,11 +74,11 @@ let foldExpState varF
                                                             | Some e3' -> LoopExp e3'                                                            
                                                return state { return! ifThenElseF e1Acc e2Acc (Some e3Acc) } 
                   | DotIndexedSet (e1, es, e3) -> let! e1Acc = LoopExp e1
-                                                  let! esAcc = mmap (fun x -> LoopExp x) es
+                                                  let! esAcc = mmap LoopExp es
                                                   let! e2Acc = LoopExp e3
                                                   return state { return! dotIndexedSetF e1Acc esAcc e2Acc }
                   | DotIndexedGet (e1, es) -> let! e1Acc = LoopExp e1
-                                              let! esAcc = mmap (fun x -> LoopExp x) es
+                                              let! esAcc = mmap LoopExp es
                                               return state { return! dotIndexedGetF e1Acc esAcc }
                   | Exp.Record xs -> let! xsAcc = mmap (fun x -> LoopRecordInst x) xs
                                      return state { return! recordInstF xsAcc }
@@ -101,11 +101,11 @@ let foldExpState varF
 
   let rec LoopDecl e = 
            cont { match e with
-                  | Exp xs -> let! xsAcc = mmap (fun x -> LoopExp x) xs
+                  | Exp xs -> let! xsAcc = mmap LoopExp xs
                               return state { return! (expF xsAcc) } 
-                  | Types xs -> let! xsAcc = mmap (fun x -> LoopTypes x) xs
+                  | Types xs -> let! xsAcc = mmap LoopTypes xs
                                 return state { return! typesF xsAcc } 
-                  | NestedModule (n, xs) ->  let! xsAcc = mmap (fun x -> LoopDecl x) xs
+                  | NestedModule (n, xs) ->  let! xsAcc = mmap LoopDecl xs
                                              return state { return! moduleF n xsAcc } 
                   | Open s -> return state { return! openF s } }
   LoopDecl decl (fun x -> x)
@@ -118,10 +118,10 @@ let foldPatState varF appF litF tupleF wildF arrayOrListF pat =
                                let! rAcc = Loop r
                                return state { return! (appF lAcc rAcc) }     
               | PLit x -> return state { return! (litF x) }
-              | PTuple es -> let! esAcc = mmap (fun x -> Loop x) es
+              | PTuple es -> let! esAcc = mmap Loop es
                              return state { return! (tupleF esAcc) } 
               | PWild -> return state { return! wildF () } 
-              | PList es -> let! esAcc = mmap (fun x -> Loop x) es
+              | PList es -> let! esAcc = mmap Loop es
                             return state { return! (arrayOrListF esAcc) } }
   Loop pat (fun x -> x)
 
@@ -131,10 +131,10 @@ let foldPat varF appF litF tupleF wildF arrayOrListF pat =
                                                          let! y' = y
                                                          return appF x' y' })
                                      (fun x -> state { return litF x })
-                                     (fun es -> state { let! es' = StateMonad.mmap (fun e -> state { return! e }) es
+                                     (fun es -> state { let! es' = mmapId es
                                                         return tupleF es' })
                                      (fun () -> state { return wildF () })
-                                     (fun es -> state { let! es' = StateMonad.mmap (fun e -> state { return! e }) es
+                                     (fun es -> state { let! es' = mmapId es
                                                         return arrayOrListF es' }) pat) ()
                                       
 
@@ -165,7 +165,7 @@ let foldExp varF
             errorF 
             decl =       
      StateMonad.execute (foldExpState  (fun x -> state { return varF x })
-                                       (fun xs -> state { let! xs' = StateMonad.mmap (fun x -> state { return! x }) xs
+                                       (fun xs -> state { let! xs' = mmapId xs
                                                           return longVarF xs' })
                                        (fun ps b -> state { let! b' = b
                                                             return lamF ps b' })
@@ -176,17 +176,17 @@ let foldExp varF
                                                                      let! e2' = e2
                                                                      return letF isRec p e1' e2' })
                                        (fun x -> state { return litF x })
-                                       (fun es -> state { let! es' = StateMonad.mmap (fun e -> state { return! e }) es
+                                       (fun es -> state { let! es' = mmapId es
                                                           return tupleF es' })
-                                       (fun es -> state { let! es' = StateMonad.mmap (fun e -> state { return! e }) es
+                                       (fun es -> state { let! es' = mmapId es
                                                           return listF es' })
-                                       (fun es -> state {  let! es' = StateMonad.mmap (fun e -> state { return! e }) es
+                                       (fun es -> state {  let! es' = mmapId es
                                                            return expF es' })
-                                       (fun xs -> state { let! xs' = StateMonad.mmap (fun x -> state { return! x }) xs  
+                                       (fun xs -> state { let! xs' = mmapId xs  
                                                           return typesF xs' })
                                        (fun name cases -> state { return unionF name cases })
                                        (fun e cs -> state { let! e' = e
-                                                            let! cs' = StateMonad.mmap (fun c -> state { return! c }) cs
+                                                            let! cs' = mmapId cs
                                                             return matchF e' cs'})
                                        (fun p e -> state { let! e' = e  
                                                            return clauseF p e' })
@@ -195,7 +195,7 @@ let foldExp varF
                                                                return forEachF p e1' e2' })
                                        (fun e -> state { let! e' = e  
                                                          return yieldOrRetF e' })
-                                       (fun n es -> state { let! es' = StateMonad.mmap (fun e -> state { return! e }) es
+                                       (fun n es -> state { let! es' = mmapId es
                                                             return moduleF n es' })
                                        (fun s -> state { return openF s })
                                        (fun e1 e2 e3 -> state { let! e1' = e1
@@ -204,14 +204,14 @@ let foldExp varF
                                                                            | Some x -> x
                                                                 return ifThenElseF e1' e2' (Some e3') }) 
                                        (fun e1 es e3 -> state { let! e1' = e1
-                                                                let! es' = StateMonad.mmap (fun e -> state { return! e }) es
+                                                                let! es' = mmapId es
                                                                 let! e3' = e3
                                                                 return dotIndexedSetF e1' es' e3' })
                                        (fun e1 es -> state { let! e1' = e1
-                                                             let! es' = StateMonad.mmap (fun e -> state { return! e }) es
+                                                             let! es' = mmapId es
                                                              return dotIndexedGetF e1' es' })
                                        (fun name fields -> state { return recordDefF name fields })
-                                       (fun fields -> state { let! fields' = StateMonad.mmap (fun e -> state { return! e }) fields
+                                       (fun fields -> state { let! fields' = mmapId fields
                                                               return recordInstF fields' })
                                        (fun n e -> state {  let! eAcc = e
                                                             return recordFieldInstF n eAcc })
