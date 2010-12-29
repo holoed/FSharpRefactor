@@ -43,6 +43,7 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SynModuleDeclToAst.fs" />
     <Compile Include="CompilerToAst.fs" />
   </ItemGroup>
   <ItemGroup>

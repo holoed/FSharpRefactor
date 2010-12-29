@@ -108,7 +108,7 @@ let foldExpState varF
                   | NestedModule (n, xs) ->  let! xsAcc = mmap LoopDecl xs
                                              return state { return! moduleF n xsAcc } 
                   | Open s -> return state { return! openF s } }
-  LoopDecl decl (fun x -> x)
+  LoopDecl decl id
 
 let foldPatState varF appF litF tupleF wildF arrayOrListF pat = 
   let rec Loop e =
@@ -123,7 +123,7 @@ let foldPatState varF appF litF tupleF wildF arrayOrListF pat =
               | PWild -> return state { return! wildF () } 
               | PList es -> let! esAcc = mmap Loop es
                             return state { return! (arrayOrListF esAcc) } }
-  Loop pat (fun x -> x)
+  Loop pat id
 
 let foldPat varF appF litF tupleF wildF arrayOrListF pat = 
     StateMonad.execute (foldPatState (fun x -> state { return varF x })
