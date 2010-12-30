@@ -30,6 +30,12 @@ let internal foldDecls decls =
                     let! nAcc = LoopPat name
                     let! eAcc = LoopExpr expr
                     return Ast.Let(isRec, nAcc, eAcc, Ast.Lit(Ast.Literal.Unit)) }
+    and LoopMemberBinding x = 
+        cont { match x with
+               | SynBinding.Binding(_,_,_,_,_,_,_,name,_,expr,_,_) -> 
+                    let! nAcc = LoopPat name
+                    let! eAcc = LoopExpr expr
+                    return Ast.Member(nAcc, eAcc) }
     and LoopExpr x =
          cont { match x with
                 | SynExpr.Match(_,e,cs,_,_) -> 
@@ -111,7 +117,9 @@ let internal foldDecls decls =
     and LoopSimplePat x =
         cont { match x with
                | SynSimplePat.Id(ident, _, _, _, _) -> 
-                    return PVar (ident.idText, mkSrcLoc (ident.idRange)) }
+                    return PVar (ident.idText, mkSrcLoc (ident.idRange))
+               | SynSimplePat.Typed(p,_,_) ->
+                    return! LoopSimplePat p }
     
     and LoopConst x =
         cont { match x with
@@ -128,8 +136,20 @@ let internal foldDecls decls =
     and LoopRep name x =
          cont { match x with
                 | SynTypeDefnRepr.Simple(x, _) -> 
-                        let! xAcc = LoopSimpleTypeRep name x
-                        return xAcc }
+                        return! LoopSimpleTypeRep name x
+                | SynTypeDefnRepr.ObjectModel(_,ms,_) ->
+                        let! msAcc = mmap LoopClassMember ms
+                        return Ast.Class (name, msAcc) }
+    and LoopClassMember x = 
+        cont { match x with 
+               | SynMemberDefn.ImplicitCtor (_,_,ps,_,_) -> 
+                    let! psAcc = mmap LoopSimplePat ps
+                    return ClassMember.ImplicitCtor psAcc
+               | SynMemberDefn.Member (b, _) -> 
+                   return! LoopMemberBinding b
+               | SynMemberDefn.LetBindings (es,_,_,_) ->
+                   let! esAcc = mmap (LoopBinding false) es
+                   return ClassMember.LetBindings esAcc }
     and LoopSimpleTypeRep name x =
          cont { match x with
                 | SynTypeDefnSimpleRepr.Union (_, xs, _) -> 
@@ -160,10 +180,11 @@ let internal foldDecls decls =
                     return! LoopPat pat //TODO: Add support for Typed patterns in AST.
                | SynPat.Named (_, x, _, _, _) -> 
                     return Ast.PVar (x.idText, mkSrcLoc x.idRange)
-               | SynPat.LongIdent (x::_, _, _, ys, _, _) -> 
+               | SynPat.LongIdent (x::xs, _, _, ys, _, _) -> 
                     match ys with  
                     | [] when x.idText = "True" -> return PLit(Literal.Bool(true))
-                    | _ -> return! buildPApp (Ast.PVar (x.idText, mkSrcLoc x.idRange)) (List.rev ys)
+                    | [] -> return PLongVar ((PVar(x.idText, mkSrcLoc x.idRange)) :: (List.map (fun (x:Ident) -> PVar(x.idText, mkSrcLoc x.idRange)) xs))
+                    | _ when (not ys.IsEmpty) -> return! buildPApp (Ast.PVar (x.idText, mkSrcLoc x.idRange)) (List.rev ys)
                | SynPat.Paren(x, _) -> return! LoopPat x
                | SynPat.Tuple(xs, _) ->
                     let! xsAcc = mmap LoopPat xs  
