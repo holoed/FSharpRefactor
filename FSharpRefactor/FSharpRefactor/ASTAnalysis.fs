@@ -72,6 +72,7 @@ let execute action p = foldPatState (fun (s:string,l:SrcLoc) -> state { do! acti
                                     (fun x -> state { return () })
                                     (fun xs -> state { return () }) 
                                     (fun () -> state { return () })
+                                    (fun xs -> state { return () })
                                     (fun xs -> state { return () }) p
 
 let flatPat p = foldPat (fun x -> [PVar x]) 
@@ -79,6 +80,7 @@ let flatPat p = foldPat (fun x -> [PVar x])
                         (fun x -> [PLit x]) 
                         (fun xs -> List.concat xs) 
                         (fun () -> [])
+                        (fun xs -> List.concat xs) 
                         (fun xs -> List.concat xs) p
 
 //Exp<'a> -> State<(OpenScopes * SymbolTable), Exp<'a>>
@@ -92,7 +94,9 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                      return PTuple es' })
                                  (fun () -> state { return PWild } ) 
                                  (fun es ->  state { let! es' = mmap (fun e -> state { return! e }) es
-                                                     return PList es' }) p
+                                                     return PList es' })
+                                 (fun xs -> state { let! xsAcc = mmap (fun x -> state { return! x }) xs 
+                                                    return PLongVar xsAcc }) p
     foldExpState (fun x -> state { do! addUsage x
                                    return Var x })
                  (fun xs -> state { let! xs' = mmap (fun x -> state { return! x }) xs
@@ -193,6 +197,14 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                  (fun n e -> state { let! eAcc = e
                                      return (n, eAcc) })
                  (fun name -> state { return None name })
+                 (fun n ms -> state { let! (ImplicitCtor ps) = ms.Head
+                                      let! _ = mmap (fun x -> execute enterScope x) ps
+                                      let! msAcc = mmap (fun m -> state { return! m }) (ms.Tail)
+                                      let! _ = mmap (fun x -> execute exitScope x) ps
+                                      return Class (n, msAcc) })
+                 (fun ps -> state { return ImplicitCtor ps })
+                 (fun n e -> state { let! eAcc = e
+                                     return Member(n, eAcc) })
                  (fun () -> state { return ArbitraryAfterError })
         exp
 

@@ -35,6 +35,8 @@ type Pat<'a> =
     | PTuple of Pat<'a> list
     | PWild
     | PList of Pat<'a> list
+    | PThis
+    | PLongVar of Pat<'a> list
 
 type IsLetRec = bool
 
@@ -62,6 +64,12 @@ type TypeDef<'a>
     = DisUnion of string * 'a list
     | Record of string * 'a option list
     | None of string
+    | Class of string * ClassMember<'a> list
+
+and ClassMember<'a>
+    = ImplicitCtor of Pat<'a> list
+    | Member of Pat<'a> * Exp<'a>
+    | LetBindings of Exp<'a> list
 
 type Module<'a>
     = Exp of Exp<'a> list

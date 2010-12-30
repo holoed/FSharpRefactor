@@ -25,7 +25,8 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                                              (fun x -> PLit x) 
                                              (fun xs -> PTuple xs) 
                                              (fun () -> PWild)
-                                             (fun xs -> PList xs) p
+                                             (fun xs -> PList xs)
+                                             (fun xs -> PLongVar xs) p
                      foldExp (fun (s, l) -> Var s) 
                              (fun xs -> LongVar xs)
                              (fun ps b -> Lam(List.map (fun p -> foldPat p) ps, b)) 
@@ -50,6 +51,9 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                              (fun fields -> Exp.Record (List.map (fun ((s,l), e) -> (s,e)) fields))
                              (fun n e -> (n, e)) 
                              (fun name -> TypeDef.None name)
+                             (fun n ms -> Class (n, ms))
+                             (fun ps -> Ast.ImplicitCtor (List.map foldPat ps))
+                             (fun n e -> Member (foldPat n, e))
                              (fun () -> Ast.ArbitraryAfterError) decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
@@ -355,3 +359,10 @@ type CompilerToAstTests() =
     member this.RecordUsage() =
         AssertAreEqual [Let (false, PVar "p", Exp.Record ["X", Lit(Integer 2); "Y", Lit(Integer 32)], Lit Unit)] 
                        (parse "let p = { X = 2; Y = 32 }")
+
+    [<Test>]
+    member this.ClassDefinition() =
+        let ast = parseTypes ("type Point (x:int,y:int) = \n" +
+                              "    member this.X = x      \n" +
+                              "    member this.Y = y") |> List.concat
+        AssertAreEqual [Class("Point", [ImplicitCtor [PVar "x"; PVar "y"]; Member (PLongVar [PVar "this"; PVar "X"], Var "x"); Member (PLongVar [PVar "this"; PVar "Y"], Var "y")])] ast

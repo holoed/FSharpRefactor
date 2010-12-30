@@ -39,6 +39,9 @@ let foldExpState varF
                  recordInstF
                  recordFieldInstF
                  noneF
+                 classF
+                 implicitConF
+                 memberF
                  errorF 
                  decl =
   let rec LoopExp e =
@@ -97,7 +100,16 @@ let foldExpState varF
            cont { match t with
                   | DisUnion (name, cases) -> return state { return! (unionF name cases) } 
                   | Record (name, fields) -> return state { return! (recordDefF name fields) } 
-                  | None name -> return state { return! (noneF name) } }
+                  | None name -> return state { return! (noneF name) } 
+                  | Class (name, members) -> 
+                        let! msAcc = mmap LoopClassMember members
+                        return state { return! (classF name msAcc) } }
+
+  and LoopClassMember ms =
+            cont { match ms with
+                   | ImplicitCtor ps -> return state { return! (implicitConF ps) }
+                   | Member (p, e) -> let! eAcc = LoopExp e
+                                      return state { return! (memberF p eAcc) } }
 
   let rec LoopDecl e = 
            cont { match e with
@@ -110,7 +122,7 @@ let foldExpState varF
                   | Open s -> return state { return! openF s } }
   LoopDecl decl id
 
-let foldPatState varF appF litF tupleF wildF arrayOrListF pat = 
+let foldPatState varF appF litF tupleF wildF arrayOrListF longVarF pat = 
   let rec Loop e =
       cont {  match e with
               | PVar x -> return state { return! (varF x) }
@@ -122,10 +134,12 @@ let foldPatState varF appF litF tupleF wildF arrayOrListF pat =
                              return state { return! (tupleF esAcc) } 
               | PWild -> return state { return! wildF () } 
               | PList es -> let! esAcc = mmap Loop es
-                            return state { return! (arrayOrListF esAcc) } }
+                            return state { return! (arrayOrListF esAcc) }
+              | PLongVar xs -> let! xsAcc = mmap Loop xs
+                               return state { return! (longVarF xsAcc) } }
   Loop pat id
 
-let foldPat varF appF litF tupleF wildF arrayOrListF pat = 
+let foldPat varF appF litF tupleF wildF arrayOrListF longVarF pat = 
     StateMonad.execute (foldPatState (fun x -> state { return varF x })
                                      (fun x y -> state { let! x' = x
                                                          let! y' = y
@@ -135,7 +149,9 @@ let foldPat varF appF litF tupleF wildF arrayOrListF pat =
                                                         return tupleF es' })
                                      (fun () -> state { return wildF () })
                                      (fun es -> state { let! es' = mmapId es
-                                                        return arrayOrListF es' }) pat) ()
+                                                        return arrayOrListF es' })
+                                     (fun xs -> state { let! xsAcc = mmapId xs
+                                                        return longVarF xsAcc}) pat) ()
                                       
 
 let foldExp varF 
@@ -162,6 +178,9 @@ let foldExp varF
             recordInstF
             recordFieldInstF
             noneF
+            classF
+            implicitConF
+            memberF
             errorF 
             decl =       
      StateMonad.execute (foldExpState  (fun x -> state { return varF x })
@@ -216,6 +235,11 @@ let foldExp varF
                                        (fun n e -> state {  let! eAcc = e
                                                             return recordFieldInstF n eAcc })
                                        (fun name -> state { return noneF name })
+                                       (fun n ms -> state { let! msAcc = mmapId ms
+                                                            return classF n msAcc })
+                                       (fun ps -> state { return (implicitConF ps) })
+                                       (fun n e -> state { let! eAcc = e
+                                                           return memberF n eAcc })
                                        (fun () -> state { return (errorF ()) })  decl) ()
                               
                                 

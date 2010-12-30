@@ -260,4 +260,13 @@ type ASTAnalysisTests() =
                                     "let p = { X = x; Y = y }")
         AssertAreEqual [Var ("y", loc(21,22,2,2));Var ("y", loc(7,8,1,1))] (findAllReferences (loc (7,8,1,1)) ast)
         AssertAreEqual [Var ("x", loc(14,15,2,2));Var ("x", loc(5,6,1,1))] (findAllReferences (loc (5,6,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of x and y in class members given their definition in the implicit constructor.`` () = 
+        let ast = parseWithPosDecl  ("type Point (x:int,y:int) = \n" +
+                                     "    member this.X = x      \n" +
+                                     "    member this.Y = y")
+        AssertAreEqual [Var ("x", loc(20,21,2,2));Var ("x", loc(12,13,1,1))] (findAllReferences (loc (12,13,1,1)) ast)
+
+
     
