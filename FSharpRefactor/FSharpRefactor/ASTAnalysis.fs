@@ -196,6 +196,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                         return Exp.Record fields'})
                  (fun n e -> state { let! eAcc = e
                                      return (n, eAcc) })
+                 (fun ss e -> state { let! eAcc = e
+                                     return New (LongIdent (List.map (fun s -> Ident s) ss), eAcc) })                                                
                  (fun name -> state { return None name })
                  (fun n ms -> state { let! (ImplicitCtor ps) = ms.Head
                                       let! _ = mmap (fun x -> execute enterScope x) ps

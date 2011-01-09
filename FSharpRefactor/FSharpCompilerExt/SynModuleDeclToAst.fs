@@ -17,7 +17,7 @@ let internal foldDecls decls =
                     let! xAcc = LoopExpr x
                     return Ast.Module.Exp [xAcc] 
                | SynModuleDecl.Types (xs, _) -> 
-                    let! xsAcc = mmap LoopType xs
+                    let! xsAcc = mmap LoopTypeDef xs
                     return Ast.Module.Types xsAcc
                | SynModuleDecl.NestedModule (SynComponentInfo.ComponentInfo(_,_,_,longId,_,_,_,_), xs, _, _) -> 
                     let! xsAcc = mmap LoopDecl xs
@@ -102,6 +102,10 @@ let internal foldDecls decls =
                 | SynExpr.Record (_,_,xs,_) -> 
                     let! xsAcc = mmap LoopRecordFieldInst xs
                     return Ast.Record xsAcc
+                | SynExpr.New (_,t,e,_) -> 
+                        let! tAcc = LoopType t
+                        let! eAcc = LoopExpr e
+                        return Ast.New (tAcc, eAcc)
                 | SynExpr.ArbitraryAfterError _ -> 
                     return Ast.ArbitraryAfterError }
 
@@ -129,10 +133,14 @@ let internal foldDecls decls =
                | SynConst.String (x, _) -> return Ast.Lit(Ast.Literal.String x)
                | SynConst.Char ch -> return Ast.Lit(Ast.Literal.Char ch)
                | SynConst.Bool b -> return Ast.Lit (Ast.Literal.Bool b) }
-    and LoopType x =
+    and LoopTypeDef x =
          cont { match x with
                 | SynTypeDefn.TypeDefn(SynComponentInfo.ComponentInfo(_,_,_,ident,_,_,_,_) , x, _,_) ->
                     return! LoopRep ((List.head ident).idText) x }
+    and LoopType x =
+         cont { match x with
+                | SynType.LongIdent (ident, _) ->
+                    return Ast.LongIdent (List.map (fun (id:Ident) -> Ast.Ident (id.idText, mkSrcLoc id.idRange)) ident) }
     and LoopRep name x =
          cont { match x with
                 | SynTypeDefnRepr.Simple(x, _) -> 

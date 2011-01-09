@@ -268,5 +268,12 @@ type ASTAnalysisTests() =
                                      "    member this.Y = y")
         AssertAreEqual [Var ("x", loc(20,21,2,2));Var ("x", loc(12,13,1,1))] (findAllReferences (loc (12,13,1,1)) ast)
 
+    [<Test>]
+    member this.``Find usages of x and y in object instance construction given their definitions`` () =
+        let ast = parseWithPosDecl ("let (x,y) = (12,42)    \n" +
+                                    "let p = new Point(x, y)")
+        AssertAreEqual [Var ("y", loc(21,22,2,2));Var ("y", loc(7,8,1,1))] (findAllReferences (loc (7,8,1,1)) ast)
+        AssertAreEqual [Var ("x", loc(18,19,2,2));Var ("x", loc(5,6,1,1))] (findAllReferences (loc (5,6,1,1)) ast)
+
 
     

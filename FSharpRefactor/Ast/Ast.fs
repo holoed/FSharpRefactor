@@ -56,15 +56,20 @@ type Exp<'a>
     | DotIndexedSet of Exp<'a> * Exp<'a> list * Exp<'a>
     | DotIndexedGet of Exp<'a> * Exp<'a> list
     | Record of ('a * Exp<'a>) list
+    | New of Type<'a> * Exp<'a>
     | ArbitraryAfterError
 
 and Clause<'a> = Clause of Pat<'a> * Exp<'a>
 
-type TypeDef<'a> 
+and TypeDef<'a> 
     = DisUnion of string * 'a list
     | Record of string * 'a option list
     | None of string
     | Class of string * ClassMember<'a> list
+
+and Type<'a> 
+    = Ident of 'a
+    | LongIdent of Type<'a> list
 
 and ClassMember<'a>
     = ImplicitCtor of Pat<'a> list
