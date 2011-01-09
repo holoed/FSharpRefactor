@@ -38,6 +38,7 @@ let foldExpState varF
                  recordDefF
                  recordInstF
                  recordFieldInstF
+                 newF
                  noneF
                  classF
                  implicitConF
@@ -85,7 +86,16 @@ let foldExpState varF
                                               return state { return! dotIndexedGetF e1Acc esAcc }
                   | Exp.Record xs -> let! xsAcc = mmap (fun x -> LoopRecordInst x) xs
                                      return state { return! recordInstF xsAcc }
+                  | Exp.New (s, e) -> let! sAcc = LoopTypeInst s
+                                      let! eAcc = LoopExp e
+                                      return state { return! newF sAcc eAcc }
                   | ArbitraryAfterError -> return state { return! (errorF ()) } }
+
+      and LoopTypeInst t = 
+                cont { match t with
+                       | LongIdent id -> let! idAcc = mmap LoopTypeInst id
+                                         return idAcc |> List.concat
+                       | Ident s -> return [s] }
 
       and LoopRecordInst (n, e) = 
                 cont { let! eAcc = LoopExp e 
@@ -177,6 +187,7 @@ let foldExp varF
             recordDefF
             recordInstF
             recordFieldInstF
+            newF
             noneF
             classF
             implicitConF
@@ -234,6 +245,8 @@ let foldExp varF
                                                               return recordInstF fields' })
                                        (fun n e -> state {  let! eAcc = e
                                                             return recordFieldInstF n eAcc })
+                                       (fun s e -> state { let! eAcc = e
+                                                           return newF s eAcc })
                                        (fun name -> state { return noneF name })
                                        (fun n ms -> state { let! msAcc = mmapId ms
                                                             return classF n msAcc })
