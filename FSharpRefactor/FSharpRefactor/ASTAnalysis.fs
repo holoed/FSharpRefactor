@@ -199,14 +199,17 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                  (fun ss e -> state { let! eAcc = e
                                      return New (LongIdent (List.map (fun s -> Ident s) ss), eAcc) })                                                
                  (fun name -> state { return None name })
-                 (fun n ms -> state { let! (ImplicitCtor ps) = ms.Head
-                                      let! _ = mmap (fun x -> execute enterScope x) ps
-                                      let! msAcc = mmap (fun m -> state { return! m }) (ms.Tail)
-                                      let! _ = mmap (fun x -> execute exitScope x) ps
+                 (fun n ms -> state { let! ic = mmap (fun x -> state {
+                                                       let! xAcc = x
+                                                       match xAcc with | ImplicitCtor ps -> return ps | _ -> return [] }) ms
+                                      let! _ = mmap (fun ps -> mmap (fun x -> execute enterScope x) ps) ic
+                                      let! msAcc = mmap (fun m -> state { return! m }) (if ic.IsEmpty then ms else ms.Tail)
+                                      let! _ = mmap (fun ps -> mmap (fun x -> execute exitScope x) ps) ic
                                       return Class (n, msAcc) })
                  (fun ps -> state { return ImplicitCtor ps })
                  (fun n e -> state { let! eAcc = e
                                      return Member(n, eAcc) })
+                 (fun n -> state { return AbstractSlot n })
                  (fun () -> state { return ArbitraryAfterError })
         exp
 

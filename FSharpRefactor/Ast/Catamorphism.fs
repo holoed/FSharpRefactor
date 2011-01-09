@@ -43,6 +43,7 @@ let foldExpState varF
                  classF
                  implicitConF
                  memberF
+                 abstractSlotF
                  errorF 
                  decl =
   let rec LoopExp e =
@@ -119,7 +120,8 @@ let foldExpState varF
             cont { match ms with
                    | ImplicitCtor ps -> return state { return! (implicitConF ps) }
                    | Member (p, e) -> let! eAcc = LoopExp e
-                                      return state { return! (memberF p eAcc) } }
+                                      return state { return! (memberF p eAcc) }
+                   | AbstractSlot n -> return state { return! (abstractSlotF n) } }
 
   let rec LoopDecl e = 
            cont { match e with
@@ -192,6 +194,7 @@ let foldExp varF
             classF
             implicitConF
             memberF
+            abstractSlotF
             errorF 
             decl =       
      StateMonad.execute (foldExpState  (fun x -> state { return varF x })
@@ -253,6 +256,7 @@ let foldExp varF
                                        (fun ps -> state { return (implicitConF ps) })
                                        (fun n e -> state { let! eAcc = e
                                                            return memberF n eAcc })
+                                       (fun n -> state { return abstractSlotF n })
                                        (fun () -> state { return (errorF ()) })  decl) ()
                               
                                 
