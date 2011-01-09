@@ -75,6 +75,7 @@ and ClassMember<'a>
     = ImplicitCtor of Pat<'a> list
     | Member of Pat<'a> * Exp<'a>
     | LetBindings of Exp<'a> list
+    | AbstractSlot of string
 
 type Module<'a>
     = Exp of Exp<'a> list

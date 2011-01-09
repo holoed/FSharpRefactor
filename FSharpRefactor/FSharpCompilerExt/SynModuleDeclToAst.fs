@@ -157,7 +157,9 @@ let internal foldDecls decls =
                    return! LoopMemberBinding b
                | SynMemberDefn.LetBindings (es,_,_,_) ->
                    let! esAcc = mmap (LoopBinding false) es
-                   return ClassMember.LetBindings esAcc }
+                   return ClassMember.LetBindings esAcc 
+               | SynMemberDefn.AbstractSlot(SynValSig.ValSpfn(_, ident, _, _, _, _, _, _, _, _, _),_,_) ->
+                   return ClassMember.AbstractSlot (ident.idText) }
     and LoopSimpleTypeRep name x =
          cont { match x with
                 | SynTypeDefnSimpleRepr.Union (_, xs, _) -> 

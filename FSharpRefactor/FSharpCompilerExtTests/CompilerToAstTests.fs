@@ -55,6 +55,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                              (fun n ms -> Class (n, ms))
                              (fun ps -> Ast.ImplicitCtor (List.map foldPat ps))
                              (fun n e -> Member (foldPat n, e))
+                             (fun n -> AbstractSlot n)
                              (fun () -> Ast.ArbitraryAfterError) decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
@@ -374,3 +375,13 @@ type CompilerToAstTests() =
     member this.NewObject() =
         let ast = parse "let p = new Point(12, 31)"
         AssertAreEqual [Let (false, PVar "p", Exp.New (LongIdent [Ident "Point"], Tuple [Lit(Integer 12); Lit(Integer 31)]), Lit Unit)] ast
+
+    [<Test>]
+    member this.InterfaceDefinition() =
+        let ast = parseTypes ("type IPeekPoke =  \n" +
+                              "     abstract Peek: unit -> int  \n" +
+                              "     abstract Poke: int -> unit    ") |> List.concat
+        AssertAreEqual [Class("IPeekPoke", [AbstractSlot "Peek"; 
+                                            AbstractSlot "Poke"])] ast
+
+
