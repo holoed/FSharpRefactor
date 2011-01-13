@@ -56,6 +56,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                              (fun ps -> Ast.ImplicitCtor (List.map foldPat ps))
                              (fun n e -> Member (foldPat n, e))
                              (fun n -> AbstractSlot n)
+                             (fun ms -> ObjExpr ms)
                              (fun () -> Ast.ArbitraryAfterError) decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
@@ -94,9 +95,9 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.FunctionsDecls() =        
-        Assert.IsTrue ([Let(false,PApp(PVar "f", PVar "x"), Var "x", Lit(Unit)) ] = parse "let f x = x")
-        Assert.IsTrue ([Let(false,PApp(PApp(PVar "f", PVar "x"), PVar "y"), Var "y", Lit(Unit)) ] = parse "let f x y = y")        
-        Assert.IsTrue ([Let(false,PApp(PApp(PApp(PVar "f", PVar "x"), PVar "y"), PVar "z"), Var "z", Lit(Unit)) ] = parse "let f x y z = z")
+        AssertAreEqual [Let(false,PApp(PVar "f", PVar "x"), Var "x", Lit(Unit)) ]  (parse "let f x = x")
+        AssertAreEqual [Let(false,PApp(PApp(PVar "f", PVar "x"), PVar "y"), Var "y", Lit(Unit)) ]  (parse "let f x y = y")        
+        AssertAreEqual [Let(false,PApp(PApp(PApp(PVar "f", PVar "x"), PVar "y"), PVar "z"), Var "z", Lit(Unit)) ] (parse "let f x y z = z")
    
     [<Test>]
     member this.NestedDecls() =
@@ -384,4 +385,7 @@ type CompilerToAstTests() =
         AssertAreEqual [Class("IPeekPoke", [AbstractSlot "Peek"; 
                                             AbstractSlot "Poke"])] ast
 
-
+    [<Test>]
+    member this.ObjectExpression() =
+        let ast = parse "let disposable = { new IDisposable with member this.Dispose () = () }"        
+        AssertAreEqual [Let (false, PVar "disposable", Exp.ObjExpr [Member (PApp (PLongVar [PVar "this"; PVar "Dispose"], PLit(Unit)), Lit Unit)], Lit Unit)] ast

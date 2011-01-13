@@ -27,3 +27,14 @@ let mmap f xs =
                        | [] -> return out
                     }
            MMap' (f, xs, [])
+
+
+let mfold f acc xs =
+          let rec Mfold' (f, xs', acc') = 
+               cont {
+                       match xs' with
+                       | h :: t -> let! h' = f h acc'
+                                   return! Mfold'(f, t, h')
+                       | [] -> return acc'
+                    }
+          Mfold' (f, xs, acc)

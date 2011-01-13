@@ -57,6 +57,7 @@ type Exp<'a>
     | DotIndexedGet of Exp<'a> * Exp<'a> list
     | Record of ('a * Exp<'a>) list
     | New of Type<'a> * Exp<'a>
+    | ObjExpr of ClassMember<'a> list
     | ArbitraryAfterError
 
 and Clause<'a> = Clause of Pat<'a> * Exp<'a>

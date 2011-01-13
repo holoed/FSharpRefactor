@@ -44,6 +44,7 @@ let foldExpState varF
                  implicitConF
                  memberF
                  abstractSlotF
+                 objExprF
                  errorF 
                  decl =
   let rec LoopExp e =
@@ -90,6 +91,8 @@ let foldExpState varF
                   | Exp.New (s, e) -> let! sAcc = LoopTypeInst s
                                       let! eAcc = LoopExp e
                                       return state { return! newF sAcc eAcc }
+                  | Exp.ObjExpr ms -> let! msAcc = mmap LoopClassMember ms
+                                      return state { return! (objExprF msAcc) }
                   | ArbitraryAfterError -> return state { return! (errorF ()) } }
 
       and LoopTypeInst t = 
@@ -107,21 +110,21 @@ let foldExpState varF
                        | Clause(p, e) ->let! eAcc = LoopExp e
                                         return state { return! clauseF p eAcc } }
 
-  let rec LoopTypes t = 
-           cont { match t with
-                  | DisUnion (name, cases) -> return state { return! (unionF name cases) } 
-                  | Record (name, fields) -> return state { return! (recordDefF name fields) } 
-                  | None name -> return state { return! (noneF name) } 
-                  | Class (name, members) -> 
-                        let! msAcc = mmap LoopClassMember members
-                        return state { return! (classF name msAcc) } }
+      and LoopTypes t = 
+               cont { match t with
+                      | DisUnion (name, cases) -> return state { return! (unionF name cases) } 
+                      | Record (name, fields) -> return state { return! (recordDefF name fields) } 
+                      | None name -> return state { return! (noneF name) } 
+                      | Class (name, members) -> 
+                            let! msAcc = mmap LoopClassMember members
+                            return state { return! (classF name msAcc) } }
 
-  and LoopClassMember ms =
-            cont { match ms with
-                   | ImplicitCtor ps -> return state { return! (implicitConF ps) }
-                   | Member (p, e) -> let! eAcc = LoopExp e
-                                      return state { return! (memberF p eAcc) }
-                   | AbstractSlot n -> return state { return! (abstractSlotF n) } }
+      and LoopClassMember ms =
+                cont { match ms with
+                       | ImplicitCtor ps -> return state { return! (implicitConF ps) }
+                       | Member (p, e) -> let! eAcc = LoopExp e
+                                          return state { return! (memberF p eAcc) }
+                       | AbstractSlot n -> return state { return! (abstractSlotF n) } }
 
   let rec LoopDecl e = 
            cont { match e with
@@ -195,6 +198,7 @@ let foldExp varF
             implicitConF
             memberF
             abstractSlotF
+            objExprF
             errorF 
             decl =       
      StateMonad.execute (foldExpState  (fun x -> state { return varF x })
@@ -257,6 +261,8 @@ let foldExp varF
                                        (fun n e -> state { let! eAcc = e
                                                            return memberF n eAcc })
                                        (fun n -> state { return abstractSlotF n })
+                                       (fun ms -> state { let! msAcc = mmapId ms
+                                                          return objExprF msAcc })
                                        (fun () -> state { return (errorF ()) })  decl) ()
                               
                                 

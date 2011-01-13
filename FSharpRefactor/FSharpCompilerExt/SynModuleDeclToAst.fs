@@ -106,6 +106,9 @@ let internal foldDecls decls =
                         let! tAcc = LoopType t
                         let! eAcc = LoopExpr e
                         return Ast.New (tAcc, eAcc)
+                | SynExpr.ObjExpr (t, x, bd, ims, _) ->
+                        let! bdAcc = mmap LoopMemberBinding bd
+                        return Ast.ObjExpr bdAcc
                 | SynExpr.ArbitraryAfterError _ -> 
                     return Ast.ArbitraryAfterError }
 
@@ -190,17 +193,27 @@ let internal foldDecls decls =
                     return! LoopPat pat //TODO: Add support for Typed patterns in AST.
                | SynPat.Named (_, x, _, _, _) -> 
                     return Ast.PVar (x.idText, mkSrcLoc x.idRange)
-               | SynPat.LongIdent (x::xs, _, _, ys, _, _) -> 
-                    match ys with  
-                    | [] when x.idText = "True" -> return PLit(Literal.Bool(true))
-                    | [] -> return PLongVar ((PVar(x.idText, mkSrcLoc x.idRange)) :: (List.map (fun (x:Ident) -> PVar(x.idText, mkSrcLoc x.idRange)) xs))
-                    | _ when (not ys.IsEmpty) -> return! buildPApp (Ast.PVar (x.idText, mkSrcLoc x.idRange)) (List.rev ys)
+               | SynPat.LongIdent (xs, _, _, ys, _, _) -> 
+                    let x = xs |> Seq.map (fun (x:Ident) -> PVar (x.idText, mkSrcLoc x.idRange)) 
+                               |> Seq.toList                               
+                               |> fun xs' -> match xs' with
+                                             | x'::[] -> match x' with
+                                                         | PVar ("True",_) -> PLit(Bool(true))
+                                                         | _ -> x'
+                                             | xs -> PLongVar xs
+                    return! if List.isEmpty ys then
+                                cont { return x }
+                            else
+                                buildPApp x (List.rev ys)
                | SynPat.Paren(x, _) -> return! LoopPat x
                | SynPat.Tuple(xs, _) ->
                     let! xsAcc = mmap LoopPat xs  
                     return PTuple xsAcc 
                | SynPat.Wild _ -> 
                     return Pat.PWild
+               | SynPat.Const (c, _) -> 
+                    let! (Ast.Lit lit) = LoopConst c
+                    return Pat.PLit lit
                | SynPat.ArrayOrList (_,xs,_) -> 
                     let! xsAcc = mmap LoopPat xs
                     return Ast.PList xsAcc }
