@@ -40,6 +40,11 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharpRefactor", "FSharpRef
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharpRefactorTests", "FSharpRefactorTests\FSharpRefactorTests.fsproj", "{A6CA343D-D9EA-4798-970A-AB4CBAC8EEF6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{C04CA249-9DDA-40FD-9DB6-DCEF1A95834C}"
+	ProjectSection(SolutionItems) = preProject
+		License.htm = License.htm
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 9
