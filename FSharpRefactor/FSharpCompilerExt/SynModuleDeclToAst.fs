@@ -123,6 +123,10 @@ let internal foldDecls decls =
                 | SynExpr.Do (e, _) ->
                         let! eAcc = LoopExpr e
                         return Ast.Do eAcc
+                | SynExpr.Downcast (e, t, _) ->
+                        let! eAcc = LoopExpr e
+                        let! tAcc = LoopType t
+                        return Ast.Downcast (eAcc, tAcc)
                 | SynExpr.ArbitraryAfterError _ -> 
                     return Ast.ArbitraryAfterError }
 

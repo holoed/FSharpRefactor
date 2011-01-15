@@ -46,6 +46,7 @@ let foldExpState varF
                  abstractSlotF
                  objExprF
                  doF
+                 downcastF
                  errorF 
                  decl =
   let rec LoopExp e =
@@ -96,6 +97,9 @@ let foldExpState varF
                                       return state { return! (objExprF msAcc) }
                   | Exp.Do e -> let! eAcc = LoopExp e
                                 return state { return! (doF eAcc) }
+                  | Exp.Downcast (e, t) -> let! eAcc = LoopExp e
+                                           let! tAcc = LoopTypeInst t
+                                           return state { return! downcastF eAcc tAcc }
                   | ArbitraryAfterError -> return state { return! (errorF ()) } }
 
       and LoopTypeInst t = 
@@ -203,6 +207,7 @@ let foldExp varF
             abstractSlotF
             objExprF
             doF
+            downcastF
             errorF 
             decl =       
      StateMonad.execute (foldExpState  (fun x -> state { return varF x })
@@ -269,6 +274,8 @@ let foldExp varF
                                                           return objExprF msAcc })
                                        (fun e -> state { let! eAcc = e
                                                          return doF eAcc })
+                                       (fun e t -> state { let! eAcc = e
+                                                           return downcastF eAcc t })
                                        (fun () -> state { return (errorF ()) })  decl) ()
                               
                                 
