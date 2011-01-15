@@ -192,7 +192,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                  (fun e1 es -> state { let! e1' = e1
                                        let! es' = mmap (fun e -> state { return! e }) es
                                        return DotIndexedGet (e1', es') }) 
-                 (fun name fields -> state { return Record(name, fields) })
+                 (fun name fields ms -> state { let! msAcc = mmap (fun m -> state { return! m }) ms
+                                                return Record(name, fields, msAcc) })
                  (fun fields -> state { let! fields' = mmap (fun e -> state { return! e }) fields
                                         return Exp.Record fields'})
                  (fun n e -> state { let! eAcc = e
@@ -217,6 +218,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                    return Do eAcc })
                  (fun e t -> state { let! eAcc = e
                                      return Downcast (eAcc, (LongIdent (List.map (fun s -> Ident s) t))) })
+                 (fun t ms -> state { let! msAcc= mmap (fun e -> state { return! e }) ms
+                                      return Interface (LongIdent (List.map (fun s -> Ident s) t), msAcc) })
                  (fun () -> state { return ArbitraryAfterError })
         exp
 

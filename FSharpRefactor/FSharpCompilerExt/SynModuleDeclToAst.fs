@@ -156,16 +156,16 @@ let internal foldDecls decls =
                | SynConst.Bool b -> return Ast.Lit (Ast.Literal.Bool b) }
     and LoopTypeDef x =
          cont { match x with
-                | SynTypeDefn.TypeDefn(SynComponentInfo.ComponentInfo(_,_,_,ident,_,_,_,_) , x, _,_) ->
-                    return! LoopRep ((List.head ident).idText) x }
+                | SynTypeDefn.TypeDefn(SynComponentInfo.ComponentInfo(_,_,_,ident,_,_,_,_) , x, ms,_) ->
+                    return! LoopRep ((List.head ident).idText) ms x }
     and LoopType x =
          cont { match x with
                 | SynType.LongIdent (ident, _) ->
                     return Ast.LongIdent (List.map (fun (id:Ident) -> Ast.Ident (id.idText, mkSrcLoc id.idRange)) ident) }
-    and LoopRep name x =
+    and LoopRep name ms x =
          cont { match x with
                 | SynTypeDefnRepr.Simple(x, _) -> 
-                        return! LoopSimpleTypeRep name x
+                        return! LoopSimpleTypeRep name ms x
                 | SynTypeDefnRepr.ObjectModel(_,ms,_) ->
                         let! msAcc = mmap LoopClassMember ms
                         return Ast.Class (name, msAcc) }
@@ -180,15 +180,20 @@ let internal foldDecls decls =
                    let! esAcc = mmap (LoopBinding false) es
                    return ClassMember.LetBindings esAcc 
                | SynMemberDefn.AbstractSlot(SynValSig.ValSpfn(_, ident, _, _, _, _, _, _, _, _, _),_,_) ->
-                   return ClassMember.AbstractSlot (ident.idText) }
-    and LoopSimpleTypeRep name x =
+                   return ClassMember.AbstractSlot (ident.idText)
+               | SynMemberDefn.Interface(t, Some ms, _) ->
+                   let! tAcc = LoopType t 
+                   let! msAcc = mmap LoopClassMember ms
+                   return ClassMember.Interface (tAcc, msAcc) }
+    and LoopSimpleTypeRep name ms x =
          cont { match x with
                 | SynTypeDefnSimpleRepr.Union (_, xs, _) -> 
                     let! xsAcc = mmap LoopUnionCases xs
                     return TypeDef.DisUnion (name, xsAcc)
                 | SynTypeDefnSimpleRepr.Record (_, fields, _) -> 
                     let! fieldsAcc = mmap LoopRecordFields fields
-                    return TypeDef.Record (name, fieldsAcc)
+                    let! msAcc = mmap LoopClassMember ms
+                    return TypeDef.Record (name, fieldsAcc, msAcc)
                 | SynTypeDefnSimpleRepr.None _ -> 
                     return TypeDef.None name }
     and LoopUnionCases x =

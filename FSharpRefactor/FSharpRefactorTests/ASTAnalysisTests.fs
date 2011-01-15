@@ -292,5 +292,15 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("x", loc(9,10,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
         AssertAreEqual [Var ("x", loc(9,10,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (9,10,2,2)) ast)
 
+    [<Test>]
+    member this.``Find usages of x in interface implementation give its definition or usage`` () =
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "type MyClass = \n" +
+                                    "     interface IFoo with \n" +
+                                    "          member this.Bar () = x")
+        AssertAreEqual [Var ("x", loc(31,32,4,4));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+        AssertAreEqual [Var ("x", loc(31,32,4,4));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (31,32,4,4)) ast)
+
+
 
     

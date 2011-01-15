@@ -47,6 +47,7 @@ let foldExpState varF
                  objExprF
                  doF
                  downcastF
+                 interfaceF
                  errorF 
                  decl =
   let rec LoopExp e =
@@ -120,7 +121,9 @@ let foldExpState varF
       and LoopTypes t = 
                cont { match t with
                       | DisUnion (name, cases) -> return state { return! (unionF name cases) } 
-                      | Record (name, fields) -> return state { return! (recordDefF name fields) } 
+                      | Record (name, fields, ms) -> 
+                            let! msAcc = mmap LoopClassMember ms
+                            return state { return! (recordDefF name fields msAcc) } 
                       | None name -> return state { return! (noneF name) } 
                       | Class (name, members) -> 
                             let! msAcc = mmap LoopClassMember members
@@ -131,6 +134,9 @@ let foldExpState varF
                        | ImplicitCtor ps -> return state { return! (implicitConF ps) }
                        | Member (p, e) -> let! eAcc = LoopExp e
                                           return state { return! (memberF p eAcc) }
+                       | Interface(t, ms) -> let! tAcc = LoopTypeInst t
+                                             let! msAcc = mmap LoopClassMember ms
+                                             return state { return! (interfaceF tAcc msAcc) }
                        | AbstractSlot n -> return state { return! (abstractSlotF n) } }
 
   let rec LoopDecl e = 
@@ -208,6 +214,7 @@ let foldExp varF
             objExprF
             doF
             downcastF
+            interfaceF
             errorF 
             decl =       
      StateMonad.execute (foldExpState  (fun x -> state { return varF x })
@@ -256,7 +263,8 @@ let foldExp varF
                                        (fun e1 es -> state { let! e1' = e1
                                                              let! es' = mmapId es
                                                              return dotIndexedGetF e1' es' })
-                                       (fun name fields -> state { return recordDefF name fields })
+                                       (fun name fields ms -> state { let! msAcc = mmapId ms
+                                                                      return recordDefF name fields msAcc })
                                        (fun fields -> state { let! fields' = mmapId fields
                                                               return recordInstF fields' })
                                        (fun n e -> state {  let! eAcc = e
@@ -276,6 +284,8 @@ let foldExp varF
                                                          return doF eAcc })
                                        (fun e t -> state { let! eAcc = e
                                                            return downcastF eAcc t })
+                                       (fun t ms -> state { let! msAcc = mmapId ms
+                                                            return interfaceF t msAcc })
                                        (fun () -> state { return (errorF ()) })  decl) ()
                               
                                 
