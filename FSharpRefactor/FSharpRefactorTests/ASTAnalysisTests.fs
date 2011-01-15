@@ -285,5 +285,12 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("y", loc(31,32,4,4));Var ("y", loc(7,8,1,1))] (findAllReferences (loc (7,8,1,1)) ast)
         AssertAreEqual [Var ("x", loc(31,32,3,3));Var ("x", loc(5,6,1,1))] (findAllReferences (loc (5,6,1,1)) ast)
 
+    [<Test>]
+    member this.``Find usages of x in do expression given its definition or usage`` () =
+        let ast = parseWithPosDecl ("let x = 42   \n" +
+                                    "do write x ")
+        AssertAreEqual [Var ("x", loc(9,10,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+        AssertAreEqual [Var ("x", loc(9,10,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (9,10,2,2)) ast)
+
 
     

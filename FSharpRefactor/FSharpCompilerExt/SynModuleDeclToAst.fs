@@ -120,6 +120,9 @@ let internal foldDecls decls =
                 | SynExpr.ObjExpr (t, x, bd, ims, _) ->
                         let! bdAcc = mmap LoopMemberBinding bd
                         return Ast.ObjExpr bdAcc
+                | SynExpr.Do (e, _) ->
+                        let! eAcc = LoopExpr e
+                        return Ast.Do eAcc
                 | SynExpr.ArbitraryAfterError _ -> 
                     return Ast.ArbitraryAfterError }
 
