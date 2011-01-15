@@ -66,7 +66,7 @@ and Clause<'a> = Clause of Pat<'a> * Exp<'a>
 
 and TypeDef<'a> 
     = DisUnion of string * 'a list
-    | Record of string * 'a option list
+    | Record of string * 'a option list * ClassMember<'a> list
     | None of string
     | Class of string * ClassMember<'a> list
 
@@ -79,6 +79,7 @@ and ClassMember<'a>
     | Member of Pat<'a> * Exp<'a>
     | LetBindings of Exp<'a> list
     | AbstractSlot of string
+    | Interface of Type<'a> * ClassMember<'a> list
 
 type Module<'a>
     = Exp of Exp<'a> list

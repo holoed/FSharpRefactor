@@ -48,7 +48,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                              (fun e1 e2 e3 -> IfThenElse (e1, e2, e3))
                              (fun e1 es e3 -> DotIndexedSet (e1, es, e3))
                              (fun e1 es -> DotIndexedGet (e1, es))
-                             (fun name fields -> Record (name, List.map (fun x -> Option.map (fun (s,l) -> s) x) fields))
+                             (fun name fields ms -> Record (name, List.map (fun x -> Option.map (fun (s,l) -> s) x) fields, ms))
                              (fun fields -> Exp.Record (List.map (fun ((s,l), e) -> (s,e)) fields))
                              (fun n e -> (n, e)) 
                              (fun ss e -> Exp.New (LongIdent (List.map (fun (s,l) -> Ident s) ss), e))
@@ -60,6 +60,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                              (fun ms -> ObjExpr ms)
                              (fun e -> Do e)
                              (fun e t -> Downcast (e, LongIdent (List.map (fun (s,l) -> Ident s) t)))
+                             (fun t ms -> Interface (LongIdent (List.map (fun (s,l) -> Ident s) t), ms))
                              (fun () -> Ast.ArbitraryAfterError) decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
@@ -359,7 +360,7 @@ type CompilerToAstTests() =
     [<Test>]
     member this.RecordTypeDef() =
         let ast = parseTypes "type Point = { X : int; Y : int }" |> List.concat
-        AssertAreEqual [Record("Point", [Some "X"; Some "Y"])]  ast
+        AssertAreEqual [Record("Point", [Some "X"; Some "Y"], [])]  ast
 
     [<Test>]
     member this.RecordUsage() =
@@ -402,3 +403,15 @@ type CompilerToAstTests() =
     member this.UnitExpression() =
         let ast = parse "let x = 2 :?> double"
         AssertAreEqual [Let (false, PVar "x", Downcast(Lit(Integer 2), LongIdent [Ident "double"]), Lit Unit)] ast
+
+    [<Test>]
+    member this.RecordMembers() =
+        let ast = parseTypes "type Point = { X : int; Y: int} with member this.Sum = this.X + this.Y" |> List.concat
+        AssertAreEqual [Record("Point", [Some "X"; Some "Y"], 
+            [Member (PLongVar [PVar "this"; PVar "Sum"], App(App (Var "op_Addition", LongVar [Var "this"; Var "X"]), LongVar [Var "this"; Var "Y"]))])]  ast
+
+    [<Test>]
+    member this.InterfaceImplementation() =
+        let ast = parseTypes "type Foo = interface IDisposable with member this.Dispose () = ()" |> List.concat
+        AssertAreEqual [Class("Foo", [Interface(LongIdent [Ident "IDisposable"], [Member (PApp(PLongVar [PVar "this"; PVar "Dispose"], PLit(Unit)), Lit Unit)])])] ast
+                                      
