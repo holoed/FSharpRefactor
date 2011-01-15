@@ -59,6 +59,7 @@ type Exp<'a>
     | New of Type<'a> * Exp<'a>
     | ObjExpr of ClassMember<'a> list
     | Do of Exp<'a>
+    | Downcast of Exp<'a> * Type<'a>
     | ArbitraryAfterError
 
 and Clause<'a> = Clause of Pat<'a> * Exp<'a>

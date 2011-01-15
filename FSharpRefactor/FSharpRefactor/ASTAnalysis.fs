@@ -215,6 +215,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                     return ObjExpr msAcc })
                  (fun e -> state { let! eAcc = e
                                    return Do eAcc })
+                 (fun e t -> state { let! eAcc = e
+                                     return Downcast (eAcc, (LongIdent (List.map (fun s -> Ident s) t))) })
                  (fun () -> state { return ArbitraryAfterError })
         exp
 
