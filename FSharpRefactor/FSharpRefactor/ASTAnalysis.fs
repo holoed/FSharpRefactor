@@ -213,6 +213,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                  (fun n -> state { return AbstractSlot n })
                  (fun ms -> state { let! msAcc = mmap (fun e -> state { return! e }) ms
                                     return ObjExpr msAcc })
+                 (fun e -> state { let! eAcc = e
+                                   return Do eAcc })
                  (fun () -> state { return ArbitraryAfterError })
         exp
 

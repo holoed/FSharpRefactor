@@ -58,6 +58,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                              (fun n e -> Member (foldPat n, e))
                              (fun n -> AbstractSlot n)
                              (fun ms -> ObjExpr ms)
+                             (fun e -> Do e)
                              (fun () -> Ast.ArbitraryAfterError) decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
@@ -390,3 +391,8 @@ type CompilerToAstTests() =
     member this.ObjectExpression() =
         let ast = parse "let disposable = { new IDisposable with member this.Dispose () = () }"        
         AssertAreEqual [Let (false, PVar "disposable", Exp.ObjExpr [Member (PApp (PLongVar [PVar "this"; PVar "Dispose"], PLit(Unit)), Lit Unit)], Lit Unit)] ast
+
+    [<Test>]
+    member this.DoExpression() =
+        let ast = parse "do Hello ()"
+        ()
