@@ -48,6 +48,7 @@ let foldExpState varF
                  objExprF
                  doF
                  downcastF
+                 upcastF
                  interfaceF
                  errorF 
                  decl =
@@ -105,6 +106,9 @@ let foldExpState varF
                   | Exp.Downcast (e, t) -> let! eAcc = LoopExp e
                                            let! tAcc = LoopTypeInst t
                                            return state { return! downcastF eAcc tAcc }
+                  | Exp.Upcast (e, t) -> let! eAcc = LoopExp e
+                                         let! tAcc = LoopTypeInst t
+                                         return state { return! upcastF eAcc tAcc }
                   | ArbitraryAfterError -> return state { return! (errorF ()) } }
 
       and LoopTypeInst t = 
@@ -219,6 +223,7 @@ let foldExp varF
             objExprF
             doF
             downcastF
+            upcastF
             interfaceF
             errorF 
             decl =       
@@ -292,6 +297,8 @@ let foldExp varF
                                                          return doF eAcc })
                                        (fun e t -> state { let! eAcc = e
                                                            return downcastF eAcc t })
+                                       (fun e t -> state { let! eAcc = e
+                                                           return upcastF eAcc t })
                                        (fun t ms -> state { let! msAcc = mmapId ms
                                                             return interfaceF t msAcc })
                                        (fun () -> state { return (errorF ()) })  decl) ()

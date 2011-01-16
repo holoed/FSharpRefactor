@@ -61,6 +61,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                              (fun ms -> ObjExpr ms)
                              (fun e -> Do e)
                              (fun e t -> Downcast (e, LongIdent (List.map (fun (s,l) -> Ident s) t)))
+                             (fun e t -> Upcast (e, LongIdent (List.map (fun (s,l) -> Ident s) t)))
                              (fun t ms -> Interface (LongIdent (List.map (fun (s,l) -> Ident s) t), ms))
                              (fun () -> Ast.ArbitraryAfterError) decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
@@ -401,7 +402,7 @@ type CompilerToAstTests() =
         AssertAreEqual [Do(App(Var "Hello", Lit(Unit)))] ast
 
     [<Test>]
-    member this.UnitExpression() =
+    member this.Downcast() =
         let ast = parse "let x = 2 :?> double"
         AssertAreEqual [Let (false, PVar "x", Downcast(Lit(Integer 2), LongIdent [Ident "double"]), Lit Unit)] ast
 
@@ -421,3 +422,7 @@ type CompilerToAstTests() =
          let ast = parse ("x <- x + 1");
          AssertAreEqual [LongVarSet (LongVar [Var "x"], App(App (Var "op_Addition", Var "x"), Lit(Integer 1)))] ast
                                         
+    [<Test>]
+    member this.Upcast() =
+        let ast = parse "let x = foo :> IBar"
+        AssertAreEqual [Let (false, PVar "x", Upcast(Var "foo", LongIdent [Ident "IBar"]), Lit Unit)] ast

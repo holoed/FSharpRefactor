@@ -127,6 +127,10 @@ let internal foldDecls decls =
                         let! eAcc = LoopExpr e
                         let! tAcc = LoopType t
                         return Ast.Downcast (eAcc, tAcc)
+                | SynExpr.Upcast (e, t, _) ->
+                        let! eAcc = LoopExpr e
+                        let! tAcc = LoopType t
+                        return Ast.Upcast (eAcc, tAcc)
                 | SynExpr.LongIdentSet (li, e, _) ->
                     let liAcc = Ast.LongVar (List.map (fun (id:Ident) -> Ast.Var (id.idText, mkSrcLoc id.idRange)) li)
                     let! eAcc = LoopExpr e
