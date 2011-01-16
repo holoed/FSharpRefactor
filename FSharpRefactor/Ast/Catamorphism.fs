@@ -50,6 +50,7 @@ let foldExpState varF
                  downcastF
                  upcastF
                  interfaceF
+                 letBindingsF
                  errorF 
                  decl =
   let rec LoopExp e =
@@ -145,7 +146,9 @@ let foldExpState varF
                        | Interface(t, ms) -> let! tAcc = LoopTypeInst t
                                              let! msAcc = mmap LoopClassMember ms
                                              return state { return! (interfaceF tAcc msAcc) }
-                       | AbstractSlot n -> return state { return! (abstractSlotF n) } }
+                       | AbstractSlot n -> return state { return! (abstractSlotF n) }
+                       | LetBindings es -> let! esAcc = mmap LoopExp es
+                                           return state { return! letBindingsF esAcc } }
 
   let rec LoopDecl e = 
            cont { match e with
@@ -225,6 +228,7 @@ let foldExp varF
             downcastF
             upcastF
             interfaceF
+            letBindingsF
             errorF 
             decl =       
      StateMonad.execute (foldExpState  (fun x -> state { return varF x })
@@ -301,6 +305,8 @@ let foldExp varF
                                                            return upcastF eAcc t })
                                        (fun t ms -> state { let! msAcc = mmapId ms
                                                             return interfaceF t msAcc })
+                                       (fun es -> state { let! esAcc = mmapId es
+                                                          return letBindingsF esAcc })
                                        (fun () -> state { return (errorF ()) })  decl) ()
                               
                                 
