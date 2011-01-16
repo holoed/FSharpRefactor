@@ -301,6 +301,12 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("x", loc(31,32,4,4));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
         AssertAreEqual [Var ("x", loc(31,32,4,4));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (31,32,4,4)) ast)
 
-
+    [<Test>]
+    member this.``Find usages of x in assignment give its definition or usages`` () =
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "x <- x + 1")
+        AssertAreEqual [Var ("x", loc(5,6,2,2));Var ("x", loc(0,1,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+        AssertAreEqual [Var ("x", loc(5,6,2,2));Var ("x", loc(0,1,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (0,1,2,2)) ast)
+        AssertAreEqual [Var ("x", loc(5,6,2,2));Var ("x", loc(0,1,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (5,6,2,2)) ast)
 
     
