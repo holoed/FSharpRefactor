@@ -63,6 +63,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                              (fun e t -> Downcast (e, LongIdent (List.map (fun (s,l) -> Ident s) t)))
                              (fun e t -> Upcast (e, LongIdent (List.map (fun (s,l) -> Ident s) t)))
                              (fun t ms -> Interface (LongIdent (List.map (fun (s,l) -> Ident s) t), ms))
+                             (fun es -> LetBindings es)
                              (fun () -> Ast.ArbitraryAfterError) decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
@@ -426,3 +427,9 @@ type CompilerToAstTests() =
     member this.Upcast() =
         let ast = parse "let x = foo :> IBar"
         AssertAreEqual [Let (false, PVar "x", Upcast(Var "foo", LongIdent [Ident "IBar"]), Lit Unit)] ast
+
+    [<Test>]
+    member this.``Lets defined in the context of a class`` () =
+        let ast = parseTypes ("type Point = \n" +
+                              "    let x = 42") |> List.concat
+        AssertAreEqual [Class("Point", [LetBindings [Let(false,PVar "x", Lit(Integer 42), Lit(Unit))]])] ast
