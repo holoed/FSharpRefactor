@@ -102,6 +102,9 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                    return Var x })
                  (fun xs -> state { let! xs' = mmap (fun x -> state { return! x }) xs
                                     return LongVar xs' })
+                 (fun e1 e2 -> state { let! e1Acc = e1
+                                       let! e2Acc = e2
+                                       return LongVarSet (e1Acc, e2Acc) })
                  (fun ps b -> state { let! ps' = mmap (fun p -> state { return! foldPat p }) ps
                                       let! b' = b
                                       return Lam (ps', b') })

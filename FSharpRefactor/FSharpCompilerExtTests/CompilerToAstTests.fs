@@ -30,6 +30,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                                              (fun xs -> PLongVar xs) p
                      foldExp (fun (s, l) -> Var s) 
                              (fun xs -> LongVar xs)
+                             (fun e1 e2 -> LongVarSet (e1, e2))
                              (fun ps b -> Lam(List.map (fun p -> foldPat p) ps, b)) 
                              (fun x y -> App (x, y))
                              (fun isRec p e1 e2 -> Let(isRec, foldPat p, e1, e2))
@@ -414,4 +415,9 @@ type CompilerToAstTests() =
     member this.InterfaceImplementation() =
         let ast = parseTypes "type Foo = interface IDisposable with member this.Dispose () = ()" |> List.concat
         AssertAreEqual [Class("Foo", [Interface(LongIdent [Ident "IDisposable"], [Member (PApp(PLongVar [PVar "this"; PVar "Dispose"], PLit(Unit)), Lit Unit)])])] ast
-                                      
+   
+    [<Test>]
+    member this.``Assignment of a mutable variable``() =
+         let ast = parse ("x <- x + 1");
+         AssertAreEqual [LongVarSet (LongVar [Var "x"], App(App (Var "op_Addition", Var "x"), Lit(Integer 1)))] ast
+                                        

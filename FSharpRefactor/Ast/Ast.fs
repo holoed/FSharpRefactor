@@ -43,6 +43,7 @@ type IsLetRec = bool
 type Exp<'a> 
     = Var      of 'a                           // variable    
     | LongVar of Exp<'a> list
+    | LongVarSet of Exp<'a> * Exp<'a>
     | Lam      of Pat<'a> list * Exp<'a>       // lambda abstraction
     | App      of Exp<'a> * Exp<'a>            // application    
     | Let      of IsLetRec * Pat<'a> * Exp<'a> * Exp<'a>  // local definition    

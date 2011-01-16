@@ -17,6 +17,7 @@ open ContinuationMonad
      
 let foldExpState varF 
                  longVarF 
+                 longVarSetF
                  lamF 
                  appF 
                  letF 
@@ -55,6 +56,9 @@ let foldExpState varF
                   | Var x -> return state { return! varF x }
                   | LongVar xs -> let! xsAcc = mmap LoopExp xs
                                   return state { return! longVarF xsAcc } 
+                  | LongVarSet (e1, e2) -> let! e1Acc = LoopExp e1
+                                           let! e2Acc = LoopExp e2
+                                           return state { return! longVarSetF e1Acc e2Acc } 
                   | Lam (x, body) -> let! bodyAcc = LoopExp body
                                      return  state { return! (lamF x bodyAcc) }
                   | App (l, r) -> let! lAcc = LoopExp l
@@ -184,6 +188,7 @@ let foldPat varF appF litF tupleF wildF arrayOrListF longVarF pat =
 
 let foldExp varF 
             longVarF 
+            longVarSetF
             lamF 
             appF 
             letF 
@@ -220,6 +225,9 @@ let foldExp varF
      StateMonad.execute (foldExpState  (fun x -> state { return varF x })
                                        (fun xs -> state { let! xs' = mmapId xs
                                                           return longVarF xs' })
+                                       (fun e1 e2 -> state { let! e1Acc = e1
+                                                             let! e2Acc = e2
+                                                             return longVarSetF e1Acc e2Acc })
                                        (fun ps b -> state { let! b' = b
                                                             return lamF ps b' })
                                        (fun x y -> state { let! x' = x
