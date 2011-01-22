@@ -293,7 +293,7 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("x", loc(9,10,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (9,10,2,2)) ast)
 
     [<Test>]
-    member this.``Find usages of x in interface implementation give its definition or usage`` () =
+    member this.``Find usages of x in interface implementation given its definition or usage`` () =
         let ast = parseWithPosDecl ("let x = 42 \n" +
                                     "type MyClass = \n" +
                                     "     interface IFoo with \n" +
@@ -302,11 +302,23 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("x", loc(31,32,4,4));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (31,32,4,4)) ast)
 
     [<Test>]
-    member this.``Find usages of x in assignment give its definition or usages`` () =
+    member this.``Find usages of x in assignment given its definition or usages`` () =
         let ast = parseWithPosDecl ("let x = 42 \n" +
                                     "x <- x + 1")
         AssertAreEqual [Var ("x", loc(5,6,2,2));Var ("x", loc(0,1,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
         AssertAreEqual [Var ("x", loc(5,6,2,2));Var ("x", loc(0,1,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (0,1,2,2)) ast)
         AssertAreEqual [Var ("x", loc(5,6,2,2));Var ("x", loc(0,1,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (5,6,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages of x in lambda expression`` () =
+        let ast = parseWithPosDecl ("let f = fun x -> x")
+        AssertAreEqual [Var ("x", loc(17,18,1,1));Var ("x", loc(12,13,1,1))] (findAllReferences (loc (12,13,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of x and y in lambda expression`` () =
+        let ast = parseWithPosDecl ("let f = fun x -> fun y -> x + y")
+        AssertAreEqual [Var ("x", loc(26,27,1,1));Var ("x", loc(12,13,1,1))] (findAllReferences (loc (12,13,1,1)) ast)
+        AssertAreEqual [Var ("y", loc(30,31,1,1));Var ("y", loc(21,22,1,1))] (findAllReferences (loc (21,22,1,1)) ast)
+
 
     
