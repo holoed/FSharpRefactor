@@ -213,8 +213,13 @@ let astAnalysisAlgebra : ExpStateAlgebra<_, _, _, _, _, _, _, _, _, _, _, _, _> 
                                                  let! _ = mmap (fun ps -> mmap (fun x -> execute exitScope x) ps) ic
                                                  return Class (n, msAcc) })
                    implicitConF = (fun ps -> state { return ImplicitCtor ps })
-                   memberF = (fun n e -> state { let! eAcc = e
-                                                 return Member(n, eAcc) })
+                   memberF = (fun p e -> state { let flatpat = flatPat p                                                                   
+                                                 let boundName = List.head (List.tail flatpat)
+                                                 let args = (List.head flatpat) :: List.tail (List.tail flatpat)
+                                                 let! _ = mmap (fun x -> execute enterScope x) args
+                                                 let! eAcc = e
+                                                 let! _ = mmap (fun x -> execute exitScope x) args
+                                                 return Member(p, eAcc) })
                    abstractSlotF = (fun n -> state { return AbstractSlot n })
                    objExprF = (fun ms -> state { let! msAcc = mmap (fun e -> state { return! e }) ms
                                                  return ObjExpr msAcc })

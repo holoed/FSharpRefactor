@@ -320,5 +320,17 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("x", loc(26,27,1,1));Var ("x", loc(12,13,1,1))] (findAllReferences (loc (12,13,1,1)) ast)
         AssertAreEqual [Var ("y", loc(30,31,1,1));Var ("y", loc(21,22,1,1))] (findAllReferences (loc (21,22,1,1)) ast)
 
+    [<Test>]
+    member this.``Find usages of x and y in member body`` () =
+        let ast = parseWithPosDecl  ("type Point = \n" +
+                                     "    member this.Swap (x, y) = (y, x)")        
+        AssertAreEqual [Var ("x", loc(34,35,2,2));Var ("x", loc(22,23,2,2))] (findAllReferences (loc (22,23,2,2)) ast)
+        AssertAreEqual [Var ("y", loc(31,32,2,2));Var ("y", loc(25,26,2,2))] (findAllReferences (loc (25,26,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages of this object identifier of instance member`` () =
+        let ast = parseWithPosDecl  ("type Point = \n" +
+                                     "    member p.Swap = p")        
+        AssertAreEqual [Var ("p", loc(20,21,2,2));Var ("p", loc(11,12,2,2))] (findAllReferences (loc (11,12,2,2)) ast)
 
     
