@@ -169,7 +169,13 @@ let internal foldDecls decls =
     and LoopType x =
          cont { match x with
                 | SynType.LongIdent (ident, _) ->
-                    return Ast.LongIdent (List.map (fun (id:Ident) -> Ast.Ident (id.idText, mkSrcLoc id.idRange)) ident) }
+                    return Ast.LongIdent (List.map (fun (id:Ident) -> Ast.Ident (id.idText, mkSrcLoc id.idRange)) ident) 
+                | SynType.Var (SynTypar.Typar(id, _, _), _) ->
+                    return Ast.Type.TVar(Ast.Ident (id.idText, mkSrcLoc id.idRange))
+                | SynType.Fun (ty1, ty2, _) ->
+                    let! ty1Acc = LoopType ty1
+                    let! ty2Acc = LoopType ty2
+                    return Ast.TFun (ty1Acc, ty2Acc) }
     and LoopRep name ms x =
          cont { match x with
                 | SynTypeDefnRepr.Simple(x, _) -> 
@@ -203,7 +209,10 @@ let internal foldDecls decls =
                     let! msAcc = mmap LoopClassMember ms
                     return TypeDef.Record (name, fieldsAcc, msAcc)
                 | SynTypeDefnSimpleRepr.None _ -> 
-                    return TypeDef.None name }
+                    return TypeDef.None name 
+                | SynTypeDefnSimpleRepr.TypeAbbrev (ty, _) ->
+                    let! tAcc = LoopType ty
+                    return TypeDef.Abbrev (name, tAcc) }
     and LoopUnionCases x =
         cont { match x with
                | SynUnionCase.UnionCase(_,x,_,_,_,_) ->

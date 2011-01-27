@@ -333,4 +333,15 @@ type ASTAnalysisTests() =
                                      "    member p.Swap = p")        
         AssertAreEqual [Var ("p", loc(20,21,2,2));Var ("p", loc(11,12,2,2))] (findAllReferences (loc (11,12,2,2)) ast)
 
+    [<Test>]
+    member this.``Identifiers defined within the scope of a method should be unavailable outside of the method`` () =
+        let ast = parseWithPosDecl  ("let y = 12 \n" +
+                                     "type Point = \n" +
+                                     "    member p.Add x =  \n" +
+                                     "        let y = 42    \n" +
+                                     "        x + y         \n" +
+                                     "let foo = y")        
+        AssertAreEqual [Var ("y", loc(10,11,6,6));Var ("y", loc(4,5,1,1))] (findAllReferences (loc (10,11,6,6)) ast)
+        AssertAreEqual [Var ("y", loc(12,13,5,5));Var ("y", loc(12,13,4,4))] (findAllReferences (loc (12,13,5,5)) ast)
+
     
