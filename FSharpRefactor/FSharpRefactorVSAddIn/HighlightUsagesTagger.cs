@@ -34,6 +34,7 @@ namespace FSharpRefactorVSAddIn
         {
             View = view;
 
+
             SourceBuffer = sourceBuffer;
             TextSearchService = textSearchService;
             TextStructureNavigator = textStructureNavigator;
