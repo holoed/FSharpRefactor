@@ -71,10 +71,13 @@ and TypeDef<'a>
     | Record of string * 'a option list * ClassMember<'a> list
     | None of string
     | Class of string * ClassMember<'a> list
+    | Abbrev of string * Type<'a>
 
 and Type<'a> 
     = Ident of 'a
     | LongIdent of Type<'a> list
+    | TFun of Type<'a> * Type<'a>
+    | TVar of Type<'a>
 
 and ClassMember<'a>
     = ImplicitCtor of Pat<'a> list
