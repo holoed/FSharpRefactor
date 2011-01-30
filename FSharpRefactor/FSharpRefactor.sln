@@ -47,7 +47,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSharpRefactorAddin", "FSha
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 9
+		SccNumberOfProjects = 10
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs02
 		SccLocalPath0 = .
@@ -83,6 +83,10 @@ Global
 		SccProjectTopLevelParentUniqueName8 = FSharpRefactor.sln
 		SccProjectName8 = FSharpRefactorTests
 		SccLocalPath8 = FSharpRefactorTests
+		SccProjectUniqueName9 = FSharpRefactorAddin\\FSharpRefactorAddin.csproj
+		SccProjectTopLevelParentUniqueName9 = FSharpRefactor.sln
+		SccProjectName9 = FSharpRefactorAddin
+		SccLocalPath9 = FSharpRefactorAddin
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
