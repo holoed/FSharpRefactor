@@ -16,6 +16,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
+using FSharpRefactorAddin;
 
 namespace FSharpRefactorVSAddIn
 {
@@ -30,6 +31,8 @@ namespace FSharpRefactorVSAddIn
         [Import]
         internal ITextStructureNavigatorSelectorService TextStructureNavigatorSelector { get; set; }
 
+        internal static IRefactor Refactor {get;private set;}
+
         public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag
         {
             // Only provide highlighting on the top-level buffer
@@ -38,8 +41,8 @@ namespace FSharpRefactorVSAddIn
 
             var textStructureNavigator = 
                 TextStructureNavigatorSelector.GetTextStructureNavigator(buffer);
-
-            return new HighlightUsagesTagger(textView, buffer, TextSearchService, textStructureNavigator) as ITagger<T>;
+            Refactor = new RefactorImpl(buffer,new HighlightUsagesTagger(textView, buffer, TextSearchService, textStructureNavigator));
+            return  ((RefactorImpl)Refactor).CurrentTagger as ITagger<T>;
         }
     }
 }

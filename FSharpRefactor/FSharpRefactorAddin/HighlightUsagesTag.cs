@@ -19,8 +19,11 @@ namespace FSharpRefactorVSAddIn
 {
     public class HighlightUsagesTag : TextMarkerTag
     {
-        public HighlightUsagesTag() : base("MarkerFormatDefinition/HighlightWordFormatDefinition") { }
+        public HighlightUsagesTag(string tagName) : base(tagName) {
+       
+        }
     }
+
 
     [Export(typeof(EditorFormatDefinition))]
     [Name("MarkerFormatDefinition/HighlightWordFormatDefinition")]
@@ -33,6 +36,21 @@ namespace FSharpRefactorVSAddIn
             ForegroundColor = Colors.DarkGreen;
             DisplayName = "Highlight Word";
             ZOrder = 5;
+        }
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [Name("MarkerFormatDefinition/HighlightWordFormatRenaming")]
+    [UserVisible(true)]
+    public class HighlightWordFormatRenaming : MarkerFormatDefinition
+    {
+        public HighlightWordFormatRenaming()
+        {
+           
+            ForegroundColor = Colors.Red;
+       
+            DisplayName = "Renaming the Word";
+            ZOrder = 4;
         }
     }
 }

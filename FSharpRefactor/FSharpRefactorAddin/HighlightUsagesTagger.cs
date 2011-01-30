@@ -29,6 +29,8 @@ namespace FSharpRefactorVSAddIn
     {
         private readonly object _updateLock = new object();
 
+        private int _version = -1;
+
         public HighlightUsagesTagger(ITextView view, ITextBuffer sourceBuffer, ITextSearchService textSearchService,
                                      ITextStructureNavigator textStructureNavigator)
         {
@@ -46,12 +48,137 @@ namespace FSharpRefactorVSAddIn
             // or the caret is moved, we refresh our list of highlighted words.
             View.Caret.PositionChanged += CaretPositionChanged;
             View.LayoutChanged += ViewLayoutChanged;
+            View.TextBuffer.Changed += Changed;
+        }
+
+        private
+
+SnapshotSpan? GetCurrentWord(SnapshotPoint requestedPoint)
+        {
+
+            var currentRequest = requestedPoint;
+
+
+
+
+            // Find all words in the buffer like the one the caret is on
+            var word = TextStructureNavigator.GetExtentOfWord(currentRequest);
+            var foundWord = true;
+            // If we've selected something not worth highlighting, we might have
+            // missed a "word" by a little bit
+            if (!WordExtentIsValid(currentRequest, word))
+            {
+
+                // Before we retry, make sure it is worthwhile
+                if (word.Span.Start != currentRequest ||
+                currentRequest == currentRequest.GetContainingLine().Start ||
+
+                char.IsWhiteSpace((currentRequest - 1).GetChar()))
+                {
+
+                    foundWord =
+
+                    false;
+                }
+
+                else
+                {
+
+                    // Try again, one character previous. If the caret is at the end of a word, then
+                    // this will pick up the word we are at the end of.
+                    word = TextStructureNavigator.GetExtentOfWord(currentRequest - 1);
+
+                    // If we still aren't valid the second time around, we're done
+                    if (!WordExtentIsValid(currentRequest, word))
+                        foundWord =
+
+                        false;
+                }
+
+            }
+
+            if (!foundWord)
+            {
+
+                // If we couldn't find a word, just clear out the existing markers
+                Renaming =
+
+                false;
+                SynchronousUpdate(currentRequest,
+
+                new NormalizedSnapshotSpanCollection(), null);
+                return null;
+            }
+
+            return word.Span;
+        }
+
+
+
+        private void Changed(object sender, TextContentChangedEventArgs e)
+        {
+
+            if (Renaming && _version + _listOfUsages.Count <= e.AfterVersion.ReiteratedVersionNumber)
+            {
+
+                _version = e.AfterVersion.ReiteratedVersionNumber;
+
+                var position = View.Caret.Position.Point.GetPoint(SourceBuffer, View.Caret.Position.Affinity);
+                if (position == null) return;
+                var currentWord = GetCurrentWord(position.Value);
+                if (currentWord == null) return;
+                var text = currentWord.Value.GetText();
+                if (currentWord.Value.Snapshot != _listOfUsages[0].Snapshot)
+                {
+
+                    var collection =
+                    _listOfUsages.Select(span => span.TranslateTo(currentWord.Value.Snapshot,
+
+                    SpanTrackingMode.EdgeExclusive)).ToArray();
+                    _listOfUsages.Clear();
+
+                    _listOfUsages.AddRange(collection);
+
+                }
+
+                for (int i = _listOfUsages.Count - 1; i >= 0; i--)
+                {
+
+                    if (_listOfUsages[i].GetText() != text && currentWord.Value.Start.Position != _listOfUsages[i].Start.Position)
+                        SourceBuffer.Replace(_listOfUsages[i], text);
+
+                }
+
+            }
+
         }
 
         private ITextView View { get; set; }
         private ITextBuffer SourceBuffer { get; set; }
         private ITextSearchService TextSearchService { get; set; }
         private ITextStructureNavigator TextStructureNavigator { get; set; }
+
+        private bool _renaming;
+        public bool Renaming
+        {
+            get
+            {
+                return _renaming;
+            }
+            set
+            {
+                if (_renaming != value)
+                {
+                    _renaming = value;
+                    if (CurrentWord.HasValue)
+                    {
+                        SynchronousUpdate(RequestedPoint, new NormalizedSnapshotSpanCollection(_listOfUsages), CurrentWord.Value);
+                    }
+                }
+            }
+        }
+
+        private readonly List<SnapshotSpan> _listOfUsages = new List<SnapshotSpan>();
 
         // The current set of words to highlight
         private NormalizedSnapshotSpanCollection WordSpans { get; set; }
@@ -87,11 +214,17 @@ namespace FSharpRefactorVSAddIn
             // Note that we'll yield back the same word again in the wordspans collection;
             // the duplication here is expected.
             if (spans.OverlapsWith(new NormalizedSnapshotSpanCollection(currentWord)))
-                yield return new TagSpan<HighlightUsagesTag>(currentWord, new HighlightUsagesTag());
+                if(Renaming)
+                    yield return new TagSpan<HighlightUsagesTag>(currentWord, new HighlightUsagesTag("MarkerFormatDefinition/HighlightWordFormatRenaming"));
+                else
+                    yield return new TagSpan<HighlightUsagesTag>(currentWord, new HighlightUsagesTag("MarkerFormatDefinition/HighlightWordFormatDefinition"));
 
             // Second, yield all the other words in the file
             foreach (var span in NormalizedSnapshotSpanCollection.Overlap(spans, wordSpans))
-                yield return new TagSpan<HighlightUsagesTag>(span, new HighlightUsagesTag());
+                if(Renaming)
+                    yield return new TagSpan<HighlightUsagesTag>(span, new HighlightUsagesTag("MarkerFormatDefinition/HighlightWordFormatRenaming"));
+                else
+                    yield return new TagSpan<HighlightUsagesTag>(span, new HighlightUsagesTag("MarkerFormatDefinition/HighlightWordFormatDefinition"));
         }
 
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
@@ -130,72 +263,63 @@ namespace FSharpRefactorVSAddIn
 
         private void UpdateWordAdornments(object threadContext)
         {
-            var currentRequest = RequestedPoint;
-
             var wordSpans = new List<SnapshotSpan>();
-
-            // Find all words in the buffer like the one the caret is on
-            var word = TextStructureNavigator.GetExtentOfWord(currentRequest);
-
-            var foundWord = true;
-
-            // If we've selected something not worth highlighting, we might have
-            // missed a "word" by a little bit
-            if (!WordExtentIsValid(currentRequest, word))
+            var currentRequest = RequestedPoint;
+            var word = GetCurrentWord(currentRequest);
+            if (!word.HasValue) return;
+            var currentWord = word.Value;
+            if (CurrentWord.HasValue && currentWord.Snapshot != CurrentWord.Value.Snapshot)
             {
-                // Before we retry, make sure it is worthwhile
-                if (word.Span.Start != currentRequest ||
-                    currentRequest == currentRequest.GetContainingLine().Start ||
-                    char.IsWhiteSpace((currentRequest - 1).GetChar()))
-                {
-                    foundWord = false;
-                }
-                else
-                {
-                    // Try again, one character previous.  If the caret is at the end of a word, then
-                    // this will pick up the word we are at the end of.
-                    word = TextStructureNavigator.GetExtentOfWord(currentRequest - 1);
 
-                    // If we still aren't valid the second time around, we're done
-                    if (!WordExtentIsValid(currentRequest, word))
-                        foundWord = false;
-                }
+                CurrentWord = CurrentWord.Value.TranslateTo(currentWord.Snapshot,
+
+                SpanTrackingMode.EdgeExclusive);
             }
-
-            if (!foundWord)
-            {
-                // If we couldn't find a word, just clear out the existing markers
-                SynchronousUpdate(currentRequest, new NormalizedSnapshotSpanCollection(), null);
-                return;
-            }
-
-            var currentWord = word.Span;
 
             // If this is the same word we currently have, we're done (e.g. caret moved within a word).
-            if (CurrentWord.HasValue && currentWord == CurrentWord)
+            if (!Renaming && CurrentWord.HasValue && currentWord == CurrentWord)
                 return;
+            if (Renaming && (!CurrentWord.HasValue || currentWord.Start.Position != CurrentWord.Value.Start.Position))
+            {
+
+                Renaming =
+
+                false;
+            }
 
             // Find the new spans
             var findData = new FindData(currentWord.GetText(), currentWord.Snapshot)
-                               {
-                                   FindOptions = FindOptions.WholeWord | FindOptions.MatchCase
-                               };
+            {
+
+                FindOptions =
+
+                FindOptions.WholeWord | FindOptions.MatchCase
+            };
 
             wordSpans.AddRange(TextSearchService.FindAll(findData));
+
 
 
             // If we are still up-to-date (another change hasn't happened yet), do a real update))
             if (currentRequest == RequestedPoint)
             {
+
                 lock (_updateLock)
                 {
+
                     var allText = currentWord.Snapshot.GetText();
                     var pos = GetPosition(currentWord);
                     var references = FSharpRefactor.findAllReferences(allText, pos);
                     var foundUsages = wordSpans.Where(x => ReferencesContains(references, x)).ToList();
+                    _listOfUsages.Clear();
 
-                    SynchronousUpdate(currentRequest, new NormalizedSnapshotSpanCollection(foundUsages), currentWord);
+                    _listOfUsages.AddRange(foundUsages);
+
+                    SynchronousUpdate(currentRequest,
+
+                    new NormalizedSnapshotSpanCollection(_listOfUsages), currentWord);
                 }
+
             }
         }
 
