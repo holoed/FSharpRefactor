@@ -181,6 +181,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                 return ForEach (p', e1', e2') })
                      (fun e -> state {  let! e' = e
                                         return YieldOrReturn e' })
+                     (fun e -> state {  let! e' = e
+                                        return YieldOrReturnFrom e' })
                      (fun n ms -> state { let! ms' = mmap (fun m -> state { return! m }) ms
                                           return NestedModule (n, ms') })
                      (fun s -> state { return Open s })

@@ -344,4 +344,9 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("y", loc(10,11,6,6));Var ("y", loc(4,5,1,1))] (findAllReferences (loc (10,11,6,6)) ast)
         AssertAreEqual [Var ("y", loc(12,13,5,5));Var ("y", loc(12,13,4,4))] (findAllReferences (loc (12,13,5,5)) ast)
 
-    
+    [<Test>]
+    member this.``Find usages of x in computation expression return!`` () =
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "let y = identity { return! x }")
+        AssertAreEqual [Var ("x", loc(27,28,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+        

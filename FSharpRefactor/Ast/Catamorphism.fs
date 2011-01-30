@@ -31,6 +31,7 @@ let foldExpState varF
                  clauseF 
                  forEachF 
                  yieldOrRetF 
+                 yieldOrRetFromF
                  moduleF 
                  openF 
                  ifThenElseF
@@ -88,6 +89,8 @@ let foldExpState varF
                                            return state { return! (forEachF p e1Acc e2Acc)} 
                   | YieldOrReturn e -> let! eAcc = LoopExp e
                                        return state { return! (yieldOrRetF eAcc)} 
+                  | YieldOrReturnFrom e -> let! eAcc = LoopExp e
+                                           return state { return! (yieldOrRetFromF eAcc)} 
                   | IfThenElse (e1, e2, e3) -> let! e1Acc = LoopExp e1
                                                let! e2Acc = LoopExp e2
                                                let! e3Acc = match e3 with 
@@ -221,6 +224,7 @@ let foldExp  varF
              clauseF 
              forEachF 
              yieldOrRetF 
+             yieldOrRetFromF
              moduleF 
              openF 
              ifThenElseF
@@ -282,6 +286,8 @@ let foldExp  varF
                                                               return forEachF p e1' e2' })
                                       (fun e -> state { let! e' = e  
                                                         return yieldOrRetF e' })
+                                      (fun e -> state { let! e' = e  
+                                                        return yieldOrRetFromF e' })
                                       (fun n es -> state { let! es' = mmapId es
                                                            return moduleF n es' })
                                       (fun s -> state { return openF s })

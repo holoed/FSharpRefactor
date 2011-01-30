@@ -82,9 +82,12 @@ let internal foldDecls decls =
                     let! yAcc = LoopExpr y
                     return Ast.Lam (xAcc, yAcc)
                 | SynExpr.LetOrUse (isRec,_,xs,x,_) -> 
-                    let! (Let(r, j, k, _)) = LoopBinding isRec (xs.Head)
-                    let! xAcc = LoopExpr x
-                    return Let (r, j, k, xAcc)
+                    if (List.isEmpty xs) then
+                        return Ast.ArbitraryAfterError
+                    else
+                        let! (Let(r, j, k, _)) = LoopBinding isRec (xs.Head)
+                        let! xAcc = LoopExpr x
+                        return Let (r, j, k, xAcc)
                 | SynExpr.ForEach (_,_,pat,e1,e2,_) -> 
                     let! pAcc = LoopPat pat
                     let! e1Acc = LoopExpr e1
@@ -93,6 +96,9 @@ let internal foldDecls decls =
                 | SynExpr.YieldOrReturn (_, e, _) ->
                     let! eAcc = LoopExpr e 
                     return Ast.YieldOrReturn eAcc
+                | SynExpr.YieldOrReturnFrom (_, e, _) ->
+                    let! eAcc = LoopExpr e 
+                    return Ast.YieldOrReturnFrom eAcc
                 | SynExpr.DotIndexedSet (e1, es, e2, _, _) -> 
                     let! e1Acc = LoopExpr e1
                     let! esAcc = mmap LoopExpr es
