@@ -44,6 +44,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                              (fun p e -> Clause(foldPat p, e))
                              (fun p e1 e2 -> ForEach (foldPat p, e1, e2))
                              (fun e -> YieldOrReturn e)
+                             (fun e -> YieldOrReturnFrom e)
                              (fun n ms -> NestedModule (n,ms))
                              (fun s -> Open s)
                              (fun e1 e2 e3 -> IfThenElse (e1, e2, e3))
@@ -448,3 +449,20 @@ type CompilerToAstTests() =
     member this.``Function type constructor`` () =
         let ast = parseTypes ("type transform<'a> = 'a -> 'a") |> List.concat
         AssertAreEqual [TypeDef.Abbrev("transform", Type.TFun(TVar (Ident "a"), TVar (Ident "a")))] ast
+
+    [<Test>]
+    member this.``Error in Empty computation expression`` () =
+        let ast = parse "let x = state { let"
+        AssertAreEqual [Let (false, PVar "x", App(Var "state", ArbitraryAfterError), Lit Unit)] ast
+
+    [<Test>]
+    member this.``Return in computation expression`` () =
+        let ast = parse "let x = state { return 5 }"
+        AssertAreEqual [Let (false, PVar "x", App (Var "state",YieldOrReturn (Lit (Integer 5))),Lit Unit)] ast
+
+    [<Test>]
+    member this.``Return! in computation expression`` () =
+        let ast = parse "let x = state { return! 5 }"
+        AssertAreEqual [Let (false, PVar "x", App (Var "state",YieldOrReturnFrom (Lit (Integer 5))),Lit Unit)] ast
+
+        

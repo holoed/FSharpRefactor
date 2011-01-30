@@ -53,6 +53,7 @@ type Exp<'a>
     | Match    of Exp<'a> * Clause<'a> list
     | ForEach  of Pat<'a> * Exp<'a> * Exp<'a>
     | YieldOrReturn of Exp<'a>
+    | YieldOrReturnFrom of Exp<'a>
     | IfThenElse of Exp<'a> * Exp<'a> * Exp<'a> option
     | DotIndexedSet of Exp<'a> * Exp<'a> list * Exp<'a>
     | DotIndexedGet of Exp<'a> * Exp<'a> list
