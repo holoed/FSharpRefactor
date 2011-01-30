@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" dslVersion="1.0.0.0" Id="e4119a0c-4387-41dc-8b4a-573a04e5e175" xmlns="http://schemas.microsoft.com/dsltools/VSPackageDesigner">
+  <commandTable>
+    <rootHasCommandTable Id="7309f45b-35f6-4fa6-97d9-730779d9a1ea">
+      <commandTable Id="b4b94a00-3853-4ba9-8931-290bf8868819" packageGuid="e4119a0c-4387-41dc-8b4a-573a04e5e175" commandSetGuid="7309f45b-35f6-4fa6-97d9-730779d9a1ea" safeProjectName="FSharpRefactorAddin" counter="1" imagesGuid="b4b94a00-3853-4ba9-8931-290bf8868819">
+        <groups>
+          <group Id="9a40079b-8ef2-4c09-b087-3822ce37438c" name="RenameGroup" idNumeric="1">
+            <buttons>
+              <groupBaseReferencesButtons Id="1c8e9382-2257-4dda-bc7c-693dd5114794">
+                <buttonMoniker Id="d8cbe0a5-d2b3-41de-af86-896acf0d9116" />
+              </groupBaseReferencesButtons>
+            </buttons>
+          </group>
+        </groups>
+        <buttons>
+          <commandTableHasButtons Id="f6171cbf-53dd-436b-8d3f-9f884139e192">
+            <button Id="d8cbe0a5-d2b3-41de-af86-896acf0d9116" name="RenameButton" idNumeric="3" buttonText="Rename" menuText="Rename" commandName="cmdidRenameButton" toolTipText="Rename" mod1="0" mod2="0" visibilityConstraints="0" icon="msotcidRenameMaster" commandFlags="0" sampleData="false" />
+          </commandTableHasButtons>
+        </buttons>
+        <menuBases>
+          <commandTableHasMenuBases Id="e8f65ea2-a6ac-4213-8872-d40d29725441">
+            <externalMenu Id="0cb27dbe-15e8-47ee-bc2d-c431feabf8cf" name="RenameMenu" idNumeric="2" parentData="guidSHLMainMenu,IDM_VS_CTXT_CODEWIN,Menu">
+              <groupBases>
+                <menuBaseReferencesGroupBases Id="e3d708ab-e4dc-4aef-92c1-0117c0109c04">
+                  <groupMoniker Id="9a40079b-8ef2-4c09-b087-3822ce37438c" />
+                </menuBaseReferencesGroupBases>
+              </groupBases>
+            </externalMenu>
+          </commandTableHasMenuBases>
+        </menuBases>
+      </commandTable>
+    </rootHasCommandTable>
+  </commandTable>
+  <userInterface>
+    <rootHasUserInterface Id="f4845751-1ed0-45d4-9bc1-8ce0c0aa69bd">
+      <userInterface Id="e40012ee-eca6-4003-b781-9ef5554c023a" />
+    </rootHasUserInterface>
+  </userInterface>
+</root>
