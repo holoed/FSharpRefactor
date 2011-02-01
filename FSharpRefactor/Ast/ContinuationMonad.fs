@@ -15,7 +15,7 @@ type ContinuationBuilder() =
     member this.Return(x) = (fun k -> k x) 
     member this.ReturnFrom(x) = x 
     member this.Bind(m,f) = (fun k -> m (fun a -> f a k)) 
-    member this.Delay(f) = f() 
+    member this.Delay(f) = (fun k -> f () k) 
 let cont = new ContinuationBuilder()
 
 let mmap f xs = 
