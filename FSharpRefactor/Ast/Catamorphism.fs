@@ -13,167 +13,126 @@ module AstCatamorphisms
 
 open Ast
 open ContinuationMonad
-     
-let foldExp      (varF: 'a -> 'b)
-                 (longVarF : 'b list -> 'b)
-                 (longVarSetF : 'b -> 'b -> 'b)
-                 (lamF : Pat<'a> list -> 'b -> 'b)
-                 (appF : 'b -> 'b -> 'b)
-                 (letF : IsLetRec -> Pat<'a> -> 'b -> 'b -> 'b)
-                 (litF : Literal -> 'b)
-                 (tupleF : 'b list -> 'b)
-                 (listF : 'b list -> 'b)
-                 (expF : 'b list -> 'c)
-                 (typesF : 'd list -> 'e)
-                 (unionF : string -> 'a list -> 'd)
-                 (matchF : 'b -> 'f list -> 'b)
-                 (clauseF : Pat<'a> -> 'b -> 'f)
-                 (forEachF : Pat<'a> -> 'b -> 'b -> 'b)
-                 (yieldOrRetF : 'b -> 'b)
-                 (yieldOrRetFromF : 'b -> 'b)
-                 (moduleF : string list -> 'e list -> 'e)
-                 (openF : string list -> 'e)
-                 (ifThenElseF : 'b -> 'b -> 'b option -> 'b)
-                 (dotIndexedSetF : 'b -> 'b list -> 'b -> 'b)
-                 (dotIndexedGetF : 'b -> 'b list -> 'b)
-                 (recordDefF : string -> 'a option list -> 'g list -> 'd)
-                 (recordInstF : 'h list -> 'b)
-                 (recordFieldInstF : 'a -> 'b -> 'h)
-                 (newF : 'i -> 'b -> 'b)
-                 (noneF : string -> 'd)
-                 (classF : string -> 'g list -> 'd)
-                 (implicitConF : Pat<'a> list -> 'g)
-                 (memberF : Pat<'a> -> 'b -> 'g)
-                 (abstractSlotF : string -> 'g)
-                 (objExprF : 'g list -> 'b)
-                 (doF : 'b -> 'b)
-                 (downcastF : 'b -> 'i -> 'b)
-                 (upcastF : 'b -> 'i -> 'b)
-                 (interfaceF : 'i -> 'g list -> 'g)
-                 (letBindingsF : 'b list -> 'g)
-                 (abbrevF : string -> 'i -> 'd)
-                 (tfunF : 'i -> 'i -> 'i)
-                 (tIdentF : 'a -> 'i)
-                 (tLongIdentF : 'i list -> 'i)
-                 (tvarF : 'i -> 'i)
-                 (errorF : unit -> 'b) 
-                 decl =
+open Algebras
+
+let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_>) decl =
   let rec LoopExp e =
           cont {  match e with
-                  | Var x -> return varF x 
+                  | Var x -> return algebra.varF x 
                   | LongVar xs -> let! xsAcc = mmap LoopExp xs
-                                  return longVarF xsAcc 
+                                  return algebra.longVarF xsAcc 
                   | LongVarSet (e1, e2) -> let! e1Acc = LoopExp e1
                                            let! e2Acc = LoopExp e2
-                                           return longVarSetF e1Acc e2Acc 
+                                           return algebra.longVarSetF e1Acc e2Acc 
                   | Lam (x, body) -> let! bodyAcc = LoopExp body
-                                     return  lamF x bodyAcc
+                                     return algebra. lamF x bodyAcc
                   | App (l, r) -> let! lAcc = LoopExp l
                                   let! rAcc = LoopExp r
-                                  return appF lAcc rAcc
+                                  return algebra.appF lAcc rAcc
                   | Let (isRec, p, e1, e2) -> let! e1Acc = LoopExp e1
                                               let! e2Acc = LoopExp e2
-                                              return letF isRec p e1Acc e2Acc
-                  | Lit x -> return litF x
+                                              return algebra.letF isRec p e1Acc e2Acc
+                  | Lit x -> return algebra.litF x
                 
                   | Tuple es -> let! esAcc = mmap LoopExp es
-                                return tupleF esAcc
+                                return algebra.tupleF esAcc
                   | List es -> let! esAcc = mmap LoopExp es
-                               return listF esAcc
+                               return algebra.listF esAcc
                   | Match (e, cs) -> let! eAcc = LoopExp e
                                      let! csAcc = mmap  LoopClauses cs
-                                     return matchF eAcc csAcc
+                                     return algebra.matchF eAcc csAcc
                   | ForEach (p, e1, e2) -> let! e1Acc = LoopExp e1
                                            let! e2Acc = LoopExp e2
-                                           return forEachF p e1Acc e2Acc
+                                           return algebra.forEachF p e1Acc e2Acc
                   | YieldOrReturn e -> let! eAcc = LoopExp e
-                                       return yieldOrRetF eAcc
+                                       return algebra.yieldOrRetF eAcc
                   | YieldOrReturnFrom e -> let! eAcc = LoopExp e
-                                           return yieldOrRetFromF eAcc
+                                           return algebra.yieldOrRetFromF eAcc
                   | IfThenElse (e1, e2, e3) -> let! e1Acc = LoopExp e1
                                                let! e2Acc = LoopExp e2
                                                let! e3Acc = match e3 with 
                                                             | Some e3' -> LoopExp e3'                                                            
-                                               return ifThenElseF e1Acc e2Acc (Some e3Acc)
+                                               return algebra.ifThenElseF e1Acc e2Acc (Some e3Acc)
                   | DotIndexedSet (e1, es, e3) -> let! e1Acc = LoopExp e1
                                                   let! esAcc = mmap LoopExp es
                                                   let! e2Acc = LoopExp e3
-                                                  return dotIndexedSetF e1Acc esAcc e2Acc
+                                                  return algebra.dotIndexedSetF e1Acc esAcc e2Acc
                   | DotIndexedGet (e1, es) -> let! e1Acc = LoopExp e1
                                               let! esAcc = mmap LoopExp es
-                                              return dotIndexedGetF e1Acc esAcc 
+                                              return algebra.dotIndexedGetF e1Acc esAcc 
                   | Exp.Record xs -> let! xsAcc = mmap (fun x -> LoopRecordInst x) xs
-                                     return recordInstF xsAcc 
+                                     return algebra.recordInstF xsAcc 
                   | Exp.New (s, e) -> let! sAcc = LoopTypeInst s
                                       let! eAcc = LoopExp e
-                                      return newF sAcc eAcc 
+                                      return algebra.newF sAcc eAcc 
                   | Exp.ObjExpr ms -> let! msAcc = mmap LoopClassMember ms
-                                      return objExprF msAcc
+                                      return algebra.objExprF msAcc
                   | Exp.Do e -> let! eAcc = LoopExp e
-                                return doF eAcc
+                                return algebra.doF eAcc
                   | Exp.Downcast (e, t) -> let! eAcc = LoopExp e
                                            let! tAcc = LoopTypeInst t
-                                           return downcastF eAcc tAcc
+                                           return algebra.downcastF eAcc tAcc
                   | Exp.Upcast (e, t) -> let! eAcc = LoopExp e
                                          let! tAcc = LoopTypeInst t
-                                         return upcastF eAcc tAcc 
-                  | ArbitraryAfterError -> return errorF () }
+                                         return algebra.upcastF eAcc tAcc 
+                  | ArbitraryAfterError -> return algebra.errorF () }
 
       and LoopTypeInst t = 
                 cont { match t with   
                        | LongIdent ts -> let! tsAcc = mmap LoopTypeInst ts
-                                         return tLongIdentF tsAcc
-                       | Ident s -> return tIdentF s
+                                         return algebra.tLongIdentF tsAcc
+                       | Ident s -> return algebra.tIdentF s
                        | Type.TVar v -> let! vAcc = LoopTypeInst v
-                                        return tvarF vAcc 
+                                        return algebra.tvarF vAcc 
                        | Type.TFun (t1, t2) -> let! t1Acc = LoopTypeInst t1
                                                let! t2Acc = LoopTypeInst t2
-                                               return tfunF t1Acc t2Acc } 
+                                               return algebra.tfunF t1Acc t2Acc } 
 
       and LoopRecordInst (n, e) = 
                 cont { let! eAcc = LoopExp e 
-                       return recordFieldInstF n eAcc }
+                       return algebra.recordFieldInstF n eAcc }
                        
       and LoopClauses c =
                 cont { match c with
                        | Clause(p, e) ->let! eAcc = LoopExp e
-                                        return clauseF p eAcc }
+                                        return algebra.clauseF p eAcc }
 
       and LoopTypes t = 
                cont { match t with
-                      | DisUnion (name, cases) -> return unionF name cases 
+                      | DisUnion (name, cases) -> return algebra.unionF name cases 
                       | Record (name, fields, ms) -> 
                             let! msAcc = mmap LoopClassMember ms
-                            return recordDefF name fields msAcc  
-                      | None name -> return noneF name
+                            return algebra.recordDefF name fields msAcc  
+                      | None name -> return algebra.noneF name
                       | Class (name, members) -> 
                             let! msAcc = mmap LoopClassMember members
-                            return classF name msAcc
+                            return algebra.classF name msAcc
                       | Abbrev (name, ty) -> let! tyAcc = LoopTypeInst ty
-                                             return abbrevF name tyAcc }
+                                             return algebra.abbrevF name tyAcc }
 
       and LoopClassMember ms =
                 cont { match ms with
-                       | ImplicitCtor ps -> return implicitConF ps
+                       | ImplicitCtor ps -> return algebra.implicitConF ps
                        | Member (p, e) -> let! eAcc = LoopExp e
-                                          return memberF p eAcc
+                                          return algebra.memberF p eAcc
                        | Interface(t, ms) -> let! tAcc = LoopTypeInst t
                                              let! msAcc = mmap LoopClassMember ms
-                                             return interfaceF tAcc msAcc
-                       | AbstractSlot n -> return abstractSlotF n
+                                             return algebra.interfaceF tAcc msAcc
+                       | AbstractSlot n -> return algebra.abstractSlotF n
                        | LetBindings es -> let! esAcc = mmap LoopExp es
-                                           return letBindingsF esAcc }
+                                           return algebra.letBindingsF esAcc }
 
   let rec LoopDecl e = 
            cont { match e with
                   | Exp xs -> let! xsAcc = mmap LoopExp xs
-                              return expF xsAcc
+                              return algebra.expF xsAcc
                   | Types xs -> let! xsAcc = mmap LoopTypes xs
-                                return typesF xsAcc 
+                                return algebra.typesF xsAcc 
                   | NestedModule (n, xs) ->  let! xsAcc = mmap LoopDecl xs
-                                             return moduleF n xsAcc 
-                  | Open s -> return openF s }
-  LoopDecl decl id
+                                             return algebra.moduleF n xsAcc 
+                  | Open s -> return algebra.openF s }
+  LoopDecl decl id    
+
 
 let foldPat varF appF litF tupleF wildF arrayOrListF longVarF pat = 
   let rec Loop e =
