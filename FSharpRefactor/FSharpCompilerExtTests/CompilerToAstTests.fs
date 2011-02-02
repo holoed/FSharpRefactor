@@ -465,4 +465,8 @@ type CompilerToAstTests() =
         let ast = parse "let x = state { return! 5 }"
         AssertAreEqual [Let (false, PVar "x", App (Var "state",YieldOrReturnFrom (Lit (Integer 5))),Lit Unit)] ast
 
+    [<Test>]
+    member this.``Conditional with no else branch`` () =
+        let ast = parse "let DoSome() = if (x > 0) then do Hello()"
+        AssertAreEqual [Let (false, PApp (PVar "DoSome",PLit Unit),  IfThenElse(App(App (Var "op_GreaterThan", Var "x"), Lit(Integer 0)), Do (App (Var "Hello",Lit Unit)), Option.None),Lit Unit)] ast
         
