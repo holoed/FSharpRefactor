@@ -51,8 +51,10 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_>) decl =
                   | IfThenElse (e1, e2, e3) -> let! e1Acc = LoopExp e1
                                                let! e2Acc = LoopExp e2
                                                let! e3Acc = match e3 with 
-                                                            | Some e3' -> LoopExp e3'                                                            
-                                               return algebra.ifThenElseF e1Acc e2Acc (Some e3Acc)
+                                                            | Some e3' -> cont { let! e3Acc' = LoopExp e3'   
+                                                                                 return Option.Some e3Acc' }
+                                                            | Option.None -> cont { return Option.None }
+                                               return algebra.ifThenElseF e1Acc e2Acc e3Acc
                   | DotIndexedSet (e1, es, e3) -> let! e1Acc = LoopExp e1
                                                   let! esAcc = mmap LoopExp es
                                                   let! e2Acc = LoopExp e3
