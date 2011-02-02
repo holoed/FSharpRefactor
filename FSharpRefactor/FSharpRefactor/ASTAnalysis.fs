@@ -97,159 +97,159 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                     return PList es' })
                                 (fun xs -> state { let! xsAcc = mmap (fun x -> state { return! x }) xs 
                                                 return PLongVar xsAcc }) p
-        foldExp      (fun x -> state { do! addUsage x
-                                       return Var x })
-                     (fun xs -> state { let! xs' = mmap (fun x -> state { return! x }) xs
-                                        return LongVar xs' })
-                     (fun e1 e2 -> state { let! e1Acc = e1
-                                           let! e2Acc = e2
-                                           return LongVarSet (e1Acc, e2Acc) })
-                     (fun ps e -> state { let! vars = mmap (fun p -> state { return! foldPat p }) ps
-                                          let! _ = mmap (fun x -> execute enterScope x) vars
-                                          let! e' = e
-                                          let! _ = mmap (fun x -> execute exitScope x) vars 
-                                          return Lam (vars, e') })
-                     (fun x y -> state { let! x' = x
-                                         let! y' = y
-                                         return App (x', y') })
-                     (fun isRec p e1 e2 -> state {  let flatpat = flatPat p
-                                                    match p with   
-                                                    | PApp(_, _) ->
-                                                            let (PVar (sf,lf)) = List.head flatpat
-                                                            let vars = List.tail flatpat                                                
-                                                            let! p'  = foldPat p
-                                                            if isRec then 
-                                                                do! enterScope (sf, lf) 
-                                                            let! _ = mmap (fun x -> execute enterScope x) vars // ----------------------------------------------------
-                                                            let! e1' = e1                                      // function variables scope (like the x in let f x = x)                                  
-                                                            let! _ = mmap (fun x -> execute exitScope x) vars  // ----------------------------------------------------
-                                                            if (not isRec) then
-                                                                do! enterScope (sf, lf)     // ----------------------------------------------------                                           
-                                                            let! e2' = e2               // function name scope (like the f in let f x = x)  
-                                                            if (e2' <> (Lit Unit)) then
-                                                                do! exitScope (sf, lf)      // ----------------------------------------------------                               
-                                                            return Let (isRec, p', e1', e2') 
-                                                    | _ ->
-                                                        let! p'  = foldPat p                                                 
-                                                        let! e1' = e1       
-                                                        let! _ = mmap (fun x -> execute enterScope x) flatpat                                            
-                                                        let! e2' = e2           // let x = x in x Only "let x" and "in x" refer to the same identifier.
-                                                        if (e2' <> (Lit Unit)) then
-                                                            let! _ = mmap (fun x -> execute exitScope x) flatpat  // ---------------------------------------------------- 
-                                                            do ()
-                                                        return Let (isRec, p', e1', e2') })
-                     (fun x -> state { return Lit x })
-                     (fun es -> state { let! es' = mmap (fun e -> state { return! e }) es
-                                        return Tuple es' })
-                     (fun es -> state { let! es' = mmap (fun e -> state { return! e }) es
-                                        return List es' })
-                     (fun es -> state { let! es' = mmap (fun e -> state { return! e }) es
-                                        return Exp es' })
-                     (fun xs -> state { let! xs' = mmap (fun x -> state { return! x }) xs
-                                        return Types xs' })
-                     (fun name cases -> state { let! _ = mmap (fun x -> enterScope x) cases
-                                                return DisUnion(name, cases) })
-                     (fun e cs -> state { let! e' = e
-                                          let! cs' = mmap (fun c -> state { return! c }) cs
-                                          return Match(e', cs')})
-                     (fun p e -> state { let vars = flatPat p
-                                         let! _ = mmap (fun x -> execute enterScope x) vars 
-                                         let! e' = e
-                                         let! _ = mmap (fun x -> execute exitScope x) vars 
-                                         return Clause(p, e') })
-                     (fun p e1 e2 -> state{ let flatpat = flatPat p
-                                            let boundName = List.head flatpat
-                                            let args = List.tail flatpat
-                                            match (boundName, args) with
-                                            | PVar (s,l), [] ->                                                 
-                                                let! p'  = foldPat p                                                 
-                                                let! e1' = e1       
-                                                do! enterScope (s,l)    // ----------------------------------------------------                                               
-                                                let! e2' = e2           // let x = x in x Only "let x" and "in x" refer to the same identifier.
-                                                if (e2' <> (Lit Unit)) then
-                                                    do! exitScope (s,l)  // ----------------------------------------------------  
-                                                return ForEach (p', e1', e2') 
-                                            | PVar (sf,lf), vars ->                                                 
-                                                let! p'  = foldPat p
-                                                let! _ = mmap (fun x -> execute enterScope x) vars // ----------------------------------------------------
-                                                let! e1' = e1                                      // function variables scope (like the x in let f x = x)                                  
-                                                let! _ = mmap (fun x -> execute exitScope x) vars  // ----------------------------------------------------
-                                                do! enterScope (sf, lf)     // ----------------------------------------------------                                           
-                                                let! e2' = e2               // function name scope (like the f in let f x = x)  
-                                                if (e2' <> (Lit Unit)) then
-                                                    do! exitScope (sf, lf)      // ----------------------------------------------------                               
-                                                return ForEach (p', e1', e2') })
-                     (fun e -> state {  let! e' = e
-                                        return YieldOrReturn e' })
-                     (fun e -> state {  let! e' = e
-                                        return YieldOrReturnFrom e' })
-                     (fun n ms -> state { let! ms' = mmap (fun m -> state { return! m }) ms
-                                          return NestedModule (n, ms') })
-                     (fun s -> state { return Open s })
-                     (fun e1 e2 e3 -> state { let! e1' = e1
-                                              let! e2' = e2
-                                              let! e3' = match e3 with
-                                                         | Some x -> x
-                                              return IfThenElse(e1', e2', Some e3') })
-                     (fun e1 es e3 -> state { let! e1' = e1
-                                              let! es' = mmap (fun e -> state { return! e }) es
-                                              let! e3' = e3
-                                              return DotIndexedSet (e1', es', e3') })
-                     (fun e1 es -> state { let! e1' = e1
-                                           let! es' = mmap (fun e -> state { return! e }) es
-                                           return DotIndexedGet (e1', es') }) 
-                     (fun name fields ms -> state { let! msAcc = mmap (fun m -> state { return! m }) ms
-                                                    return Record(name, fields, msAcc) })
-                     (fun fields -> state { let! fields' = mmap (fun e -> state { return! e }) fields
-                                            return Exp.Record fields'})
-                     (fun n e -> state { let! eAcc = e
-                                         return (n, eAcc) })
-                     (fun ss e -> state { let! ssAcc = ss
-                                          let! eAcc = e
-                                          return New (ssAcc, eAcc) })                                                
-                     (fun name -> state { return None name })
-                     (fun n ms -> state { let! ic = mmap (fun x -> state { let! xAcc = x
-                                                                           match xAcc with | ImplicitCtor ps -> return ps | _ -> return [] }) ms
-                                          let! _ = mmap (fun ps -> mmap (fun x -> execute enterScope x) ps) ic
-                                          let! msAcc = mmap (fun m -> state { return! m }) (if ic.IsEmpty then ms else ms.Tail)
-                                          let! _ = mmap (fun ps -> mmap (fun x -> execute exitScope x) ps) ic
-                                          return Class (n, msAcc) })
-                     (fun ps -> state { return ImplicitCtor ps })
-                     (fun p e -> state { let flatpat = flatPat p                                                                   
-                                         let boundName = List.head (List.tail flatpat)
-                                         let args = (List.head flatpat) :: List.tail (List.tail flatpat)
-                                         let! _ = mmap (fun x -> execute enterScope x) args
-                                         let! eAcc = e
-                                         let! _ = mmap (fun x -> execute exitScope x) args
-                                         return Member(p, eAcc) })
-                     (fun n -> state { return AbstractSlot n })
-                     (fun ms -> state { let! msAcc = mmap (fun e -> state { return! e }) ms
-                                        return ObjExpr msAcc })
-                     (fun e -> state { let! eAcc = e
-                                       return Do eAcc })
-                     (fun e t -> state { let! eAcc = e
-                                         let! (tAcc:Type<_>) = t
-                                         return Downcast (eAcc, tAcc) })
-                     (fun e t -> state { let! eAcc = e
-                                         let! (tAcc:Type<_>) = t
-                                         return Upcast (eAcc, tAcc) })
-                     (fun t ms -> state { let! (tAcc:Type<_>) = t
-                                          let! msAcc = mmap (fun e -> state { return! e }) ms
-                                          return Interface (tAcc, msAcc) })
-                     (fun es -> state { let! esAcc = mmap (fun e -> state { return! e }) es
-                                        return LetBindings esAcc })
-                     (fun n t -> state { let! (tAcc:Type<_>) = t
-                                         return Abbrev (n, tAcc) })
-                     (fun t1 t2 -> state { let! (t1Acc:Type<_>) = t1
-                                           let! (t2Acc:Type<_>) = t2
-                                           return TFun (t1Acc, t2Acc) })
-                     (fun s -> state { return Ident s })
-                     (fun ts -> state { let! tsAcc = mmap (fun t -> state { return! t}) ts
-                                        return LongIdent tsAcc })  
-                     (fun t -> state { let! tAcc = t
-                                       return TVar tAcc })
-                     (fun () -> state { return ArbitraryAfterError }) 
-                     exp
+        foldExpAlgebra {
+                         varF =        (fun x -> state { do! addUsage x
+                                                         return Var x })
+                         longVarF =    (fun xs -> state { let! xs' = mmap (fun x -> state { return! x }) xs
+                                                          return LongVar xs' })
+                         longVarSetF = (fun e1 e2 -> state { let! e1Acc = e1
+                                                             let! e2Acc = e2
+                                                             return LongVarSet (e1Acc, e2Acc) })
+                         lamF =        (fun ps e -> state { let! vars = mmap (fun p -> state { return! foldPat p }) ps
+                                                            let! _ = mmap (fun x -> execute enterScope x) vars
+                                                            let! e' = e
+                                                            let! _ = mmap (fun x -> execute exitScope x) vars 
+                                                            return Lam (vars, e') })
+                         appF =        (fun x y -> state { let! x' = x
+                                                           let! y' = y
+                                                           return App (x', y') })
+                         letF =        (fun isRec p e1 e2 -> state {    let flatpat = flatPat p
+                                                                        match p with   
+                                                                        | PApp(_, _) ->
+                                                                                let (PVar (sf,lf)) = List.head flatpat
+                                                                                let vars = List.tail flatpat                                                
+                                                                                let! p'  = foldPat p
+                                                                                if isRec then 
+                                                                                    do! enterScope (sf, lf) 
+                                                                                let! _ = mmap (fun x -> execute enterScope x) vars // ----------------------------------------------------
+                                                                                let! e1' = e1                                      // function variables scope (like the x in let f x = x)                                  
+                                                                                let! _ = mmap (fun x -> execute exitScope x) vars  // ----------------------------------------------------
+                                                                                if (not isRec) then
+                                                                                    do! enterScope (sf, lf)     // ----------------------------------------------------                                           
+                                                                                let! e2' = e2               // function name scope (like the f in let f x = x)  
+                                                                                if (e2' <> (Lit Unit)) then
+                                                                                    do! exitScope (sf, lf)      // ----------------------------------------------------                               
+                                                                                return Let (isRec, p', e1', e2') 
+                                                                        | _ ->
+                                                                            let! p'  = foldPat p                                                 
+                                                                            let! e1' = e1       
+                                                                            let! _ = mmap (fun x -> execute enterScope x) flatpat                                            
+                                                                            let! e2' = e2           // let x = x in x Only "let x" and "in x" refer to the same identifier.
+                                                                            if (e2' <> (Lit Unit)) then
+                                                                                let! _ = mmap (fun x -> execute exitScope x) flatpat  // ---------------------------------------------------- 
+                                                                                do ()
+                                                                            return Let (isRec, p', e1', e2') })
+                         litF =        (fun x -> state { return Lit x })
+                         tupleF =      (fun es -> state { let! es' = mmap (fun e -> state { return! e }) es
+                                                          return Tuple es' })
+                         listF =       (fun es -> state { let! es' = mmap (fun e -> state { return! e }) es
+                                                          return List es' })
+                         expF =        (fun es -> state { let! es' = mmap (fun e -> state { return! e }) es
+                                                          return Exp es' })
+                         typesF =      (fun xs -> state { let! xs' = mmap (fun x -> state { return! x }) xs
+                                                          return Types xs' })
+                         unionF =      (fun name cases -> state { let! _ = mmap (fun x -> enterScope x) cases
+                                                                  return DisUnion(name, cases) })
+                         matchF =      (fun e cs -> state { let! e' = e
+                                                            let! cs' = mmap (fun c -> state { return! c }) cs
+                                                            return Match(e', cs')})
+                         clauseF =     (fun p e -> state { let vars = flatPat p
+                                                           let! _ = mmap (fun x -> execute enterScope x) vars 
+                                                           let! e' = e
+                                                           let! _ = mmap (fun x -> execute exitScope x) vars 
+                                                           return Clause(p, e') })
+                         forEachF =    (fun p e1 e2 -> state{   let flatpat = flatPat p
+                                                                let boundName = List.head flatpat
+                                                                let args = List.tail flatpat
+                                                                match (boundName, args) with
+                                                                | PVar (s,l), [] ->                                                 
+                                                                    let! p'  = foldPat p                                                 
+                                                                    let! e1' = e1       
+                                                                    do! enterScope (s,l)    // ----------------------------------------------------                                               
+                                                                    let! e2' = e2           // let x = x in x Only "let x" and "in x" refer to the same identifier.
+                                                                    if (e2' <> (Lit Unit)) then
+                                                                        do! exitScope (s,l)  // ----------------------------------------------------  
+                                                                    return ForEach (p', e1', e2') 
+                                                                | PVar (sf,lf), vars ->                                                 
+                                                                    let! p'  = foldPat p
+                                                                    let! _ = mmap (fun x -> execute enterScope x) vars // ----------------------------------------------------
+                                                                    let! e1' = e1                                      // function variables scope (like the x in let f x = x)                                  
+                                                                    let! _ = mmap (fun x -> execute exitScope x) vars  // ----------------------------------------------------
+                                                                    do! enterScope (sf, lf)     // ----------------------------------------------------                                           
+                                                                    let! e2' = e2               // function name scope (like the f in let f x = x)  
+                                                                    if (e2' <> (Lit Unit)) then
+                                                                        do! exitScope (sf, lf)      // ----------------------------------------------------                               
+                                                                    return ForEach (p', e1', e2') })
+                         yieldOrRetF = (fun e -> state {  let! e' = e
+                                                          return YieldOrReturn e' })
+                         yieldOrRetFromF = (fun e -> state {  let! e' = e
+                                                              return YieldOrReturnFrom e' })
+                         moduleF =     (fun n ms -> state { let! ms' = mmap (fun m -> state { return! m }) ms
+                                                            return NestedModule (n, ms') })
+                         openF =       (fun s -> state { return Open s })
+                         ifThenElseF = (fun e1 e2 e3 -> state { let! e1' = e1
+                                                                let! e2' = e2
+                                                                let! e3' = match e3 with
+                                                                          | Some x -> x
+                                                                return IfThenElse(e1', e2', Some e3') })
+                         dotIndexedSetF =  (fun e1 es e3 -> state { let! e1' = e1
+                                                                    let! es' = mmap (fun e -> state { return! e }) es
+                                                                    let! e3' = e3
+                                                                    return DotIndexedSet (e1', es', e3') })
+                         dotIndexedGetF =  (fun e1 es -> state { let! e1' = e1
+                                                                 let! es' = mmap (fun e -> state { return! e }) es
+                                                                 return DotIndexedGet (e1', es') }) 
+                         recordDefF =      (fun name fields ms -> state { let! msAcc = mmap (fun m -> state { return! m }) ms
+                                                                          return Record(name, fields, msAcc) })
+                         recordInstF =     (fun fields -> state { let! fields' = mmap (fun e -> state { return! e }) fields
+                                                                  return Exp.Record fields'})
+                         recordFieldInstF = (fun n e -> state { let! eAcc = e
+                                                                return (n, eAcc) })
+                         newF =             (fun ss e -> state { let! ssAcc = ss
+                                                                 let! eAcc = e
+                                                                 return New (ssAcc, eAcc) })                                                
+                         noneF =    (fun name -> state { return None name })
+                         classF =   (fun n ms -> state {  let! ic = mmap (fun x -> state { let! xAcc = x
+                                                                                           match xAcc with | ImplicitCtor ps -> return ps | _ -> return [] }) ms
+                                                          let! _ = mmap (fun ps -> mmap (fun x -> execute enterScope x) ps) ic
+                                                          let! msAcc = mmap (fun m -> state { return! m }) (if ic.IsEmpty then ms else ms.Tail)
+                                                          let! _ = mmap (fun ps -> mmap (fun x -> execute exitScope x) ps) ic
+                                                          return Class (n, msAcc) })
+                         implicitConF = (fun ps -> state { return ImplicitCtor ps })
+                         memberF =      (fun p e -> state {  let flatpat = flatPat p                                                                   
+                                                             let boundName = List.head (List.tail flatpat)
+                                                             let args = (List.head flatpat) :: List.tail (List.tail flatpat)
+                                                             let! _ = mmap (fun x -> execute enterScope x) args
+                                                             let! eAcc = e
+                                                             let! _ = mmap (fun x -> execute exitScope x) args
+                                                             return Member(p, eAcc) })
+                         abstractSlotF = (fun n -> state { return AbstractSlot n })
+                         objExprF =      (fun ms -> state { let! msAcc = mmap (fun e -> state { return! e }) ms
+                                                            return ObjExpr msAcc })
+                         doF =     (fun e -> state { let! eAcc = e
+                                                     return Do eAcc })
+                         downcastF =      (fun e t -> state { let! eAcc = e
+                                                              let! (tAcc:Type<_>) = t
+                                                              return Downcast (eAcc, tAcc) })
+                         upcastF =        (fun e t -> state { let! eAcc = e
+                                                              let! (tAcc:Type<_>) = t
+                                                              return Upcast (eAcc, tAcc) })
+                         interfaceF =     (fun t ms -> state { let! (tAcc:Type<_>) = t
+                                                               let! msAcc = mmap (fun e -> state { return! e }) ms
+                                                               return Interface (tAcc, msAcc) })
+                         letBindingsF =   (fun es -> state { let! esAcc = mmap (fun e -> state { return! e }) es
+                                                             return LetBindings esAcc })
+                         abbrevF =        (fun n t -> state { let! (tAcc:Type<_>) = t
+                                                              return Abbrev (n, tAcc) })
+                         tfunF =          (fun t1 t2 -> state { let! (t1Acc:Type<_>) = t1
+                                                                let! (t2Acc:Type<_>) = t2
+                                                                return TFun (t1Acc, t2Acc) })
+                         tIdentF =        (fun s -> state { return Ident s })
+                         tLongIdentF =    (fun ts -> state { let! tsAcc = mmap (fun t -> state { return! t}) ts
+                                                             return LongIdent tsAcc })  
+                         tvarF =          (fun t -> state { let! tAcc = t
+                                                            return TVar tAcc })
+                         errorF =         (fun () -> state { return ArbitraryAfterError })  }   exp
                      
                                                        
 
