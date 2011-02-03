@@ -11,7 +11,6 @@
 
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -35,8 +34,6 @@ namespace FSharpRefactorVSAddIn
                                      ITextStructureNavigator textStructureNavigator)
         {
             View = view;
-
-
             SourceBuffer = sourceBuffer;
             TextSearchService = textSearchService;
             TextStructureNavigator = textStructureNavigator;
@@ -137,6 +134,25 @@ namespace FSharpRefactorVSAddIn
             var wordSpans = new List<SnapshotSpan>();
 
             // Find all words in the buffer like the one the caret is on
+            var currentWord = FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(currentRequest);
+
+            if (!currentWord.Success)
+                return;
+
+            // If this is the same word we currently have, we're done (e.g. caret moved within a word).
+            if (CurrentWord.HasValue && currentWord.Value == CurrentWord)
+                return;
+
+            // Find the new spans
+            FindTheNewSpans(currentWord.Value, wordSpans);
+
+
+            // If we are still up-to-date (another change hasn't happened yet), do a real update))
+            IfWeAreStillUpToDateDoARealUpdate(currentRequest, currentWord.Value, wordSpans);
+        }
+
+        private Maybe<SnapshotSpan> FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(SnapshotPoint currentRequest)
+        {
             var word = TextStructureNavigator.GetExtentOfWord(currentRequest);
 
             var foundWord = true;
@@ -168,25 +184,24 @@ namespace FSharpRefactorVSAddIn
             {
                 // If we couldn't find a word, just clear out the existing markers
                 SynchronousUpdate(currentRequest, new NormalizedSnapshotSpanCollection(), null);
-                return;
+                return new Maybe<SnapshotSpan>{Success =  false};
             }
 
-            var currentWord = word.Span;
+            return new Maybe<SnapshotSpan> {Value = word.Span, Success = true};
+        }
 
-            // If this is the same word we currently have, we're done (e.g. caret moved within a word).
-            if (CurrentWord.HasValue && currentWord == CurrentWord)
-                return;
-
-            // Find the new spans
+        private void FindTheNewSpans(SnapshotSpan currentWord, List<SnapshotSpan> wordSpans)
+        {
             var findData = new FindData(currentWord.GetText(), currentWord.Snapshot)
-            {
-                FindOptions = FindOptions.WholeWord | FindOptions.MatchCase
-            };
+                               {
+                                   FindOptions = FindOptions.WholeWord | FindOptions.MatchCase
+                               };
 
             wordSpans.AddRange(TextSearchService.FindAll(findData));
+        }
 
-
-            // If we are still up-to-date (another change hasn't happened yet), do a real update))
+        private void IfWeAreStillUpToDateDoARealUpdate(SnapshotPoint currentRequest, SnapshotSpan currentWord, List<SnapshotSpan> wordSpans)
+        {
             if (currentRequest == RequestedPoint)
             {
                 lock (_updateLock)
