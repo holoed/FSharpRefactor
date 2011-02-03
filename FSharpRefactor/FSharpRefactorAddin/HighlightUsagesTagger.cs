@@ -11,6 +11,7 @@
 
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -28,6 +29,7 @@ namespace FSharpRefactorVSAddIn
     public class HighlightUsagesTagger : ITagger<HighlightUsagesTag>
     {
         private readonly object _updateLock = new object();
+        private Tuple<int, ASTAnalysis.SymbolTable> _symbolTableCache;
 
         public HighlightUsagesTagger(ITextView view, ITextBuffer sourceBuffer, ITextSearchService textSearchService,
                                      ITextStructureNavigator textStructureNavigator)
@@ -189,14 +191,30 @@ namespace FSharpRefactorVSAddIn
             {
                 lock (_updateLock)
                 {
-                    var allText = currentWord.Snapshot.GetText();
+                    var snapshot = currentWord.Snapshot;
                     var pos = GetPosition(currentWord);
-                    var references = FSharpRefactor.findAllReferences(allText, pos);
+                    var symbolTable = GetSymbolTable(snapshot);
+                    var references = FSharpRefactor.findAllReferencesInSymbolTable(symbolTable, pos);
                     var foundUsages = wordSpans.Where(x => ReferencesContains(references, x)).ToList();
 
                     SynchronousUpdate(currentRequest, new NormalizedSnapshotSpanCollection(foundUsages), currentWord);
                 }
             }
+        }
+
+        private ASTAnalysis.SymbolTable GetSymbolTable(ITextSnapshot snapshot)
+        {
+            var version = snapshot.Version.VersionNumber;
+            ASTAnalysis.SymbolTable symbolTable;
+            if (_symbolTableCache == null || version != _symbolTableCache.Item1)
+            {
+                var allText = snapshot.GetText();                        
+                symbolTable = ASTAnalysis.buildSymbolTable(FSharpRefactor.parseWithPos(allText));
+                _symbolTableCache = Tuple.Create(snapshot.Version.VersionNumber, symbolTable);
+            }
+            else
+                symbolTable = _symbolTableCache.Item2;
+            return symbolTable;
         }
 
         private static bool ReferencesContains(IEnumerable<Tuple<int, int, int, int>> references, SnapshotSpan currentWord)

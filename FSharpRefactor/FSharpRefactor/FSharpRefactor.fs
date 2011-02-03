@@ -23,14 +23,22 @@ let parseWithPos s =
         let [xs:_] = parseToAst [path]
         xs 
 
-let findAllReferences (text,(x1,x2,y1,y2)) =
+let findAllReferences (ast, (x1,x2,y1,y2)) =
         let pos = { srcFilename = path; srcLine = { startLine = y1; endLine = y2 }; srcColumn = { startColumn = x1; endColumn = x2 } }
         try 
-            text 
-            |> parseWithPos 
+            ast
             |> findAllReferences pos
             |> List.map (fun (Var (s, { srcFilename = _; srcLine = { startLine = y1; endLine = y2 }; srcColumn = { startColumn = x1; endColumn = x2 } })) -> (x1, x2, y1, y2))
             |> List.toSeq
         with
         | _ -> Seq.empty
-             
+
+let findAllReferencesInSymbolTable (symbolTable, (x1,x2,y1,y2)) =
+        let pos = { srcFilename = path; srcLine = { startLine = y1; endLine = y2 }; srcColumn = { startColumn = x1; endColumn = x2 } }
+        try 
+            pos
+            |> ASTAnalysis.getAllReferences symbolTable
+            |> List.map (fun (Var (s, { srcFilename = _; srcLine = { startLine = y1; endLine = y2 }; srcColumn = { startColumn = x1; endColumn = x2 } })) -> (x1, x2, y1, y2))
+            |> List.toSeq
+        with
+        | _ -> Seq.empty      
