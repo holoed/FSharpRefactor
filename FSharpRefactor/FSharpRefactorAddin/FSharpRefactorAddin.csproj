@@ -81,6 +81,7 @@
   <ItemGroup>
     <Compile Include="HighlightUsagesTag.cs" />
     <Compile Include="HighlightUsagesTaggerProvider.cs" />
+    <Compile Include="Maybe.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HighlightUsagesTagger.cs" />
   </ItemGroup>
