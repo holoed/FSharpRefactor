@@ -219,6 +219,8 @@ namespace FSharpRefactorVSAddIn
         {
             var allText = e.After.GetText();
             var newSymbolTable = ASTAnalysis.buildSymbolTable(FSharpRefactor.parseWithPos(allText));
+            if (e.Changes.Count == 0 || (e.Changes[0].NewText.Trim() == string.Empty && e.Changes[0].OldText.Trim() == string.Empty))
+                return;
 
             var textChange = e.Changes[0];
             var wordBefore = FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(new SnapshotPoint(e.Before, textChange.OldPosition));
