@@ -17,12 +17,12 @@ using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
 
-namespace FSharpRefactorVSAddIn
+namespace FSharpRefactorVSAddIn.Rename
 {
     [Export(typeof(IViewTaggerProvider))]
     [ContentType("text")]
-    [TagType(typeof(HighlightUsagesTag))]
-    public class HighlightUsagesTaggerProvider : IViewTaggerProvider
+    [TagType(typeof(RenameTag))]
+    public class RenameTaggerProvider : IViewTaggerProvider
     {
         [Import]
         internal ITextSearchService TextSearchService { get; set; }
@@ -39,7 +39,7 @@ namespace FSharpRefactorVSAddIn
             var textStructureNavigator =
                 TextStructureNavigatorSelector.GetTextStructureNavigator(buffer);
 
-            return new HighlightUsagesTagger(textView, buffer, TextSearchService, textStructureNavigator) as ITagger<T>;
+            return new RenameTagger(textView, buffer, TextSearchService, textStructureNavigator) as ITagger<T>;
         }
     }
 }

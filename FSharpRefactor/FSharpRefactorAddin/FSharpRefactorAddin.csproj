@@ -79,11 +79,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HighlightUsagesTag.cs" />
-    <Compile Include="HighlightUsagesTaggerProvider.cs" />
-    <Compile Include="Maybe.cs" />
+    <Compile Include="Rename\RenameTagger.cs" />
+    <Compile Include="Rename\RenameTaggerProvider.cs" />
+    <Compile Include="Rename\RenameTag.cs" />
+    <Compile Include="HighlightUsages\HighlightUsagesTag.cs" />
+    <Compile Include="HighlightUsages\HighlightUsagesTaggerProvider.cs" />
+    <Compile Include="Common\Maybe.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="HighlightUsagesTagger.cs" />
+    <Compile Include="HighlightUsages\HighlightUsagesTagger.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">

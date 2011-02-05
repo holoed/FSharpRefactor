@@ -15,23 +15,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using FSharpRefactorVSAddIn.Common;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Text.Tagging;
 
-namespace FSharpRefactorVSAddIn
+namespace FSharpRefactorVSAddIn.Rename
 {
     /// <summary>
     /// This tagger will provide tags for every word in the buffer that
     /// matches the word currently under the cursor.
     /// </summary>
-    public class HighlightUsagesTagger : ITagger<HighlightUsagesTag>
+    public class RenameTagger : ITagger<RenameTag>
     {
         private readonly object _updateLock = new object();
         private ASTAnalysis.SymbolTable _symbolTable;
+        private bool _renaming;
 
-        public HighlightUsagesTagger(ITextView view, ITextBuffer sourceBuffer, ITextSearchService textSearchService,
+        public RenameTagger(ITextView view, ITextBuffer sourceBuffer, ITextSearchService textSearchService,
                                      ITextStructureNavigator textStructureNavigator)
         {
             View = view;
@@ -61,7 +63,7 @@ namespace FSharpRefactorVSAddIn
         // The current request, from the last cursor movement or view render
         private SnapshotPoint RequestedPoint { get; set; }
 
-        public IEnumerable<ITagSpan<HighlightUsagesTag>> GetTags(NormalizedSnapshotSpanCollection spans)
+        public IEnumerable<ITagSpan<RenameTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
             if (CurrentWord == null)
                 yield break;
@@ -88,11 +90,11 @@ namespace FSharpRefactorVSAddIn
             // Note that we'll yield back the same word again in the wordspans collection;
             // the duplication here is expected.
             if (spans.OverlapsWith(new NormalizedSnapshotSpanCollection(currentWord)))
-                yield return new TagSpan<HighlightUsagesTag>(currentWord, new HighlightUsagesTag());
+                yield return new TagSpan<RenameTag>(currentWord, new RenameTag());
 
             // Second, yield all the other words in the file
             foreach (var span in NormalizedSnapshotSpanCollection.Overlap(spans, wordSpans))
-                yield return new TagSpan<HighlightUsagesTag>(span, new HighlightUsagesTag());
+                yield return new TagSpan<RenameTag>(span, new RenameTag());
         }
 
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
@@ -261,6 +263,7 @@ namespace FSharpRefactorVSAddIn
                     var newUsage = usage.TranslateTo(afterSnapshot, SpanTrackingMode.EdgeExclusive);
                     afterSnapshot = SourceBuffer.Replace(newUsage, text);
                     lastProcessedVersion = afterSnapshot.Version.VersionNumber;
+                    _renaming = true;
                 }
                 SourceBuffer.Changed += HandleTextChanged;
             }
@@ -299,6 +302,9 @@ namespace FSharpRefactorVSAddIn
         {
             lock (_updateLock)
             {
+                if (!_renaming)
+                    return;
+
                 if (currentRequest != RequestedPoint)
                     return;
 
@@ -310,6 +316,8 @@ namespace FSharpRefactorVSAddIn
                     tempEvent(this,
                               new SnapshotSpanEventArgs(new SnapshotSpan(SourceBuffer.CurrentSnapshot, 0,
                                                                          SourceBuffer.CurrentSnapshot.Length)));
+                if (newSpans.Count == 0)
+                    _renaming = false;
             }
         }
     }
