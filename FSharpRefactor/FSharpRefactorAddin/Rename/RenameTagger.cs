@@ -195,7 +195,8 @@ namespace FSharpRefactorVSAddIn.Rename
         private static List<SnapshotSpan> FindTheNewSpans(SnapshotSpan currentWord)
         {
             var txt = currentWord.Snapshot.GetText();
-            var matches = Regex.Matches(txt, "\\b" + currentWord.GetText().Trim() + "\\b");
+            var word = Regex.Match(currentWord.GetText(), "\\b\\w+\\b");
+            var matches = Regex.Matches(txt, "\\b" + word + "\\b");
             var spans = matches.Cast<Match>().Select(m => new SnapshotSpan(currentWord.Snapshot, m.Index, m.Length));           
             return spans.ToList();
         }
