@@ -225,17 +225,20 @@ namespace FSharpRefactorVSAddIn.Rename
                 return;
             var allText = e.After.GetText();
             var newSymbolTable = ASTAnalysis.buildSymbolTable(FSharpRefactor.parseWithPos(allText));
-            if (e.Changes.Count == 0) 
-                return;
-            var textChange = e.Changes[0];
-            if (textChange.NewText.Trim() == string.Empty && textChange.OldText.Trim() == string.Empty)
-                return;
-
-            var wordBefore = FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(new SnapshotPoint(e.Before, textChange.OldPosition));
-            var wordAfter = FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(new SnapshotPoint(e.After, textChange.NewPosition));
-            if (wordBefore.Success && wordAfter.Success)
-                _lastProcessedVersion = IfIdentifierHasChangedThanRenameAllOccurrences(e, wordBefore, wordAfter, _lastProcessedVersion);
-
+            if (_lastProcessedVersion != e.AfterVersion.VersionNumber && e.Changes.Count > 0)
+            {
+                var textChange = e.Changes[0];
+                if (textChange.NewText.Trim() != string.Empty || textChange.OldText.Trim() != string.Empty)
+                {
+                    var wordBefore =
+                        FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(new SnapshotPoint(e.Before, textChange.OldPosition));
+                    var wordAfter =
+                        FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(new SnapshotPoint(e.After, textChange.NewPosition));
+                    if (wordBefore.Success && wordAfter.Success)
+                        _lastProcessedVersion = IfIdentifierHasChangedThanRenameAllOccurrences(e, wordBefore, wordAfter,
+                                                                                               _lastProcessedVersion);
+                }                
+            }
             _symbolTable = newSymbolTable;
         }
 
