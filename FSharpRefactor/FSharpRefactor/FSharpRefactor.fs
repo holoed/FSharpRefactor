@@ -18,10 +18,12 @@ open System.IO
 
 let path = sprintf "%s\\%s" (Directory.GetCurrentDirectory()) "test.fs" 
 
-let parseWithPos s =         
-        File.WriteAllText("test.fs", s)        
-        let [xs:_] = parseToAst [path]
-        xs 
+let syncObj = new obj()
+
+let parseWithPos s =   
+        lock syncObj (fun () -> File.WriteAllText("test.fs", s)        
+                                let [xs:_] = parseToAst [path]
+                                xs)
 
 let findAllReferences (ast, (x1,x2,y1,y2)) =
         let pos = { srcFilename = path; srcLine = { startLine = y1; endLine = y2 }; srcColumn = { startColumn = x1; endColumn = x2 } }

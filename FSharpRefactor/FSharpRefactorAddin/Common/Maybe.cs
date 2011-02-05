@@ -9,7 +9,7 @@
 // * You must not remove this notice, or any other, from this software.
 // * **********************************************************************************************
 
-namespace FSharpRefactorVSAddIn
+namespace FSharpRefactorVSAddIn.Common
 {
     public struct Maybe<T>
     {

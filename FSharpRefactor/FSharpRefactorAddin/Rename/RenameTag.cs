@@ -15,24 +15,25 @@ using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
 
-namespace FSharpRefactorVSAddIn
+namespace FSharpRefactorVSAddIn.Rename
 {
-    public class HighlightUsagesTag : TextMarkerTag
+    public class RenameTag : TextMarkerTag
     {
-        public HighlightUsagesTag() : base("MarkerFormatDefinition/HighlightWordFormatDefinition") { }
+        public RenameTag() : base("MarkerFormatDefinition/RenameFormatDefinition") { }
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [Name("MarkerFormatDefinition/HighlightWordFormatDefinition")]
+    [Name("MarkerFormatDefinition/RenameFormatDefinition")]
     [UserVisible(true)]
-    public class HighlightWordFormatDefinition : MarkerFormatDefinition
+    public class RenameFormatDefinition : MarkerFormatDefinition
     {
-        public HighlightWordFormatDefinition()
+        public RenameFormatDefinition()
         {
-            BackgroundColor = Colors.LightGreen;
-            ForegroundColor = Colors.DarkGreen;
-            DisplayName = "Highlight Word";
-            ZOrder = 5;
+            ForegroundColor = Colors.Red;
+            BackgroundColor = Colors.Transparent;
+            DisplayName = "Rename identifier";
+            ZOrder = 6;
+            
         }
     }
 }
