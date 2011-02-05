@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
@@ -28,7 +29,7 @@ namespace FSharpRefactorVSAddIn
     public class HighlightUsagesTagger : ITagger<HighlightUsagesTag>
     {
         private readonly object _updateLock = new object();
-        private Tuple<int, ASTAnalysis.SymbolTable> _symbolTableCache;
+        private ASTAnalysis.SymbolTable _symbolTable;
 
         public HighlightUsagesTagger(ITextView view, ITextBuffer sourceBuffer, ITextSearchService textSearchService,
                                      ITextStructureNavigator textStructureNavigator)
@@ -45,7 +46,8 @@ namespace FSharpRefactorVSAddIn
             // or the caret is moved, we refresh our list of highlighted words.
             View.Caret.PositionChanged += CaretPositionChanged;
             View.LayoutChanged += ViewLayoutChanged;
-        }
+            View.TextBuffer.Changed += HandleTextChanged;
+        }        
 
         private ITextView View { get; set; }
         private ITextBuffer SourceBuffer { get; set; }
@@ -129,9 +131,7 @@ namespace FSharpRefactorVSAddIn
 
         private void UpdateWordAdornments(object threadContext)
         {
-            var currentRequest = RequestedPoint;
-
-            var wordSpans = new List<SnapshotSpan>();
+            var currentRequest = RequestedPoint;            
 
             // Find all words in the buffer like the one the caret is on
             var currentWord = FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(currentRequest);
@@ -144,7 +144,7 @@ namespace FSharpRefactorVSAddIn
                 return;
 
             // Find the new spans
-            FindTheNewSpans(currentWord.Value, wordSpans);
+            var wordSpans = FindTheNewSpans(currentWord.Value);
 
 
             // If we are still up-to-date (another change hasn't happened yet), do a real update))
@@ -190,14 +190,12 @@ namespace FSharpRefactorVSAddIn
             return new Maybe<SnapshotSpan> {Value = word.Span, Success = true};
         }
 
-        private void FindTheNewSpans(SnapshotSpan currentWord, List<SnapshotSpan> wordSpans)
+        private static List<SnapshotSpan> FindTheNewSpans(SnapshotSpan currentWord)
         {
-            var findData = new FindData(currentWord.GetText(), currentWord.Snapshot)
-                               {
-                                   FindOptions = FindOptions.WholeWord | FindOptions.MatchCase
-                               };
-
-            wordSpans.AddRange(TextSearchService.FindAll(findData));
+            var txt = currentWord.Snapshot.GetText();
+            var matches = Regex.Matches(txt, "\\b" + currentWord.GetText().Trim() + "\\b");
+            var spans = matches.Cast<Match>().Select(m => new SnapshotSpan(currentWord.Snapshot, m.Index, m.Length));           
+            return spans.ToList();
         }
 
         private void IfWeAreStillUpToDateDoARealUpdate(SnapshotPoint currentRequest, SnapshotSpan currentWord, List<SnapshotSpan> wordSpans)
@@ -206,10 +204,10 @@ namespace FSharpRefactorVSAddIn
             {
                 lock (_updateLock)
                 {
-                    var snapshot = currentWord.Snapshot;
+                    if (_symbolTable == null)
+                        _symbolTable = ASTAnalysis.buildSymbolTable(FSharpRefactor.parseWithPos(currentRequest.Snapshot.GetText()));
                     var pos = GetPosition(currentWord);
-                    var symbolTable = GetSymbolTable(snapshot);
-                    var references = FSharpRefactor.findAllReferencesInSymbolTable(symbolTable, pos);
+                    var references = FSharpRefactor.findAllReferencesInSymbolTable(_symbolTable, pos);
                     var foundUsages = wordSpans.Where(x => ReferencesContains(references, x)).ToList();
 
                     SynchronousUpdate(currentRequest, new NormalizedSnapshotSpanCollection(foundUsages), currentWord);
@@ -217,20 +215,44 @@ namespace FSharpRefactorVSAddIn
             }
         }
 
-        private ASTAnalysis.SymbolTable GetSymbolTable(ITextSnapshot snapshot)
+        private void HandleTextChanged(object sender, TextContentChangedEventArgs e)
         {
-            var version = snapshot.Version.VersionNumber;
-            ASTAnalysis.SymbolTable symbolTable;
-            if (_symbolTableCache == null || version != _symbolTableCache.Item1)
+            var allText = e.After.GetText();
+            var newSymbolTable = ASTAnalysis.buildSymbolTable(FSharpRefactor.parseWithPos(allText));
+
+            var textChange = e.Changes[0];
+            var wordBefore = FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(new SnapshotPoint(e.Before, textChange.OldPosition));
+            var wordAfter = FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(new SnapshotPoint(e.After, textChange.NewPosition));
+            if (wordBefore.Success && wordAfter.Success)
             {
-                var allText = snapshot.GetText();                        
-                symbolTable = ASTAnalysis.buildSymbolTable(FSharpRefactor.parseWithPos(allText));
-                _symbolTableCache = Tuple.Create(snapshot.Version.VersionNumber, symbolTable);
+                var oldText = Regex.Match(e.Before.GetText(wordBefore.Value), "\\b\\w+\\b");
+                if (oldText.Success)
+                {
+                    var position = GetPosition(wordBefore.Value);
+                    position = Tuple.Create(position.Item1, position.Item1 + oldText.Length, position.Item3, position.Item4);
+                    var usagesOfModifiedWord =
+                        FSharpRefactor.findAllReferencesInSymbolTable(_symbolTable, position).Where(p => !(p.Item1 == position.Item1 &&
+                                                                                                           p.Item2 == position.Item2 &&
+                                                                                                           p.Item3 == position.Item3 &&
+                                                                                                           p.Item4 == position.Item4));
+
+                    var spans = FindTheNewSpans(wordBefore.Value);
+                    var foundUsages = spans.Where(x => ReferencesContains(usagesOfModifiedWord, x)).ToList();
+
+                    var text = Regex.Match(e.After.GetText(wordAfter.Value), "\\b\\w+\\b").Value;
+                    var afterSnapshot = e.After;
+                    SourceBuffer.Changed -= HandleTextChanged;
+                    foreach (var usage in foundUsages)
+                    {                        
+                        var newUsage = usage.TranslateTo(afterSnapshot, SpanTrackingMode.EdgeExclusive);
+                        afterSnapshot = SourceBuffer.Replace(newUsage, text);
+                    }
+                    SourceBuffer.Changed += HandleTextChanged;
+                }
             }
-            else
-                symbolTable = _symbolTableCache.Item2;
-            return symbolTable;
-        }
+
+            _symbolTable = newSymbolTable;
+        }        
 
         private static bool ReferencesContains(IEnumerable<Tuple<int, int, int, int>> references, SnapshotSpan currentWord)
         {
