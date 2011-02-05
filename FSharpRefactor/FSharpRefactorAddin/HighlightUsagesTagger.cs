@@ -215,46 +215,57 @@ namespace FSharpRefactorVSAddIn
             }
         }
 
+        private int _lastProcessedVersion;
+
         private void HandleTextChanged(object sender, TextContentChangedEventArgs e)
         {
+            if (_lastProcessedVersion > e.AfterVersion.VersionNumber)
+                return;
             var allText = e.After.GetText();
             var newSymbolTable = ASTAnalysis.buildSymbolTable(FSharpRefactor.parseWithPos(allText));
-            if (e.Changes.Count == 0 || (e.Changes[0].NewText.Trim() == string.Empty && e.Changes[0].OldText.Trim() == string.Empty))
+            if (e.Changes.Count == 0) 
+                return;
+            var textChange = e.Changes[0];
+            if (textChange.NewText.Trim() == string.Empty && textChange.OldText.Trim() == string.Empty)
                 return;
 
-            var textChange = e.Changes[0];
             var wordBefore = FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(new SnapshotPoint(e.Before, textChange.OldPosition));
             var wordAfter = FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(new SnapshotPoint(e.After, textChange.NewPosition));
             if (wordBefore.Success && wordAfter.Success)
-            {
-                var oldText = Regex.Match(e.Before.GetText(wordBefore.Value), "\\b\\w+\\b");
-                if (oldText.Success)
-                {
-                    var position = GetPosition(wordBefore.Value);
-                    position = Tuple.Create(position.Item1, position.Item1 + oldText.Length, position.Item3, position.Item4);
-                    var usagesOfModifiedWord =
-                        FSharpRefactor.findAllReferencesInSymbolTable(_symbolTable, position).Where(p => !(p.Item1 == position.Item1 &&
-                                                                                                           p.Item2 == position.Item2 &&
-                                                                                                           p.Item3 == position.Item3 &&
-                                                                                                           p.Item4 == position.Item4));
-
-                    var spans = FindTheNewSpans(wordBefore.Value);
-                    var foundUsages = spans.Where(x => ReferencesContains(usagesOfModifiedWord, x)).ToList();
-
-                    var text = Regex.Match(e.After.GetText(wordAfter.Value), "\\b\\w+\\b").Value;
-                    var afterSnapshot = e.After;
-                    SourceBuffer.Changed -= HandleTextChanged;
-                    foreach (var usage in foundUsages)
-                    {                        
-                        var newUsage = usage.TranslateTo(afterSnapshot, SpanTrackingMode.EdgeExclusive);
-                        afterSnapshot = SourceBuffer.Replace(newUsage, text);
-                    }
-                    SourceBuffer.Changed += HandleTextChanged;
-                }
-            }
+                _lastProcessedVersion = IfIdentifierHasChangedThanRenameAllOccurrences(e, wordBefore, wordAfter, _lastProcessedVersion);
 
             _symbolTable = newSymbolTable;
-        }        
+        }
+
+        private int IfIdentifierHasChangedThanRenameAllOccurrences(TextContentChangedEventArgs e, Maybe<SnapshotSpan> wordBefore, Maybe<SnapshotSpan> wordAfter, int lastProcessedVersion)
+        {
+            var oldText = Regex.Match(e.Before.GetText(wordBefore.Value), "\\b\\w+\\b");
+            if (oldText.Success)
+            {
+                var position = GetPosition(wordBefore.Value);
+                position = Tuple.Create(position.Item1, position.Item1 + oldText.Length, position.Item3, position.Item4);
+                var usagesOfModifiedWord =
+                    FSharpRefactor.findAllReferencesInSymbolTable(_symbolTable, position).Where(p => !(p.Item1 == position.Item1 &&
+                                                                                                       p.Item2 == position.Item2 &&
+                                                                                                       p.Item3 == position.Item3 &&
+                                                                                                       p.Item4 == position.Item4));
+
+                var spans = FindTheNewSpans(wordBefore.Value);
+                var foundUsages = spans.Where(x => ReferencesContains(usagesOfModifiedWord, x)).ToList();
+
+                var text = Regex.Match(e.After.GetText(wordAfter.Value), "\\b\\w+\\b").Value;
+                var afterSnapshot = e.After;
+                SourceBuffer.Changed -= HandleTextChanged;
+                foreach (var usage in foundUsages)
+                {                        
+                    var newUsage = usage.TranslateTo(afterSnapshot, SpanTrackingMode.EdgeExclusive);
+                    afterSnapshot = SourceBuffer.Replace(newUsage, text);
+                    lastProcessedVersion = afterSnapshot.Version.VersionNumber;
+                }
+                SourceBuffer.Changed += HandleTextChanged;
+            }
+            return lastProcessedVersion;
+        }
 
         private static bool ReferencesContains(IEnumerable<Tuple<int, int, int, int>> references, SnapshotSpan currentWord)
         {
