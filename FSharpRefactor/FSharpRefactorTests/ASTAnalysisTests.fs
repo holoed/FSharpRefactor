@@ -359,3 +359,9 @@ type ASTAnalysisTests() =
                                      "    | :? System.DivideByZeroException -> None ")
         AssertAreEqual [Var ("x", loc(12,13,3,3));Var ("x", loc(12,13,1,1))] (findAllReferences (loc (12,13,1,1)) ast)
         AssertAreEqual [Var ("y", loc(16,17,3,3));Var ("y", loc(14,15,1,1))] (findAllReferences (loc (14,15,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of identifiers bound with let! in computation expression``  () =
+        let ast = parseWithPosDecl("let y = state { let! x = f   \n" +
+                                   "                return x }")
+        AssertAreEqual [Var ("x", loc(23,24,2,2));Var ("x", loc(21,22,1,1))] (findAllReferences (loc (21,22,1,1)) ast)
