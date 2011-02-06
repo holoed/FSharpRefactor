@@ -351,7 +351,6 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("x", loc(27,28,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
 
     [<Test>]
-    [<Ignore("Work in progress...")>]
     member this.``Find usages in body of try with expression`` () =
         let ast = parseWithPosDecl(  "let divide1 x y =      \n" +
                                      "    try               \n" +
