@@ -10,7 +10,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j> =
         longVarSetF : 'b -> 'b -> 'b
         lamF : 'j list -> 'b -> 'b
         appF : 'b -> 'b -> 'b
-        letF : IsLetRec -> 'j -> 'b -> 'b -> 'b
+        letF : IsLetRec -> ('j * 'b) list -> 'b -> 'b
         letBangF : 'j -> 'b -> 'b -> 'b
         litF : Literal -> 'b
         tupleF : 'b list -> 'b
