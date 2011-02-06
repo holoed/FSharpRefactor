@@ -88,6 +88,11 @@ let internal foldDecls decls =
                         let! (Let(r, j, k, _)) = LoopBinding isRec (xs.Head)
                         let! xAcc = LoopExpr x
                         return Let (r, j, k, xAcc)
+                | SynExpr.LetOrUseBang (_,_,p,e1,e2,_) ->
+                    let! pAcc = LoopPat p
+                    let! e1Acc = LoopExpr e1
+                    let! e2Acc = LoopExpr e2
+                    return LetBang (pAcc, e1Acc, e2Acc)                        
                 | SynExpr.ForEach (_,_,pat,e1,e2,_) -> 
                     let! pAcc = LoopPat pat
                     let! e1Acc = LoopExpr e1

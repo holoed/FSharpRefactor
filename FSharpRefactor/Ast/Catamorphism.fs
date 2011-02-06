@@ -34,6 +34,10 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_>) decl =
                                               let! e1Acc = LoopExp e1
                                               let! e2Acc = LoopExp e2
                                               return algebra.letF isRec pAcc e1Acc e2Acc
+                  | LetBang (p, e1, e2) -> let! pAcc = LoopPat p
+                                           let! e1Acc = LoopExp e1
+                                           let! e2Acc = LoopExp e2
+                                           return algebra.letBangF pAcc e1Acc e2Acc
                   | Lit x -> return algebra.litF x
                 
                   | Tuple es -> let! esAcc = mmap LoopExp es

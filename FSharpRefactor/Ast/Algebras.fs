@@ -11,6 +11,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j> =
         lamF : 'j list -> 'b -> 'b
         appF : 'b -> 'b -> 'b
         letF : IsLetRec -> 'j -> 'b -> 'b -> 'b
+        letBangF : 'j -> 'b -> 'b -> 'b
         litF : Literal -> 'b
         tupleF : 'b list -> 'b
         listF : 'b list -> 'b

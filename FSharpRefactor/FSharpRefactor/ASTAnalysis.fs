@@ -149,6 +149,29 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                                                 let! _ = mmap (fun x -> execute exitScope x) flatpat  // ---------------------------------------------------- 
                                                                                 do ()
                                                                             return Let (isRec, p', e1', e2') })
+                         letBangF =          (fun p e1 e2 -> state {    let! pAcc = p
+                                                                        let flatpat = flatPat pAcc
+                                                                        match pAcc with   
+                                                                        | PApp(_, _) ->
+                                                                                let (PVar (sf,lf)) = List.head flatpat
+                                                                                let vars = List.tail flatpat                                                                                                                                
+                                                                                let! _ = mmap (fun x -> execute enterScope x) vars // ----------------------------------------------------
+                                                                                let! e1' = e1                                      // function variables scope (like the x in let f x = x)                                  
+                                                                                let! _ = mmap (fun x -> execute exitScope x) vars  // ----------------------------------------------------
+                                                                                do! enterScope (sf, lf)     // ----------------------------------------------------                                           
+                                                                                let! e2' = e2               // function name scope (like the f in let f x = x)  
+                                                                                if (e2' <> (Lit Unit)) then
+                                                                                    do! exitScope (sf, lf)      // ----------------------------------------------------                               
+                                                                                return LetBang (pAcc, e1', e2') 
+                                                                        | _ ->
+                                                                            let! p'  = p                                                 
+                                                                            let! e1' = e1       
+                                                                            let! _ = mmap (fun x -> execute enterScope x) flatpat                                            
+                                                                            let! e2' = e2           // let x = x in x Only "let x" and "in x" refer to the same identifier.
+                                                                            if (e2' <> (Lit Unit)) then
+                                                                                let! _ = mmap (fun x -> execute exitScope x) flatpat  // ---------------------------------------------------- 
+                                                                                do ()
+                                                                            return LetBang (p', e1', e2') })
                          litF =        (fun x -> state { return Lit x })
                          tupleF =      (fun es -> state { let! es' = mmap (fun e -> state { return! e }) es
                                                           return Tuple es' })

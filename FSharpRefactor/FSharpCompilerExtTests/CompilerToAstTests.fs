@@ -27,6 +27,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               lamF                 =     (fun ps b -> Lam(ps, b)) 
                               appF                 =     (fun x y -> App (x, y))
                               letF                 =     (fun isRec p e1 e2 -> Let(isRec, p, e1, e2))
+                              letBangF             =     (fun p e1 e2 -> LetBang (p, e1, e2))
                               litF                 =     (fun x -> Lit x)
                               tupleF               =     (fun xs -> Tuple xs)
                               listF                =     (fun xs -> List xs)
@@ -473,7 +474,7 @@ type CompilerToAstTests() =
         AssertAreEqual [Let (false, PApp (PVar "DoSome",PLit Unit),  IfThenElse(App(App (Var "op_GreaterThan", Var "x"), Lit(Integer 0)), Do (App (Var "Hello",Lit Unit)), Option.None),Lit Unit)] ast
         
     [<Test>]
-    member this. ``try with expression`` () =
+    member this.``try with expression`` () =
         let ast = parse("let divide1 x y =      \n" +
                          "    try               \n" +
                          "      Some (x / y)    \n" +
@@ -486,4 +487,10 @@ type CompilerToAstTests() =
                                [Clause
                                   (PIsInst (LongIdent [Ident "System"; Ident "DivideByZeroException"]),
                                    Var "None")]),Lit Unit)] ast
+
+    [<Test>]
+    member this.``Let! in computation expression``  () =
+        let ast = parse("let y = state { let! x = f   \n" +
+                         "               return x }")
+        AssertAreEqual [Let (false,PVar "y",  App (Var "state",LetBang (PVar "x",Var "f",YieldOrReturn (Var "x"))), Lit Unit)] ast
 
