@@ -30,10 +30,9 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_>) decl =
                   | App (l, r) -> let! lAcc = LoopExp l
                                   let! rAcc = LoopExp r
                                   return algebra.appF lAcc rAcc
-                  | Let (isRec, p, e1, e2) -> let! pAcc = LoopPat p
-                                              let! e1Acc = LoopExp e1
-                                              let! e2Acc = LoopExp e2
-                                              return algebra.letF isRec pAcc e1Acc e2Acc
+                  | Let (isRec, bs, e) -> let! bsAcc = mmap LoopBinding bs
+                                          let! eAcc = LoopExp e
+                                          return algebra.letF isRec bsAcc eAcc
                   | LetBang (p, e1, e2) -> let! pAcc = LoopPat p
                                            let! e1Acc = LoopExp e1
                                            let! e2Acc = LoopExp e2
@@ -88,6 +87,11 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_>) decl =
                                            let! clAcc = mmap LoopClauses cl
                                            return algebra.tryWithF eAcc clAcc
                   | ArbitraryAfterError -> return algebra.errorF () }
+
+      and LoopBinding (p, e) =
+            cont { let! pAcc = LoopPat p
+                   let! eAcc = LoopExp e
+                   return (pAcc, eAcc) }
 
       and LoopTypeInst t = 
                 cont { match t with   

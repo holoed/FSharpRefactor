@@ -22,8 +22,9 @@ let internal foldDecls decls =
     let rec LoopDecl x =
         cont { match x with
                | SynModuleDecl.Let (isRec,xs,_) -> 
-                    let! xsAcc = mmap (LoopBinding isRec) xs
-                    return Ast.Module.Exp xsAcc
+                    let! xsAcc = mmap LoopBinding xs
+                    let xsAcc' = List.map (fun (nAcc, eAcc) -> Let(isRec, [nAcc, eAcc], Lit(Unit))) xsAcc
+                    return Ast.Module.Exp xsAcc'
                | SynModuleDecl.DoExpr (_,x,_) -> 
                     let! xAcc = LoopExpr x
                     return Ast.Module.Exp [xAcc] 
@@ -35,12 +36,12 @@ let internal foldDecls decls =
                     return Ast.NestedModule (List.map (fun (x:Ident) -> x.idText) longId, xsAcc)
                | SynModuleDecl.Open (xs, _) -> 
                     return Ast.Open (List.map (fun (x:Ident) -> x.idText) xs) }
-    and LoopBinding isRec x = 
+    and LoopBinding x = 
         cont { match x with
                | SynBinding.Binding(_,_,_,_,_,_,_,name,_,expr,_,_) -> 
                     let! nAcc = LoopPat name
                     let! eAcc = LoopExpr expr
-                    return Ast.Let(isRec, nAcc, eAcc, Ast.Lit(Ast.Literal.Unit)) }
+                    return (nAcc, eAcc) }
     and LoopMemberBinding x = 
         cont { match x with
                | SynBinding.Binding(_,_,_,_,_,_,_,name,_,expr,_,_) -> 
@@ -85,9 +86,9 @@ let internal foldDecls decls =
                     if (List.isEmpty xs) then
                         return Ast.ArbitraryAfterError
                     else
-                        let! (Let(r, j, k, _)) = LoopBinding isRec (xs.Head)
+                        let! bsAcc = mmap LoopBinding xs
                         let! xAcc = LoopExpr x
-                        return Let (r, j, k, xAcc)
+                        return Let (isRec, bsAcc, xAcc)
                 | SynExpr.LetOrUseBang (_,_,p,e1,e2,_) ->
                     let! pAcc = LoopPat p
                     let! e1Acc = LoopExpr e1
@@ -206,8 +207,9 @@ let internal foldDecls decls =
                | SynMemberDefn.Member (b, _) -> 
                    return! LoopMemberBinding b
                | SynMemberDefn.LetBindings (es,_,_,_) ->
-                   let! esAcc = mmap (LoopBinding false) es
-                   return ClassMember.LetBindings esAcc 
+                   let! esAcc = mmap LoopBinding es
+                   let esAcc' = List.map (fun (pAcc, eAcc) -> Let(false, [pAcc, eAcc], Lit(Unit))) esAcc
+                   return ClassMember.LetBindings esAcc'
                | SynMemberDefn.AbstractSlot(SynValSig.ValSpfn(_, ident, _, _, _, _, _, _, _, _, _),_,_) ->
                    return ClassMember.AbstractSlot (ident.idText)
                | SynMemberDefn.Interface(t, Some ms, _) ->

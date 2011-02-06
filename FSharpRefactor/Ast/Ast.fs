@@ -47,7 +47,7 @@ and Exp<'a>
     | LongVarSet of Exp<'a> * Exp<'a>
     | Lam      of Pat<'a> list * Exp<'a>       // lambda abstraction
     | App      of Exp<'a> * Exp<'a>            // application    
-    | Let      of IsLetRec * Pat<'a> * Exp<'a> * Exp<'a>  // local definition    
+    | Let      of IsLetRec * (Pat<'a> * Exp<'a>) list * Exp<'a>  // local definition    
     | LetBang  of Pat<'a> * Exp<'a> * Exp<'a>
     | Lit      of Literal                      // literal 
     | Tuple    of Exp<'a> list

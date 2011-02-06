@@ -365,3 +365,16 @@ type ASTAnalysisTests() =
         let ast = parseWithPosDecl("let y = state { let! x = f   \n" +
                                    "                return x }")
         AssertAreEqual [Var ("x", loc(23,24,2,2));Var ("x", loc(21,22,1,1))] (findAllReferences (loc (21,22,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in mutually recursive functions``() =
+        let ast = parseWithPosDecl ( "let loop e =              \n" +
+                                     "    let rec foo x =       \n" +
+                                     "      bar x               \n" +
+                                     "    and bar y =           \n" +
+                                     "        foo y             \n" +
+                                     "    foo e")
+        AssertAreEqual [Var ("x", loc(10,11,3,3));Var ("x", loc(16,17,2,2))] (findAllReferences (loc (16,17,2,2)) ast)
+        AssertAreEqual [Var ("y", loc(12,13,5,5));Var ("y", loc(12,13,4,4))] (findAllReferences (loc (12,13,4,4)) ast)
+        
+
