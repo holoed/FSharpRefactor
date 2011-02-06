@@ -138,9 +138,13 @@ let internal foldDecls decls =
                         let! tAcc = LoopType t
                         return Ast.Upcast (eAcc, tAcc)
                 | SynExpr.LongIdentSet (li, e, _) ->
-                    let liAcc = Ast.LongVar (List.map (fun (id:Ident) -> Ast.Var (id.idText, mkSrcLoc id.idRange)) li)
-                    let! eAcc = LoopExpr e
-                    return Ast.LongVarSet (liAcc, eAcc)
+                        let liAcc = Ast.LongVar (List.map (fun (id:Ident) -> Ast.Var (id.idText, mkSrcLoc id.idRange)) li)
+                        let! eAcc = LoopExpr e
+                        return Ast.LongVarSet (liAcc, eAcc)
+                | SynExpr.TryWith (e,_,cl,_,_,_,_) ->
+                        let! eAcc = LoopExpr e
+                        let! clAcc = mmap LoopClause cl
+                        return Ast.TryWith (eAcc, clAcc)
                 | SynExpr.ArbitraryAfterError _ -> 
                     return Ast.ArbitraryAfterError }
 
@@ -262,7 +266,10 @@ let internal foldDecls decls =
                     return Pat.PLit lit
                | SynPat.ArrayOrList (_,xs,_) -> 
                     let! xsAcc = mmap LoopPat xs
-                    return Ast.PList xsAcc }
+                    return Ast.PList xsAcc
+               | SynPat.IsInst (t, _) ->
+                    let! tAcc = LoopType t
+                    return Ast.PIsInst tAcc }
 
     and buildPApp f xs = 
                cont { match xs with

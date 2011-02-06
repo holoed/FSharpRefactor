@@ -15,7 +15,24 @@ open Ast
 open ContinuationMonad
 open Algebras
 
-let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_>) decl =
+let foldPat varF appF litF tupleF wildF arrayOrListF longVarF pat = 
+ let rec Loop e =
+     cont {  match e with
+             | PVar x -> return varF x
+             | PApp (l, r) -> let! lAcc = Loop l
+                              let! rAcc = Loop r
+                              return appF lAcc rAcc  
+             | PLit x -> return litF x
+             | PTuple es -> let! esAcc = mmap Loop es
+                            return tupleF esAcc
+             | PWild -> return wildF () 
+             | PList es -> let! esAcc = mmap Loop es
+                           return arrayOrListF esAcc
+             | PLongVar xs -> let! xsAcc = mmap Loop xs
+                              return longVarF xsAcc }
+ Loop pat id
+
+let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_>) decl =
   let rec LoopExp e =
           cont {  match e with
                   | Var x -> return algebra.varF x 
@@ -24,14 +41,16 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_>) decl =
                   | LongVarSet (e1, e2) -> let! e1Acc = LoopExp e1
                                            let! e2Acc = LoopExp e2
                                            return algebra.longVarSetF e1Acc e2Acc 
-                  | Lam (x, body) -> let! bodyAcc = LoopExp body
-                                     return algebra. lamF x bodyAcc
+                  | Lam (ps, body) -> let! psAcc = mmap LoopPat ps
+                                      let! bodyAcc = LoopExp body
+                                      return algebra. lamF psAcc bodyAcc
                   | App (l, r) -> let! lAcc = LoopExp l
                                   let! rAcc = LoopExp r
                                   return algebra.appF lAcc rAcc
-                  | Let (isRec, p, e1, e2) -> let! e1Acc = LoopExp e1
+                  | Let (isRec, p, e1, e2) -> let! pAcc = LoopPat p
+                                              let! e1Acc = LoopExp e1
                                               let! e2Acc = LoopExp e2
-                                              return algebra.letF isRec p e1Acc e2Acc
+                                              return algebra.letF isRec pAcc e1Acc e2Acc
                   | Lit x -> return algebra.litF x
                 
                   | Tuple es -> let! esAcc = mmap LoopExp es
@@ -41,9 +60,10 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_>) decl =
                   | Match (e, cs) -> let! eAcc = LoopExp e
                                      let! csAcc = mmap  LoopClauses cs
                                      return algebra.matchF eAcc csAcc
-                  | ForEach (p, e1, e2) -> let! e1Acc = LoopExp e1
+                  | ForEach (p, e1, e2) -> let! pAcc = LoopPat p
+                                           let! e1Acc = LoopExp e1
                                            let! e2Acc = LoopExp e2
-                                           return algebra.forEachF p e1Acc e2Acc
+                                           return algebra.forEachF pAcc e1Acc e2Acc
                   | YieldOrReturn e -> let! eAcc = LoopExp e
                                        return algebra.yieldOrRetF eAcc
                   | YieldOrReturnFrom e -> let! eAcc = LoopExp e
@@ -77,6 +97,9 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_>) decl =
                   | Exp.Upcast (e, t) -> let! eAcc = LoopExp e
                                          let! tAcc = LoopTypeInst t
                                          return algebra.upcastF eAcc tAcc 
+                  | Exp.TryWith (e, cl) -> let! eAcc = LoopExp e
+                                           let! clAcc = mmap LoopClauses cl
+                                           return algebra.tryWithF eAcc clAcc
                   | ArbitraryAfterError -> return algebra.errorF () }
 
       and LoopTypeInst t = 
@@ -96,8 +119,9 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_>) decl =
                        
       and LoopClauses c =
                 cont { match c with
-                       | Clause(p, e) ->let! eAcc = LoopExp e
-                                        return algebra.clauseF p eAcc }
+                       | Clause(p, e) ->let! pAcc = LoopPat p
+                                        let! eAcc = LoopExp e
+                                        return algebra.clauseF pAcc eAcc }
 
       and LoopTypes t = 
                cont { match t with
@@ -114,15 +138,33 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_>) decl =
 
       and LoopClassMember ms =
                 cont { match ms with
-                       | ImplicitCtor ps -> return algebra.implicitConF ps
-                       | Member (p, e) -> let! eAcc = LoopExp e
-                                          return algebra.memberF p eAcc
+                       | ImplicitCtor ps -> let! psAcc = mmap LoopPat ps
+                                            return algebra.implicitConF psAcc
+                       | Member (p, e) -> let! pAcc = LoopPat p
+                                          let! eAcc = LoopExp e
+                                          return algebra.memberF pAcc eAcc
                        | Interface(t, ms) -> let! tAcc = LoopTypeInst t
                                              let! msAcc = mmap LoopClassMember ms
                                              return algebra.interfaceF tAcc msAcc
                        | AbstractSlot n -> return algebra.abstractSlotF n
                        | LetBindings es -> let! esAcc = mmap LoopExp es
                                            return algebra.letBindingsF esAcc }
+       and LoopPat pat =    
+                cont {    match pat with
+                          | PVar x -> return algebra.pVarF x
+                          | PApp (l, r) -> let! lAcc = LoopPat l
+                                           let! rAcc = LoopPat r
+                                           return algebra.pAppF lAcc rAcc  
+                          | PLit x -> return algebra.pLitF x
+                          | PTuple es -> let! esAcc = mmap LoopPat es
+                                         return algebra.pTupleF esAcc
+                          | PWild -> return algebra.pWildF () 
+                          | PList es -> let! esAcc = mmap LoopPat es
+                                        return algebra.pArrayOrListF esAcc
+                          | PLongVar xs -> let! xsAcc = mmap LoopPat xs
+                                           return algebra.pLongVarF xsAcc
+                          | PIsInst t -> let! tAcc = LoopTypeInst t
+                                         return algebra.pIsInstF tAcc }
 
   let rec LoopDecl e = 
            cont { match e with
@@ -134,23 +176,5 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_>) decl =
                                              return algebra.moduleF n xsAcc 
                   | Open s -> return algebra.openF s }
   LoopDecl decl id    
-
-
-let foldPat varF appF litF tupleF wildF arrayOrListF longVarF pat = 
-  let rec Loop e =
-      cont {  match e with
-              | PVar x -> return varF x
-              | PApp (l, r) -> let! lAcc = Loop l
-                               let! rAcc = Loop r
-                               return appF lAcc rAcc  
-              | PLit x -> return litF x
-              | PTuple es -> let! esAcc = mmap Loop es
-                             return tupleF esAcc
-              | PWild -> return wildF () 
-              | PList es -> let! esAcc = mmap Loop es
-                            return arrayOrListF esAcc
-              | PLongVar xs -> let! xsAcc = mmap Loop xs
-                               return longVarF xsAcc }
-  Loop pat id
 
 

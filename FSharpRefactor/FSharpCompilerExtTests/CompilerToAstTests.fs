@@ -20,20 +20,13 @@ open AstCatamorphisms
 
 let path = sprintf "%s\\%s" (Directory.GetCurrentDirectory()) "test.fs" 
 
-let stripPos (decl:Module<'a*'b>) :Module<'a> = 
-            let foldPat p = foldPat (fun (s,l) -> PVar s) 
-                                    (fun l r -> PApp(l,r)) 
-                                    (fun x -> PLit x) 
-                                    (fun xs -> PTuple xs) 
-                                    (fun () -> PWild)
-                                    (fun xs -> PList xs)
-                                    (fun xs -> PLongVar xs) p
+let stripPos (decl:Module<'a*'b>) :Module<'a> =             
             foldExpAlgebra {  varF                 =     (fun (s, l) -> Var s) 
                               longVarF             =     (fun xs -> LongVar xs)
                               longVarSetF          =     (fun e1 e2 -> LongVarSet (e1, e2))
-                              lamF                 =     (fun ps b -> Lam(List.map (fun p -> foldPat p) ps, b)) 
+                              lamF                 =     (fun ps b -> Lam(ps, b)) 
                               appF                 =     (fun x y -> App (x, y))
-                              letF                 =     (fun isRec p e1 e2 -> Let(isRec, foldPat p, e1, e2))
+                              letF                 =     (fun isRec p e1 e2 -> Let(isRec, p, e1, e2))
                               litF                 =     (fun x -> Lit x)
                               tupleF               =     (fun xs -> Tuple xs)
                               listF                =     (fun xs -> List xs)
@@ -41,8 +34,8 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               typesF               =     (fun xs -> Types xs)
                               unionF               =     (fun name cases -> DisUnion (name, List.map (fun (s,l) -> s) cases))
                               matchF               =     (fun e cs -> Match(e, cs))
-                              clauseF              =     (fun p e -> Clause(foldPat p, e))
-                              forEachF             =     (fun p e1 e2 -> ForEach (foldPat p, e1, e2))
+                              clauseF              =     (fun p e -> Clause(p, e))
+                              forEachF             =     (fun p e1 e2 -> ForEach (p, e1, e2))
                               yieldOrRetF          =     (fun e -> YieldOrReturn e)
                               yieldOrRetFromF      =     (fun e -> YieldOrReturnFrom e)
                               moduleF              =     (fun n ms -> NestedModule (n,ms))
@@ -56,8 +49,8 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               newF                 =     (fun ss e -> Exp.New (ss, e))
                               noneF                =     (fun name -> TypeDef.None name)
                               classF               =     (fun n ms -> Class (n, ms))
-                              implicitConF         =     (fun ps -> Ast.ImplicitCtor (List.map foldPat ps))
-                              memberF              =     (fun n e -> Member (foldPat n, e))
+                              implicitConF         =     (fun ps -> Ast.ImplicitCtor ps)
+                              memberF              =     (fun n e -> Member (n, e))
                               abstractSlotF        =     (fun n -> AbstractSlot n)
                               objExprF             =     (fun ms -> ObjExpr ms)
                               doF                  =     (fun e -> Do e)
@@ -69,8 +62,17 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               tfunF                =     (fun t1 t2 -> TFun(t1, t2))
                               tIdentF              =     (fun (s,l) -> Ident s)
                               tLongIdentF          =     (fun ts -> LongIdent ts)
-                              tvarF                =     (fun t -> TVar t)                             
-                              errorF               =     (fun () -> Ast.ArbitraryAfterError) } decl
+                              tvarF                =     (fun t -> TVar t)  
+                              tryWithF             =     (fun e cl -> TryWith(e, cl))                           
+                              errorF               =     (fun () -> Ast.ArbitraryAfterError) 
+                              pVarF                =     (fun (s,l) -> PVar s) 
+                              pAppF                =     (fun l r -> PApp(l,r)) 
+                              pLitF                =     (fun x -> PLit x) 
+                              pTupleF              =     (fun xs -> PTuple xs) 
+                              pWildF               =     (fun () -> PWild)
+                              pArrayOrListF        =     (fun xs -> PList xs)
+                              pLongVarF            =     (fun xs -> PLongVar xs)
+                              pIsInstF             =     (fun t -> PIsInst t) } decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
 
@@ -470,3 +472,18 @@ type CompilerToAstTests() =
         let ast = parse "let DoSome() = if (x > 0) then do Hello()"
         AssertAreEqual [Let (false, PApp (PVar "DoSome",PLit Unit),  IfThenElse(App(App (Var "op_GreaterThan", Var "x"), Lit(Integer 0)), Do (App (Var "Hello",Lit Unit)), Option.None),Lit Unit)] ast
         
+    [<Test>]
+    member this. ``try with expression`` () =
+        let ast = parse("let divide1 x y =      \n" +
+                         "    try               \n" +
+                         "      Some (x / y)    \n" +
+                         "    with              \n" +
+                         "    | :? System.DivideByZeroException -> None ")
+        AssertAreEqual [Let
+                           (false,PApp (PApp (PVar "divide1",PVar "x"),PVar "y"),
+                            TryWith
+                              (App (Var "Some",App (App (Var "op_Division",Var "x"),Var "y")),
+                               [Clause
+                                  (PIsInst (LongIdent [Ident "System"; Ident "DivideByZeroException"]),
+                                   Var "None")]),Lit Unit)] ast
+
