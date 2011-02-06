@@ -16,12 +16,12 @@ open ASTAnalysis
 open Ast
 open System.IO
 
-let path = sprintf "%s\\%s" (Directory.GetCurrentDirectory()) "test.fs" 
+let path = sprintf "%s\\%s" (Path.GetTempPath()) "test.fs" 
 
 let syncObj = new obj()
 
 let parseWithPos s =   
-        lock syncObj (fun () -> File.WriteAllText("test.fs", s)        
+        lock syncObj (fun () -> File.WriteAllText(path, s)        
                                 let [xs:_] = parseToAst [path]
                                 xs)
 
