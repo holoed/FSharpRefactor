@@ -3,14 +3,14 @@
 open Ast
 open StateMonad
 
-type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i> =
+type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j> =
     {
         varF : 'a -> 'b
         longVarF : 'b list -> 'b
         longVarSetF : 'b -> 'b -> 'b
-        lamF : Pat<'a> list -> 'b -> 'b
+        lamF : 'j list -> 'b -> 'b
         appF : 'b -> 'b -> 'b
-        letF : IsLetRec -> Pat<'a> -> 'b -> 'b -> 'b
+        letF : IsLetRec -> 'j -> 'b -> 'b -> 'b
         litF : Literal -> 'b
         tupleF : 'b list -> 'b
         listF : 'b list -> 'b
@@ -18,8 +18,8 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i> =
         typesF : 'd list -> 'e
         unionF : string -> 'a list -> 'd
         matchF : 'b -> 'f list -> 'b
-        clauseF : Pat<'a> -> 'b -> 'f
-        forEachF : Pat<'a> -> 'b -> 'b -> 'b
+        clauseF : 'j -> 'b -> 'f
+        forEachF : 'j -> 'b -> 'b -> 'b
         yieldOrRetF : 'b -> 'b
         yieldOrRetFromF : 'b -> 'b
         moduleF : string list -> 'e list -> 'e
@@ -33,8 +33,8 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i> =
         newF : 'i -> 'b -> 'b
         noneF : string -> 'd
         classF : string -> 'g list -> 'd
-        implicitConF : Pat<'a> list -> 'g
-        memberF : Pat<'a> -> 'b -> 'g
+        implicitConF : 'j list -> 'g
+        memberF : 'j -> 'b -> 'g
         abstractSlotF : string -> 'g
         objExprF : 'g list -> 'b
         doF : 'b -> 'b
@@ -47,5 +47,14 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i> =
         tIdentF : 'a -> 'i
         tLongIdentF : 'i list -> 'i
         tvarF : 'i -> 'i
+        tryWithF : 'b -> 'f list -> 'b
         errorF : unit -> 'b 
+        pVarF : 'a -> 'j
+        pAppF : 'j -> 'j -> 'j
+        pLitF : Literal -> 'j
+        pTupleF : 'j list -> 'j
+        pWildF : unit -> 'j
+        pArrayOrListF : 'j list -> 'j
+        pLongVarF : 'j list -> 'j
+        pIsInstF : 'i -> 'j
     }

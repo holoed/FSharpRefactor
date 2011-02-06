@@ -349,4 +349,14 @@ type ASTAnalysisTests() =
         let ast = parseWithPosDecl ("let x = 42 \n" +
                                     "let y = identity { return! x }")
         AssertAreEqual [Var ("x", loc(27,28,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
-        
+
+    [<Test>]
+    [<Ignore("Work in progress...")>]
+    member this.``Find usages in body of try with expression`` () =
+        let ast = parseWithPosDecl(  "let divide1 x y =      \n" +
+                                     "    try               \n" +
+                                     "      Some (x / y)    \n" +
+                                     "    with              \n" +
+                                     "    | :? System.DivideByZeroException -> None ")
+        AssertAreEqual [Var ("x", loc(12,13,3,3));Var ("x", loc(12,13,1,1))] (findAllReferences (loc (12,13,1,1)) ast)
+        AssertAreEqual [Var ("y", loc(16,17,3,3));Var ("y", loc(14,15,1,1))] (findAllReferences (loc (14,15,1,1)) ast)

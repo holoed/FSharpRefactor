@@ -28,6 +28,8 @@ type SrcLine = { startLine : int; endLine : int }
 
 type SrcLoc = { srcFilename : string; srcLine : SrcLine; srcColumn : SrcCol }     
 
+type IsLetRec = bool
+
 type Pat<'a> =
     | PVar of 'a
     | PApp of Pat<'a> * Pat<'a>
@@ -37,10 +39,9 @@ type Pat<'a> =
     | PList of Pat<'a> list
     | PThis
     | PLongVar of Pat<'a> list
+    | PIsInst of Type<'a>
 
-type IsLetRec = bool
-
-type Exp<'a> 
+and Exp<'a> 
     = Var      of 'a                           // variable    
     | LongVar of Exp<'a> list
     | LongVarSet of Exp<'a> * Exp<'a>
@@ -63,6 +64,7 @@ type Exp<'a>
     | Do of Exp<'a>
     | Downcast of Exp<'a> * Type<'a>
     | Upcast of Exp<'a> * Type<'a>
+    | TryWith of Exp<'a> * Clause<'a> list
     | ArbitraryAfterError
 
 and Clause<'a> = Clause of Pat<'a> * Exp<'a>

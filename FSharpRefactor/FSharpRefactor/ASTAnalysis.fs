@@ -85,18 +85,6 @@ let flatPat p = foldPat (fun x -> [PVar x])
                         (fun xs -> List.concat xs) p
 
 let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> = 
-        let foldPat p = foldPat (fun x -> state { return PVar x }) 
-                                (fun l r -> state { let! l' = l
-                                                    let! r' = r
-                                                    return PApp (l', r') }) 
-                                (fun x -> state { return PLit x })
-                                (fun es ->  state { let! es' = mmap (fun e -> state { return! e }) es
-                                                    return PTuple es' })
-                                (fun () -> state { return PWild } ) 
-                                (fun es ->  state { let! es' = mmap (fun e -> state { return! e }) es
-                                                    return PList es' })
-                                (fun xs -> state { let! xsAcc = mmap (fun x -> state { return! x }) xs 
-                                                return PLongVar xsAcc }) p
         foldExpAlgebra {
                          varF =        (fun x -> state { do! addUsage x
                                                          return Var x })
@@ -105,7 +93,7 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          longVarSetF = (fun e1 e2 -> state { let! e1Acc = e1
                                                              let! e2Acc = e2
                                                              return LongVarSet (e1Acc, e2Acc) })
-                         lamF =        (fun ps e -> state { let! vars = mmap (fun p -> state { return! foldPat p }) ps
+                         lamF =        (fun ps e -> state { let! vars = mmap (fun p -> state { return! p }) ps
                                                             let! _ = mmap (fun x -> execute enterScope x) vars
                                                             let! e' = e
                                                             let! _ = mmap (fun x -> execute exitScope x) vars 
@@ -113,12 +101,12 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          appF =        (fun x y -> state { let! x' = x
                                                            let! y' = y
                                                            return App (x', y') })
-                         letF =        (fun isRec p e1 e2 -> state {    let flatpat = flatPat p
-                                                                        match p with   
+                         letF =        (fun isRec p e1 e2 -> state {    let! pAcc = p
+                                                                        let flatpat = flatPat pAcc
+                                                                        match pAcc with   
                                                                         | PApp(_, _) ->
                                                                                 let (PVar (sf,lf)) = List.head flatpat
-                                                                                let vars = List.tail flatpat                                                
-                                                                                let! p'  = foldPat p
+                                                                                let vars = List.tail flatpat                                                                                                                                
                                                                                 if isRec then 
                                                                                     do! enterScope (sf, lf) 
                                                                                 let! _ = mmap (fun x -> execute enterScope x) vars // ----------------------------------------------------
@@ -129,9 +117,9 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                                                 let! e2' = e2               // function name scope (like the f in let f x = x)  
                                                                                 if (e2' <> (Lit Unit)) then
                                                                                     do! exitScope (sf, lf)      // ----------------------------------------------------                               
-                                                                                return Let (isRec, p', e1', e2') 
+                                                                                return Let (isRec, pAcc, e1', e2') 
                                                                         | _ ->
-                                                                            let! p'  = foldPat p                                                 
+                                                                            let! p'  = p                                                 
                                                                             let! e1' = e1       
                                                                             let! _ = mmap (fun x -> execute enterScope x) flatpat                                            
                                                                             let! e2' = e2           // let x = x in x Only "let x" and "in x" refer to the same identifier.
@@ -153,17 +141,19 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          matchF =      (fun e cs -> state { let! e' = e
                                                             let! cs' = mmap (fun c -> state { return! c }) cs
                                                             return Match(e', cs')})
-                         clauseF =     (fun p e -> state { let vars = flatPat p
+                         clauseF =     (fun p e -> state { let! pAcc = p
+                                                           let vars = flatPat pAcc
                                                            let! _ = mmap (fun x -> execute enterScope x) vars 
                                                            let! e' = e
                                                            let! _ = mmap (fun x -> execute exitScope x) vars 
-                                                           return Clause(p, e') })
-                         forEachF =    (fun p e1 e2 -> state{   let flatpat = flatPat p
+                                                           return Clause(pAcc, e') })
+                         forEachF =    (fun p e1 e2 -> state{   let! pAcc = p
+                                                                let flatpat = flatPat pAcc
                                                                 let boundName = List.head flatpat
                                                                 let args = List.tail flatpat
                                                                 match (boundName, args) with
                                                                 | PVar (s,l), [] ->                                                 
-                                                                    let! p'  = foldPat p                                                 
+                                                                    let! p'  = p                                                 
                                                                     let! e1' = e1       
                                                                     do! enterScope (s,l)    // ----------------------------------------------------                                               
                                                                     let! e2' = e2           // let x = x in x Only "let x" and "in x" refer to the same identifier.
@@ -171,7 +161,7 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                                         do! exitScope (s,l)  // ----------------------------------------------------  
                                                                     return ForEach (p', e1', e2') 
                                                                 | PVar (sf,lf), vars ->                                                 
-                                                                    let! p'  = foldPat p
+                                                                    let! p'  = p
                                                                     let! _ = mmap (fun x -> execute enterScope x) vars // ----------------------------------------------------
                                                                     let! e1' = e1                                      // function variables scope (like the x in let f x = x)                                  
                                                                     let! _ = mmap (fun x -> execute exitScope x) vars  // ----------------------------------------------------
@@ -215,14 +205,16 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                           let! msAcc = mmap (fun m -> state { return! m }) (if ic.IsEmpty then ms else ms.Tail)
                                                           let! _ = mmap (fun ps -> mmap (fun x -> execute exitScope x) ps) ic
                                                           return Class (n, msAcc) })
-                         implicitConF = (fun ps -> state { return ImplicitCtor ps })
-                         memberF =      (fun p e -> state {  let flatpat = flatPat p                                                                   
+                         implicitConF = (fun ps -> state { let! psAcc = mmapId ps
+                                                           return ImplicitCtor psAcc })
+                         memberF =      (fun p e -> state {  let! pAcc = p
+                                                             let flatpat = flatPat pAcc                                                                   
                                                              let boundName = List.head (List.tail flatpat)
                                                              let args = (List.head flatpat) :: List.tail (List.tail flatpat)
                                                              let! _ = mmap (fun x -> execute enterScope x) args
                                                              let! eAcc = e
                                                              let! _ = mmap (fun x -> execute exitScope x) args
-                                                             return Member(p, eAcc) })
+                                                             return Member(pAcc, eAcc) })
                          abstractSlotF = (fun n -> state { return AbstractSlot n })
                          objExprF =      (fun ms -> state { let! msAcc = mmap (fun e -> state { return! e }) ms
                                                             return ObjExpr msAcc })
@@ -249,7 +241,25 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                              return LongIdent tsAcc })  
                          tvarF =          (fun t -> state { let! tAcc = t
                                                             return TVar tAcc })
-                         errorF =         (fun () -> state { return ArbitraryAfterError })  }   exp
+                         tryWithF =       (fun e cs -> state { let! e' = e
+                                                               let! cs' = mmap (fun c -> state { return! c }) cs
+                                                               return TryWith(e', cs')})
+                         errorF =         (fun () -> state { return ArbitraryAfterError }) 
+                         
+                         pVarF =          (fun x -> state { return PVar x }) 
+                         pAppF =          (fun l r -> state { let! l' = l
+                                                              let! r' = r
+                                                              return PApp (l', r') }) 
+                         pLitF =          (fun x -> state { return PLit x })
+                         pTupleF =        (fun es ->  state { let! es' = mmap (fun e -> state { return! e }) es
+                                                              return PTuple es' })
+                         pWildF =         (fun () -> state { return PWild } ) 
+                         pArrayOrListF =  (fun es ->  state { let! es' = mmap (fun e -> state { return! e }) es
+                                                              return PList es' })
+                         pLongVarF =      (fun xs -> state { let! xsAcc = mmap (fun x -> state { return! x }) xs 
+                                                             return PLongVar xsAcc }) 
+                         pIsInstF  =      (fun t -> state { let! tAcc= t
+                                                            return PIsInst tAcc }) }   exp
                      
                                                        
 
