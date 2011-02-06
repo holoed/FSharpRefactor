@@ -65,24 +65,46 @@ let exitGlobalScope = state { let! (OpenScopes(map), SymbolTable(table)) = getSt
                                                           return () }) scopesList
                               return () }
 
-let execute action p = foldPat  (fun (s:string,l:SrcLoc) -> state { do! action (s,l)
-                                                                    return () }) 
-                                (fun l r -> state { let! l' = l
-                                                    let! r' = r
-                                                    return () }) 
-                                (fun x -> state { return () })
-                                (fun xs -> state { return () }) 
-                                (fun () -> state { return () })
-                                (fun xs -> state { return () })
-                                (fun xs -> state { return () }) p
 
-let flatPat p = foldPat (fun x -> [PVar x]) 
-                        (fun l r -> l @ r) 
-                        (fun x -> [PLit x]) 
-                        (fun xs -> List.concat xs) 
-                        (fun () -> [])
-                        (fun xs -> List.concat xs) 
-                        (fun xs -> List.concat xs) p
+let flatPat p =
+    let rec LoopPat pat =    
+                ContinuationMonad.cont {  match pat with
+                                          | PVar x -> return [PVar x]
+                                          | PApp (l, r) -> let! lAcc = LoopPat l
+                                                           let! rAcc = LoopPat r
+                                                           return lAcc @ rAcc  
+                                          | PLit x -> return [PLit x]
+                                          | PTuple es -> let! esAcc = ContinuationMonad.mmap LoopPat es
+                                                         return List.concat esAcc
+                                          | PWild -> return [] 
+                                          | PList es -> let! esAcc = ContinuationMonad.mmap LoopPat es
+                                                        return List.concat esAcc
+                                          | PLongVar xs -> let! xsAcc = ContinuationMonad.mmap LoopPat xs
+                                                           return List.concat xsAcc
+                                          | PIsInst t -> return [] }
+    LoopPat p id
+
+let execute action p =
+    let rec LoopPat pat =    
+                ContinuationMonad.cont {  match pat with
+                                          | PVar (s,l) -> return state { do! action (s,l)
+                                                                         return () }
+                                          | PApp (l, r) -> let! lAcc = LoopPat l
+                                                           let! rAcc = LoopPat r
+                                                           return state { let! l' = lAcc
+                                                                          let! r' = rAcc
+                                                                          return () }
+                                          | PLit x -> return state { return () }
+                                          | PTuple es -> let! esAcc = ContinuationMonad.mmap LoopPat es
+                                                         return state { return () }
+                                          | PWild -> return state { return () } 
+                                          | PList es -> let! esAcc = ContinuationMonad.mmap LoopPat es
+                                                        return state { return () }
+                                          | PLongVar xs -> let! xsAcc = ContinuationMonad.mmap LoopPat xs
+                                                           return state { return () }
+                                          | PIsInst t -> return state { return () } }
+    LoopPat p id
+
 
 let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> = 
         foldExpAlgebra {

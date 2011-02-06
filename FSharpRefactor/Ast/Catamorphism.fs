@@ -15,23 +15,6 @@ open Ast
 open ContinuationMonad
 open Algebras
 
-let foldPat varF appF litF tupleF wildF arrayOrListF longVarF pat = 
- let rec Loop e =
-     cont {  match e with
-             | PVar x -> return varF x
-             | PApp (l, r) -> let! lAcc = Loop l
-                              let! rAcc = Loop r
-                              return appF lAcc rAcc  
-             | PLit x -> return litF x
-             | PTuple es -> let! esAcc = mmap Loop es
-                            return tupleF esAcc
-             | PWild -> return wildF () 
-             | PList es -> let! esAcc = mmap Loop es
-                           return arrayOrListF esAcc
-             | PLongVar xs -> let! xsAcc = mmap Loop xs
-                              return longVarF xsAcc }
- Loop pat id
-
 let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_>) decl =
   let rec LoopExp e =
           cont {  match e with
