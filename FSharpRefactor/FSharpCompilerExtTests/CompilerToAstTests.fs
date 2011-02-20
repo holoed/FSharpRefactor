@@ -55,6 +55,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               abstractSlotF        =     (fun n -> AbstractSlot n)
                               objExprF             =     (fun ms -> ObjExpr ms)
                               doF                  =     (fun e -> Do e)
+                              doBangF              =     (fun e -> DoBang e)
                               downcastF            =     (fun e t -> Downcast (e, t))
                               upcastF              =     (fun e t -> Upcast (e, t))
                               interfaceF           =     (fun t ms -> Interface (t, ms))
@@ -515,3 +516,12 @@ type CompilerToAstTests() =
                                   (PApp (PVar "bar",PVar "y"), App (Var "foo",Var "y"))],
                                  App (Var "foo",Var "e")))],Lit Unit)] ast
 
+    [<Test>]
+    member this.``Support for tuples fst and snd``() =
+        AssertAreEqual [Let (false,[(PApp (PVar "f",PVar "x"), App (Var "fst",Var "x"))],Lit Unit)] (parse "let f x = fst x")
+        AssertAreEqual [Let (false,[(PApp (PVar "f",PVar "x"), App (Var "snd",Var "x"))],Lit Unit)] (parse "let f x = snd x")
+
+    [<Test>]
+    member this.``do! in computation expression``  () =
+        let ast = parse("let f x = state { do! f x }")
+        ()
