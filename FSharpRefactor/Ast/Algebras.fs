@@ -39,6 +39,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j> =
         abstractSlotF : string -> 'g
         objExprF : 'g list -> 'b
         doF : 'b -> 'b
+        doBangF : 'b -> 'b
         downcastF : 'b -> 'i -> 'b
         upcastF : 'b -> 'i -> 'b
         interfaceF : 'i -> 'g list -> 'g

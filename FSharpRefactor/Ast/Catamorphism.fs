@@ -77,6 +77,8 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_>) decl =
                                       return algebra.objExprF msAcc
                   | Exp.Do e -> let! eAcc = LoopExp e
                                 return algebra.doF eAcc
+                  | Exp.DoBang e -> let! eAcc = LoopExp e
+                                    return algebra.doBangF eAcc
                   | Exp.Downcast (e, t) -> let! eAcc = LoopExp e
                                            let! tAcc = LoopTypeInst t
                                            return algebra.downcastF eAcc tAcc

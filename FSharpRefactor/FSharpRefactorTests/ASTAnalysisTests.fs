@@ -378,3 +378,10 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("y", loc(12,13,5,5));Var ("y", loc(12,13,4,4))] (findAllReferences (loc (12,13,4,4)) ast)
         
 
+    [<Test>]
+    member this.``Find usages of identifiers in do!``  () =
+        let ast = parseWithPosDecl("let transfer accA accB amount = stm { do! withdraw accA amount \n" +
+                                   "                                      do! deposit accB amount }")
+        AssertAreEqual [Var ("accA", loc(51,55,1,1));Var ("accA", loc(13,17,1,1))] (findAllReferences (loc (13,17,1,1)) ast)
+        AssertAreEqual [Var ("accB", loc(50,54,2,2));Var ("accB", loc(18,22,1,1))] (findAllReferences (loc (18,22,1,1)) ast)
+        AssertAreEqual [Var ("amount", loc(55,61,2,2));Var ("amount", loc(56,62,1,1));Var ("amount", loc(23,29,1,1))] (findAllReferences (loc (23,29,1,1)) ast)

@@ -63,6 +63,7 @@ and Exp<'a>
     | New of Type<'a> * Exp<'a>
     | ObjExpr of ClassMember<'a> list
     | Do of Exp<'a>
+    | DoBang of Exp<'a>
     | Downcast of Exp<'a> * Type<'a>
     | Upcast of Exp<'a> * Type<'a>
     | TryWith of Exp<'a> * Clause<'a> list
