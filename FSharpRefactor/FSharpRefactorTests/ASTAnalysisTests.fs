@@ -385,3 +385,8 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("accA", loc(51,55,1,1));Var ("accA", loc(13,17,1,1))] (findAllReferences (loc (13,17,1,1)) ast)
         AssertAreEqual [Var ("accB", loc(50,54,2,2));Var ("accB", loc(18,22,1,1))] (findAllReferences (loc (18,22,1,1)) ast)
         AssertAreEqual [Var ("amount", loc(55,61,2,2));Var ("amount", loc(56,62,1,1));Var ("amount", loc(23,29,1,1))] (findAllReferences (loc (23,29,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of identifiers in dotGet``  () =
+        let ast = parseWithPosDecl("let getName xs = (List.head xs).Name")
+        AssertAreEqual [Var ("xs", loc(28,30,1,1));Var ("xs", loc(12,14,1,1))] (findAllReferences (loc (12,14,1,1)) ast)

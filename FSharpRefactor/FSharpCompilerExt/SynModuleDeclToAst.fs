@@ -114,6 +114,10 @@ let internal foldDecls decls =
                     let! e1Acc = LoopExpr e1
                     let! esAcc = mmap LoopExpr es
                     return Ast.DotIndexedGet (e1Acc, esAcc)
+                | SynExpr.DotGet (e, li, _) -> 
+                    let! eAcc = LoopExpr e
+                    let liAcc = Ast.LongVar (List.map (fun (id:Ident) -> Ast.Var (id.idText, mkSrcLoc id.idRange)) li)
+                    return Ast.DotGet (eAcc, liAcc)
                 | SynExpr.IfThenElse (e1,e2,e3,_,_,_) -> 
                     let! e1Acc = LoopExpr e1
                     let! e2Acc = LoopExpr e2

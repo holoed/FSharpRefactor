@@ -230,6 +230,9 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                                 let! e3' = match e3 with
                                                                           | Some x -> x
                                                                 return IfThenElse(e1', e2', Some e3') })
+                         dotGetF        = (fun e li -> state { let! e' = e
+                                                               let! li' = li
+                                                               return DotGet (e', li') })
                          dotIndexedSetF =  (fun e1 es e3 -> state { let! e1' = e1
                                                                     let! es' = mmap (fun e -> state { return! e }) es
                                                                     let! e3' = e3

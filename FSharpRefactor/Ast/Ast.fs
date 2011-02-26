@@ -57,6 +57,7 @@ and Exp<'a>
     | YieldOrReturn of Exp<'a>
     | YieldOrReturnFrom of Exp<'a>
     | IfThenElse of Exp<'a> * Exp<'a> * Exp<'a> option
+    | DotGet of Exp<'a> * Exp<'a>
     | DotIndexedSet of Exp<'a> * Exp<'a> list * Exp<'a>
     | DotIndexedGet of Exp<'a> * Exp<'a> list
     | Record of ('a * Exp<'a>) list

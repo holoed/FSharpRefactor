@@ -42,6 +42,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               moduleF              =     (fun n ms -> NestedModule (n,ms))
                               openF                =     (fun s -> Open s)
                               ifThenElseF          =     (fun e1 e2 e3 -> IfThenElse (e1, e2, e3))
+                              dotGetF              =     (fun e li -> DotGet (e, li))
                               dotIndexedSetF       =     (fun e1 es e3 -> DotIndexedSet (e1, es, e3))
                               dotIndexedGetF       =     (fun e1 es -> DotIndexedGet (e1, es))
                               recordDefF           =     (fun name fields ms -> Record (name, List.map (fun x -> Option.map (fun (s,l) -> s) x) fields, ms))
@@ -523,5 +524,9 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.``do! in computation expression``  () =
-        let ast = parse("let f x = state { do! f x }")
-        ()
+        AssertAreEqual [Let (false, [(PApp (PVar "f",PVar "x"), App (Var "state",DoBang (App (Var "f",Var "x"))))], Lit Unit)] (parse("let f x = state { do! f x }"))
+
+    [<Test>]
+    member this.``dot get for object instances`` () =
+        AssertAreEqual [Let (false, [(PApp (PVar "getName",PVar "xs"), DotGet (App (LongVar [Var "List"; Var "head"],Var "xs"),LongVar [Var "Name"]))], Lit Unit)] 
+                       (parse "let getName xs = (List.head xs).Name")
