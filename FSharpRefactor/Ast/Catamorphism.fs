@@ -61,6 +61,9 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_>) decl =
                                                                                  return Option.Some e3Acc' }
                                                             | Option.None -> cont { return Option.None }
                                                return algebra.ifThenElseF e1Acc e2Acc e3Acc
+                  | DotGet (e, li) -> let! eAcc = LoopExp e
+                                      let! liAcc = LoopExp li
+                                      return algebra.dotGetF eAcc liAcc
                   | DotIndexedSet (e1, es, e3) -> let! e1Acc = LoopExp e1
                                                   let! esAcc = mmap LoopExp es
                                                   let! e2Acc = LoopExp e3

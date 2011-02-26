@@ -26,6 +26,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j> =
         moduleF : string list -> 'e list -> 'e
         openF : string list -> 'e
         ifThenElseF : 'b -> 'b -> 'b option -> 'b
+        dotGetF : 'b -> 'b -> 'b
         dotIndexedSetF : 'b -> 'b list -> 'b -> 'b
         dotIndexedGetF : 'b -> 'b list -> 'b
         recordDefF : string -> 'a option list -> 'g list -> 'd
