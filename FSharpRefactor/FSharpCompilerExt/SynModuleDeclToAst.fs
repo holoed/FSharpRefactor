@@ -35,7 +35,16 @@ let internal foldDecls decls =
                     let! xsAcc = mmap LoopDecl xs
                     return Ast.NestedModule (List.map (fun (x:Ident) -> x.idText) longId, xsAcc)
                | SynModuleDecl.Open (xs, _) -> 
-                    return Ast.Open (List.map (fun (x:Ident) -> x.idText) xs) }
+                    return Ast.Open (List.map (fun (x:Ident) -> x.idText) xs) 
+               | SynModuleDecl.Exception (ed, _) ->
+                    let! edAcc = LoopExceptionDef ed
+                    return Ast.Exception edAcc }
+    and LoopExceptionDef x =
+        cont { match x with
+               | SynExceptionDefn.ExceptionDefn (SynExceptionRepr.ExceptionDefnRepr(_,uc,Option.None,_,_,_), ms, _) ->
+                    let! (name, _) = LoopUnionCases uc
+                    let! msAcc = mmap LoopClassMember ms                    
+                    return Ast.ExceptionDef (name, msAcc) }
     and LoopBinding x = 
         cont { match x with
                | SynBinding.Binding(_,_,_,_,_,_,_,name,_,expr,_,_) -> 

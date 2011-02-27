@@ -3,7 +3,7 @@
 open Ast
 open StateMonad
 
-type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j> =
+type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k> =
     {
         varF : 'a -> 'b
         longVarF : 'b list -> 'b
@@ -25,6 +25,8 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j> =
         yieldOrRetFromF : 'b -> 'b
         moduleF : string list -> 'e list -> 'e
         openF : string list -> 'e
+        exceptionF : 'k -> 'e
+        exceptionDefF : string -> 'g list -> 'k
         ifThenElseF : 'b -> 'b -> 'b option -> 'b
         dotGetF : 'b -> 'b -> 'b
         dotIndexedSetF : 'b -> 'b list -> 'b -> 'b
