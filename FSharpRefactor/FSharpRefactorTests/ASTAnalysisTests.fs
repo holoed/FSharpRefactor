@@ -397,7 +397,13 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("x", loc(16,17,1,1));Var ("x", loc(6,7,1,1))] (findAllReferences (loc (6,7,1,1)) ast)
 
     [<Test>]
-    member this.``Find usages in static class members of exception definition`` () =
+    member this.``Find usages in static members of exception definition`` () =
         let ast = parseWithPosDecl ("let x = 42 \n" +
                                     "exception Foo with static member Bar = x")
         AssertAreEqual [Var ("x", loc(39,40,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in instance members of exception definition`` () =
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "exception Foo with member this.Bar = x")
+        AssertAreEqual [Var ("x", loc(37,38,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)

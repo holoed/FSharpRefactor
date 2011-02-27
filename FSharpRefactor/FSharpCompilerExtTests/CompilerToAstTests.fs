@@ -544,4 +544,10 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.``Exception declaration with static members`` () =
-        AssertAreEqual [Exception (ExceptionDef ("Empty",[Member (PVar "Foo",Lit (Integer 42))]))] (parseModule "exception Empty with static member Foo = 42")
+        AssertAreEqual [Exception (ExceptionDef ("Empty",[Member (PVar "Foo",Lit (Integer 42))]))] 
+                       (parseModule "exception Empty with static member Foo = 42")
+
+    [<Test>]
+    member this.``Exception declaration with instance members`` () =
+        AssertAreEqual [Exception (ExceptionDef ("Empty",[Member (PLongVar [PVar "this"; PVar "Foo"],Lit (Integer 42))]))] 
+                       (parseModule "exception Empty with member this.Foo = 42")
