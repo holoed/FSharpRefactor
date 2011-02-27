@@ -225,6 +225,10 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          moduleF =     (fun n ms -> state { let! ms' = mmap (fun m -> state { return! m }) ms
                                                             return NestedModule (n, ms') })
                          openF =       (fun s -> state { return Open s })
+                         exceptionF =  (fun ex -> state { let! ex' = ex
+                                                          return Exception ex' })
+                         exceptionDefF = (fun n ms -> state { let! msAcc = mmap (fun m -> state { return! m }) ms
+                                                              return ExceptionDef (n, msAcc) })
                          ifThenElseF = (fun e1 e2 e3 -> state { let! e1' = e1
                                                                 let! e2' = e2
                                                                 let! e3' = match e3 with
@@ -260,8 +264,10 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                            return ImplicitCtor psAcc })
                          memberF =      (fun p e -> state {  let! pAcc = p
                                                              let flatpat = flatPat pAcc                                                                   
-                                                             let boundName = List.head (List.tail flatpat)
-                                                             let args = (List.head flatpat) :: List.tail (List.tail flatpat)
+                                                             let boundName = List.head (let xs = List.tail flatpat
+                                                                                        if (List.isEmpty xs) then flatpat else xs)
+                                                             let args = (List.head flatpat) :: (let xs = List.tail flatpat
+                                                                                                if (List.isEmpty xs) then xs else List.tail xs)
                                                              let! _ = mmap (fun x -> execute enterScope x) args
                                                              let! eAcc = e
                                                              let! _ = mmap (fun x -> execute exitScope x) args

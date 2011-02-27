@@ -41,6 +41,8 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               yieldOrRetFromF      =     (fun e -> YieldOrReturnFrom e)
                               moduleF              =     (fun n ms -> NestedModule (n,ms))
                               openF                =     (fun s -> Open s)
+                              exceptionF           =     (fun ex -> Exception ex)
+                              exceptionDefF        =     (fun n ms -> ExceptionDef (n, ms))
                               ifThenElseF          =     (fun e1 e2 e3 -> IfThenElse (e1, e2, e3))
                               dotGetF              =     (fun e li -> DotGet (e, li))
                               dotIndexedSetF       =     (fun e1 es e3 -> DotIndexedSet (e1, es, e3))
@@ -535,3 +537,11 @@ type CompilerToAstTests() =
     [<Test>]
     member this.``Typed function`` () =
         AssertAreEqual [Let (false,[(PApp (PVar "f",PVar "x"), Typed (Var "x",LongIdent [Ident "int"]))], Lit Unit)] (parse "let f x : int = x")
+
+    [<Test>]
+    member this.``Exception declaration`` () =
+        AssertAreEqual [Exception (ExceptionDef ("Empty",[]))] (parseModule "exception Empty")
+
+    [<Test>]
+    member this.``Exception declaration with static members`` () =
+        AssertAreEqual [Exception (ExceptionDef ("Empty",[Member (PVar "Foo",Lit (Integer 42))]))] (parseModule "exception Empty with static member Foo = 42")

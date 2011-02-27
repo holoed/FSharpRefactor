@@ -73,6 +73,8 @@ and Exp<'a>
 
 and Clause<'a> = Clause of Pat<'a> * Exp<'a>
 
+and ExceptionDef<'a> = ExceptionDef of string * ClassMember<'a> list    
+
 and TypeDef<'a> 
     = DisUnion of string * 'a list
     | Record of string * 'a option list * ClassMember<'a> list
@@ -98,5 +100,6 @@ type Module<'a>
     | Types of TypeDef<'a> list
     | NestedModule of string list * Module<'a> list
     | Open of string list
+    | Exception of ExceptionDef<'a>
     
 

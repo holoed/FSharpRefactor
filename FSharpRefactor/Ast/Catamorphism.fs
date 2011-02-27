@@ -15,7 +15,7 @@ open Ast
 open ContinuationMonad
 open Algebras
 
-let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_>) decl =
+let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_>) decl =
   let rec LoopExp e =
           cont {  match e with
                   | Var x -> return algebra.varF x 
@@ -165,6 +165,12 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_>) decl =
                           | PIsInst t -> let! tAcc = LoopTypeInst t
                                          return algebra.pIsInstF tAcc }
 
+        and LoopExceptionDef ex =
+            cont { match ex with
+                   | ExceptionDef (name, ms) ->
+                        let! msAcc = mmap LoopClassMember ms
+                        return algebra.exceptionDefF name msAcc }
+
   let rec LoopDecl e = 
            cont { match e with
                   | Exp xs -> let! xsAcc = mmap LoopExp xs
@@ -173,7 +179,9 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_>) decl =
                                 return algebra.typesF xsAcc 
                   | NestedModule (n, xs) ->  let! xsAcc = mmap LoopDecl xs
                                              return algebra.moduleF n xsAcc 
-                  | Open s -> return algebra.openF s }
+                  | Open s -> return algebra.openF s
+                  | Exception ex -> let! exAcc = LoopExceptionDef ex
+                                    return algebra.exceptionF exAcc }
   LoopDecl decl id    
 
 
