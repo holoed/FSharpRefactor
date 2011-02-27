@@ -59,6 +59,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               doBangF              =     (fun e -> DoBang e)
                               downcastF            =     (fun e t -> Downcast (e, t))
                               upcastF              =     (fun e t -> Upcast (e, t))
+                              typedF               =     (fun e t -> Typed (e, t))
                               interfaceF           =     (fun t ms -> Interface (t, ms))
                               letBindingsF         =     (fun es -> LetBindings es)
                               abbrevF              =     (fun n t -> Abbrev(n, t))
@@ -530,3 +531,7 @@ type CompilerToAstTests() =
     member this.``dot get for object instances`` () =
         AssertAreEqual [Let (false, [(PApp (PVar "getName",PVar "xs"), DotGet (App (LongVar [Var "List"; Var "head"],Var "xs"),LongVar [Var "Name"]))], Lit Unit)] 
                        (parse "let getName xs = (List.head xs).Name")
+
+    [<Test>]
+    member this.``Typed function`` () =
+        AssertAreEqual [Let (false,[(PApp (PVar "f",PVar "x"), Typed (Var "x",LongIdent [Ident "int"]))], Lit Unit)] (parse "let f x : int = x")

@@ -68,6 +68,7 @@ and Exp<'a>
     | Downcast of Exp<'a> * Type<'a>
     | Upcast of Exp<'a> * Type<'a>
     | TryWith of Exp<'a> * Clause<'a> list
+    | Typed of Exp<'a> * Type<'a>
     | ArbitraryAfterError
 
 and Clause<'a> = Clause of Pat<'a> * Exp<'a>

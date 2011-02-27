@@ -43,6 +43,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j> =
         doBangF : 'b -> 'b
         downcastF : 'b -> 'i -> 'b
         upcastF : 'b -> 'i -> 'b
+        typedF : 'b -> 'i -> 'b
         interfaceF : 'i -> 'g list -> 'g
         letBindingsF : 'b list -> 'g
         abbrevF : string -> 'i -> 'd
