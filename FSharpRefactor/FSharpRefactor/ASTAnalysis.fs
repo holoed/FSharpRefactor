@@ -279,6 +279,9 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          upcastF =        (fun e t -> state { let! eAcc = e
                                                               let! (tAcc:Type<_>) = t
                                                               return Upcast (eAcc, tAcc) })
+                         typedF =         (fun e t -> state { let! eAcc = e
+                                                              let! tAcc = t
+                                                              return Typed (eAcc, tAcc) })
                          interfaceF =     (fun t ms -> state { let! (tAcc:Type<_>) = t
                                                                let! msAcc = mmap (fun e -> state { return! e }) ms
                                                                return Interface (tAcc, msAcc) })

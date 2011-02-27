@@ -91,6 +91,9 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_>) decl =
                   | Exp.TryWith (e, cl) -> let! eAcc = LoopExp e
                                            let! clAcc = mmap LoopClauses cl
                                            return algebra.tryWithF eAcc clAcc
+                  | Exp.Typed (e, t) -> let! eAcc = LoopExp e
+                                        let! tAcc = LoopTypeInst t
+                                        return algebra.typedF eAcc tAcc
                   | ArbitraryAfterError -> return algebra.errorF () }
 
       and LoopBinding (p, e) =

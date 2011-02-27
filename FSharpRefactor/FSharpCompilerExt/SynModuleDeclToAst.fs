@@ -158,6 +158,10 @@ let internal foldDecls decls =
                         let! eAcc = LoopExpr e
                         let! clAcc = mmap LoopClause cl
                         return Ast.TryWith (eAcc, clAcc)
+                | SynExpr.Typed (e, t, _) ->
+                        let! eAcc = LoopExpr e
+                        let! tAcc = LoopType t
+                        return Ast.Typed (eAcc, tAcc)
                 | SynExpr.ArbitraryAfterError _ -> 
                     return Ast.ArbitraryAfterError }
 
