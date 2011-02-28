@@ -407,3 +407,8 @@ type ASTAnalysisTests() =
         let ast = parseWithPosDecl ("let x = 42 \n" +
                                     "exception Foo with member this.Bar = x")
         AssertAreEqual [Var ("x", loc(37,38,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in IfThen expression without else`` () =
+        let ast = parseWithPosDecl ("let f x = state { if (x > 0) then return! f x }")
+        AssertAreEqual [Var ("x", loc(44,45,1,1));Var ("x", loc(22,23,1,1));Var ("x", loc(6,7,1,1))] (findAllReferences (loc (6,7,1,1)) ast)
