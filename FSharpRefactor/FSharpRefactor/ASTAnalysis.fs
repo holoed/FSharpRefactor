@@ -306,6 +306,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          tappF =          (fun t ts -> state { let! tAcc = t
                                                                let! tsAcc = mmap (fun t -> state { return! t}) ts
                                                                return TApp (tAcc, tsAcc) })
+                         ttupleF  =       (fun ts -> state { let! tsAcc = mmap (fun t -> state { return! t}) ts
+                                                             return TTuple tsAcc })
                          tryWithF =       (fun e cs -> state { let! e' = e
                                                                let! cs' = mmap (fun c -> state { return! c }) cs
                                                                return TryWith(e', cs')})

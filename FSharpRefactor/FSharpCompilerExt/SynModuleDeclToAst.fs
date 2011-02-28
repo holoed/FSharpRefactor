@@ -215,7 +215,10 @@ let internal foldDecls decls =
                 | SynType.App (t, ts, _, _) ->
                     let! tAcc = LoopType t
                     let! tsAcc = mmap LoopType ts
-                    return Ast.TApp (tAcc, tsAcc) }
+                    return Ast.TApp (tAcc, tsAcc) 
+                | SynType.Tuple (ts, _) ->
+                    let! tsAcc = mmap (fun (_, x) -> LoopType x) ts
+                    return Ast.TTuple tsAcc}
     and LoopRep name ms x =
          cont { match x with
                 | SynTypeDefnRepr.Simple(x, _) -> 

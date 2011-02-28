@@ -88,6 +88,7 @@ and Type<'a>
     | TFun of Type<'a> * Type<'a>
     | TVar of Type<'a>
     | TApp of Type<'a> * Type<'a> list
+    | TTuple of Type<'a> list
 
 and ClassMember<'a>
     = ImplicitCtor of Pat<'a> list
