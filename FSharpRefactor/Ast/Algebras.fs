@@ -53,6 +53,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k> =
         tIdentF : 'a -> 'i
         tLongIdentF : 'i list -> 'i
         tvarF : 'i -> 'i
+        tappF : 'i -> 'i list -> 'i
         tryWithF : 'b -> 'f list -> 'b
         errorF : unit -> 'b 
         pVarF : 'a -> 'j

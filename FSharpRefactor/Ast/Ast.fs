@@ -87,6 +87,7 @@ and Type<'a>
     | LongIdent of Type<'a> list
     | TFun of Type<'a> * Type<'a>
     | TVar of Type<'a>
+    | TApp of Type<'a> * Type<'a> list
 
 and ClassMember<'a>
     = ImplicitCtor of Pat<'a> list
