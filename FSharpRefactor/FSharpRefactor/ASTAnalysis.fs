@@ -231,9 +231,12 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                               return ExceptionDef (n, msAcc) })
                          ifThenElseF = (fun e1 e2 e3 -> state { let! e1' = e1
                                                                 let! e2' = e2
-                                                                let! e3' = match e3 with
-                                                                          | Some x -> x
-                                                                return IfThenElse(e1', e2', Some e3') })
+                                                                match e3 with
+                                                                | Some x ->
+                                                                    let! x' = x
+                                                                    return IfThenElse(e1', e2', Some x')
+                                                                | Option.None ->
+                                                                    return IfThenElse(e1', e2', Option.None) })
                          dotGetF        = (fun e li -> state { let! e' = e
                                                                let! li' = li
                                                                return DotGet (e', li') })
