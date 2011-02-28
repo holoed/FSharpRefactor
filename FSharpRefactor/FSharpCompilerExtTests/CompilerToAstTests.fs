@@ -70,6 +70,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               tLongIdentF          =     (fun ts -> LongIdent ts)
                               tvarF                =     (fun t -> TVar t)  
                               tappF                =     (fun t ts -> TApp (t, ts))
+                              ttupleF              =     (fun ts -> TTuple ts)
                               tryWithF             =     (fun e cl -> TryWith(e, cl))                           
                               errorF               =     (fun () -> Ast.ArbitraryAfterError) 
                               pVarF                =     (fun (s,l) -> PVar s) 
@@ -557,3 +558,7 @@ type CompilerToAstTests() =
     member this.``Type application in type constraint`` () =
         AssertAreEqual [Let (false, [(PVar "xs", Typed (Var "ys",TApp (LongIdent [Ident "Seq"],[TVar (Ident "a")])))], Lit Unit)]
                        (parse "let xs : Seq<'a> = ys")
+
+    [<Test>]
+    member this.``Tuple type in type constraint`` () =
+        AssertAreEqual [Let (false, [(PVar "xs", Typed (Var "ys",TTuple [TVar (Ident "a"); TVar (Ident "b")]))], Lit Unit)] (parse "let xs : 'a * 'b = ys")

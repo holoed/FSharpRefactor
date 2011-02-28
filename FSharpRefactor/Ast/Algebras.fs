@@ -54,6 +54,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k> =
         tLongIdentF : 'i list -> 'i
         tvarF : 'i -> 'i
         tappF : 'i -> 'i list -> 'i
+        ttupleF : 'i list -> 'i
         tryWithF : 'b -> 'f list -> 'b
         errorF : unit -> 'b 
         pVarF : 'a -> 'j
