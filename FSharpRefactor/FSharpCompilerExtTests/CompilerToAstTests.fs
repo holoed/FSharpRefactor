@@ -69,6 +69,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               tIdentF              =     (fun (s,l) -> Ident s)
                               tLongIdentF          =     (fun ts -> LongIdent ts)
                               tvarF                =     (fun t -> TVar t)  
+                              tappF                =     (fun t ts -> TApp (t, ts))
                               tryWithF             =     (fun e cl -> TryWith(e, cl))                           
                               errorF               =     (fun () -> Ast.ArbitraryAfterError) 
                               pVarF                =     (fun (s,l) -> PVar s) 
@@ -551,3 +552,8 @@ type CompilerToAstTests() =
     member this.``Exception declaration with instance members`` () =
         AssertAreEqual [Exception (ExceptionDef ("Empty",[Member (PLongVar [PVar "this"; PVar "Foo"],Lit (Integer 42))]))] 
                        (parseModule "exception Empty with member this.Foo = 42")
+
+    [<Test>]
+    member this.``Type application in type constraint`` () =
+        AssertAreEqual [Let (false, [(PVar "xs", Typed (Var "ys",TApp (LongIdent [Ident "Seq"],[TVar (Ident "a")])))], Lit Unit)]
+                       (parse "let xs : Seq<'a> = ys")
