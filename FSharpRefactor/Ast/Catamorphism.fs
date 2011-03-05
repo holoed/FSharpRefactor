@@ -162,6 +162,9 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_>) decl =
                           | PLit x -> return algebra.pLitF x
                           | PTuple es -> let! esAcc = mmap LoopPat es
                                          return algebra.pTupleF esAcc
+                          | PRecord es -> let! esAcc = mmap (fun (i, p) -> cont { let! pAcc  = LoopPat p
+                                                                                  return (i, pAcc) }) es
+                                          return algebra.pRecordF esAcc
                           | PWild -> return algebra.pWildF () 
                           | PList es -> let! esAcc = mmap LoopPat es
                                         return algebra.pArrayOrListF esAcc

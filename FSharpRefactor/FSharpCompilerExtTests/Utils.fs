@@ -65,6 +65,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               pAppF                =     (fun l r -> PApp(l,r)) 
                               pLitF                =     (fun x -> PLit x) 
                               pTupleF              =     (fun xs -> PTuple xs) 
+                              pRecordF             =     (fun xs -> PRecord xs)
                               pWildF               =     (fun () -> PWild)
                               pArrayOrListF        =     (fun xs -> PList xs)
                               pLongVarF            =     (fun xs -> PLongVar xs)
