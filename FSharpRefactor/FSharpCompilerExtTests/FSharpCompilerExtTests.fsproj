@@ -46,6 +46,7 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Utils.fs" />
     <Compile Include="CompilerToAstTests.fs" />
     <Compile Include="CompilerToAstTypedTests.fs" />
   </ItemGroup>

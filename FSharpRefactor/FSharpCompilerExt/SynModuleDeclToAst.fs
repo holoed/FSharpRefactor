@@ -14,10 +14,8 @@ module SynModuleDeclToAst
 open Ast
 open ContinuationMonad
 open Microsoft.FSharp.Compiler.Ast
+open Utils
 
-let internal mkSrcLoc (r: Microsoft.FSharp.Compiler.Range.range)  = 
-    { srcFilename = r.FileName; srcLine = { startLine = r.StartLine; endLine = r.EndLine }; 
-                                srcColumn = { startColumn = r.StartColumn; endColumn = r.EndColumn } }
 let internal foldDecls decls =
     let rec LoopDecl x =
         cont { match x with
