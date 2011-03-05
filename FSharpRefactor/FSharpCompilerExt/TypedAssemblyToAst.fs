@@ -62,7 +62,16 @@ let internal foldDecls (decls:TypedAssembly) =
                     return eAcc
                | Expr.Const (c, _, _) ->
                     let! cAcc = LoopConst c
-                    return Lit(cAcc) }                      
+                    return Lit(cAcc)
+               | Expr.TyLambda (_,_,e,_,_) ->
+                    let! eAcc = LoopExpr e
+                    return eAcc
+               | Expr.Lambda (_,sv,_,svs,e,_,_) ->
+                    let! eAcc = LoopExpr e
+                    let svs' = List.map (fun (v:Val) -> PVar (v.DisplayName, mkSrcLoc (v.Range)))  svs
+                    return Ast.Lam(svs', eAcc)                    
+               | Expr.Val (v,_,_) ->                    
+                    return Ast.Var(v.DisplayName, mkSrcLoc (v.Range)) }                      
     and LoopConst x =
         cont { match x with
                | Const.Int32 x -> return Literal.Integer x }
