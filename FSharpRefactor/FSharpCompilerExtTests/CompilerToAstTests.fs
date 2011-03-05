@@ -42,7 +42,7 @@ type CompilerToAstTests() =
     [<Test>]
     member this.SimpleDecls() =        
         AssertAreEqual [Let(false,[PVar "x", Lit(Integer 42)], Lit(Unit))] (parse "let x = 42")
-        AssertAreEqual [Let(false,[PVar "x", Lit(Integer 42)], Lit(Unit)); Let(false,[PVar "x", Lit(Integer 24)], Lit(Unit))] (parse "let x = 42\nlet x = 24")
+        AssertAreEqual [Let(false,[PVar "x", Lit(Integer 42)], Lit(Unit)); Let(false,[PVar "y", Lit(Integer 24)], Lit(Unit))] (parse "let x = 42\nlet y = 24")
 
     [<Test>]
     member this.FunctionsDecls() =        
