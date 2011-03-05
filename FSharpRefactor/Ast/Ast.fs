@@ -90,6 +90,7 @@ and Type<'a>
     | TVar of Type<'a>
     | TApp of Type<'a> * Type<'a> list
     | TTuple of Type<'a> list
+    | TAnon
 
 and ClassMember<'a>
     = ImplicitCtor of Pat<'a> list

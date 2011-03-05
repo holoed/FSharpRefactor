@@ -495,3 +495,8 @@ type CompilerToAstTests() =
     member this.``Record pattern`` () =
         AssertAreEqual [Let (false, [(PRecord [("FirstName", PVar "x"); ("LastName", PVar "y")], Var "ret")], Lit Unit)] 
                        (parse "let { FirstName = x; LastName = y } = ret")
+
+    [<Test>]
+    member this.``Anonymous type constraint`` () =
+        AssertAreEqual [Let (false, [(PVar "x", Typed (Var "dict",TApp (LongIdent [Ident "IDictionary"],[TAnon; TAnon])))], Lit Unit)]
+                       (parse "let x : IDictionary<_, _> = dict")
