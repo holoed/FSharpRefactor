@@ -291,6 +291,10 @@ let internal foldDecls decls =
                | SynPat.Tuple(xs, _) ->
                     let! xsAcc = mmap LoopPat xs  
                     return PTuple xsAcc 
+               | SynPat.Record (xs, _) ->
+                    let! xsAcc = mmap (fun ((_, i : Ident), p) -> cont { let! pAcc = LoopPat p
+                                                                         return (i.idText, pAcc) }) xs
+                    return Pat.PRecord xsAcc
                | SynPat.Wild _ -> 
                     return Pat.PWild
                | SynPat.Const (c, _) -> 

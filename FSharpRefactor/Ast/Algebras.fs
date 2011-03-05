@@ -61,6 +61,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k> =
         pAppF : 'j -> 'j -> 'j
         pLitF : Literal -> 'j
         pTupleF : 'j list -> 'j
+        pRecordF : (string * 'j) list -> 'j
         pWildF : unit -> 'j
         pArrayOrListF : 'j list -> 'j
         pLongVarF : 'j list -> 'j

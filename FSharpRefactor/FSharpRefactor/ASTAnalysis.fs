@@ -69,6 +69,7 @@ let exitGlobalScope = state { let! (OpenScopes(map), SymbolTable(table)) = getSt
 let flatPat p =
     let rec LoopPat pat =    
                 ContinuationMonad.cont {  match pat with
+                                          | PRecord x -> return [PRecord x]
                                           | PVar x -> return [PVar x]
                                           | PApp (l, r) -> let! lAcc = LoopPat l
                                                            let! rAcc = LoopPat r
@@ -97,6 +98,11 @@ let execute action p =
                                           | PLit x -> return state { return () }
                                           | PTuple es -> let! esAcc = ContinuationMonad.mmap LoopPat es
                                                          return state { return () }
+                                          | PRecord es -> let! esAcc = ContinuationMonad.mmap (fun (i, p) -> ContinuationMonad.cont { let! pAcc = LoopPat p
+                                                                                                                                      return (i, pAcc) }) es
+                                                          return state { let! _ = StateMonad.mmap (fun (i,e') -> state { let! eAcc' = e'
+                                                                                                                         return (i, eAcc') }) esAcc 
+                                                                         return () }
                                           | PWild -> return state { return () } 
                                           | PList es -> let! esAcc = ContinuationMonad.mmap LoopPat es
                                                         return state { return () }
@@ -323,6 +329,9 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          pLitF =          (fun x -> state { return PLit x })
                          pTupleF =        (fun es ->  state { let! es' = mmap (fun e -> state { return! e }) es
                                                               return PTuple es' })
+                         pRecordF =       (fun es ->  state { let! esAcc = mmap (fun (i, e) -> state { let! eAcc = e
+                                                                                                       return i, eAcc }) es
+                                                              return PRecord esAcc })
                          pWildF =         (fun () -> state { return PWild } ) 
                          pArrayOrListF =  (fun es ->  state { let! es' = mmap (fun e -> state { return! e }) es
                                                               return PList es' })

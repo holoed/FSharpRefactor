@@ -413,3 +413,10 @@ type ASTAnalysisTests() =
     member this.``Find usages in IfThen expression without else`` () =
         let ast = parseWithPosDecl ("let f x = state { if (x > 0) then return! f x }")
         AssertAreEqual [Var ("x", loc(44,45,1,1));Var ("x", loc(22,23,1,1));Var ("x", loc(6,7,1,1))] (findAllReferences (loc (6,7,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in Record pattern`` () =
+        let ast = parseWithPosDecl ("let { FirstName = x; LastName = y } = ret  \n" +
+                                    "let fullName = x + y                         ")
+        AssertAreEqual [Var ("x", loc(15,16,2,2));Var ("x", loc(18,19,1,1))] (findAllReferences (loc (18,19,1,1)) ast)
+        AssertAreEqual [Var ("y", loc(19,20,2,2));Var ("y", loc(32,33,1,1))] (findAllReferences (loc (32,33,1,1)) ast)

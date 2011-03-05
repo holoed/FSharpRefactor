@@ -35,6 +35,7 @@ type Pat<'a> =
     | PApp of Pat<'a> * Pat<'a>
     | PLit of Literal    
     | PTuple of Pat<'a> list
+    | PRecord of (string * Pat<'a>) list
     | PWild
     | PList of Pat<'a> list
     | PThis

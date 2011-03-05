@@ -490,3 +490,8 @@ type CompilerToAstTests() =
     [<Test>]
     member this.``Tuple type in type constraint`` () =
         AssertAreEqual [Let (false, [(PVar "xs", Typed (Var "ys",TTuple [TVar (Ident "a"); TVar (Ident "b")]))], Lit Unit)] (parse "let xs : 'a * 'b = ys")
+
+    [<Test>]
+    member this.``Record pattern`` () =
+        AssertAreEqual [Let (false, [(PRecord [("FirstName", PVar "x"); ("LastName", PVar "y")], Var "ret")], Lit Unit)] 
+                       (parse "let { FirstName = x; LastName = y } = ret")
