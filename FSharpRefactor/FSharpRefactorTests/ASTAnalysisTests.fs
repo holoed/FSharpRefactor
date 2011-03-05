@@ -420,3 +420,9 @@ type ASTAnalysisTests() =
                                     "let fullName = x + y                         ")
         AssertAreEqual [Var ("x", loc(15,16,2,2));Var ("x", loc(18,19,1,1))] (findAllReferences (loc (18,19,1,1)) ast)
         AssertAreEqual [Var ("y", loc(19,20,2,2));Var ("y", loc(32,33,1,1))] (findAllReferences (loc (32,33,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in expression containing anonymous type constraints`` () =
+        let ast = parseWithPosDecl ("let x : IDictionary<_, _> = dict \n" +
+                                    "let y = x ")
+        AssertAreEqual [Var ("x", loc(8,9,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
