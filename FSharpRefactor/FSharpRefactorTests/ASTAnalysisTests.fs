@@ -15,6 +15,7 @@ module ASTAnalysisTests
 open Ast
 open CompilerToAst
 open CompilerToAstTests
+open Utils
 open ASTAnalysis
 open NUnit.Framework
 

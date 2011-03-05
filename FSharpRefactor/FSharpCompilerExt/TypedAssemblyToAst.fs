@@ -3,10 +3,8 @@
 open Ast
 open ContinuationMonad
 open Microsoft.FSharp.Compiler.Tast
+open Utils
 
-let internal mkSrcLoc (r: Microsoft.FSharp.Compiler.Range.range)  = 
-    { srcFilename = r.FileName; srcLine = { startLine = r.StartLine; endLine = r.EndLine }; 
-                                srcColumn = { startColumn = r.StartColumn; endColumn = r.EndColumn } }
 let internal foldDecls (decls:TypedAssembly) =
     let rec LoopDecl x =
         cont { match x with
@@ -44,7 +42,7 @@ let internal foldDecls (decls:TypedAssembly) =
         cont { match x with 
                | Binding.TBind (v,e,_) ->
                     let! eAcc = LoopExpr e
-                    return Ast.Let(false, [Pat.PVar(v.DisplayName), eAcc], Lit(Unit)) }
+                    return Ast.Let(false, [Pat.PVar(v.DisplayName, mkSrcLoc v.Range), eAcc], Lit(Unit)) }
 
     and LoopExpr x =
         cont { match x with
