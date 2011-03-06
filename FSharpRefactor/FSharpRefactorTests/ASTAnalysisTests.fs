@@ -426,3 +426,9 @@ type ASTAnalysisTests() =
         let ast = parseWithPosDecl ("let x : IDictionary<_, _> = dict \n" +
                                     "let y = x ")
         AssertAreEqual [Var ("x", loc(8,9,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in expression containing an array type constraint`` () =
+        let ast = parseWithPosDecl ("let x : int[] = xs \n" +
+                                    "let y = x ")
+        AssertAreEqual [Var ("x", loc(8,9,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)

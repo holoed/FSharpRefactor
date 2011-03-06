@@ -202,6 +202,9 @@ let internal foldDecls decls =
                     return! LoopRep ((List.head ident).idText) ms x }
     and LoopType x =
          cont { match x with
+                | SynType.Array (n,t,_) ->
+                    let! tAcc = LoopType t
+                    return Ast.TArray (n, tAcc)
                 | SynType.Anon(_) ->
                     return Ast.TAnon
                 | SynType.LongIdent (ident, _) ->
