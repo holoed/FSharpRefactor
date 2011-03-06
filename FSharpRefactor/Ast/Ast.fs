@@ -43,6 +43,7 @@ type Pat<'a> =
     | PLongVar of Pat<'a> list
     | PIsInst of Type<'a>
     | PNull
+    | POr of Pat<'a> * Pat<'a>
 
 and Exp<'a> 
     = Var      of 'a                           // variable    

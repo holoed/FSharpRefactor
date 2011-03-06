@@ -535,3 +535,12 @@ type CompilerToAstTests() =
     member this.``Int64 literal value`` () =
         AssertAreEqual [Let (false,[PVar "x", Lit(Int64(0L))],Lit Unit)]
                        (parse "let x = 0L")
+
+    [<Test>]
+    member this.``Or on exception matching`` () =
+        let ast = parse ("try Foo() with                     \n" +
+                         "| :? System.ArgumentException      \n" +
+                         "| :? System.ArgumentNullException -> 42")
+        AssertAreEqual [TryWith (App (Var "Foo",Lit Unit), 
+                            [Clause (POr (PIsInst (LongIdent [Ident "System"; Ident "ArgumentException"]), 
+                                          PIsInst (LongIdent [Ident "System"; Ident "ArgumentNullException"])), Lit (Integer 42))])] ast

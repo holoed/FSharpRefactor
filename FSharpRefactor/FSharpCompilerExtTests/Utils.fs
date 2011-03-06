@@ -69,6 +69,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               errorF               =     (fun () -> Ast.ArbitraryAfterError) 
                               pVarF                =     (fun (s,l) -> PVar s) 
                               pAppF                =     (fun l r -> PApp(l,r)) 
+                              porF                 =     (fun p1 p2 -> POr(p1, p2))
                               pLitF                =     (fun x -> PLit x) 
                               pTupleF              =     (fun xs -> PTuple xs) 
                               pRecordF             =     (fun xs -> PRecord xs)

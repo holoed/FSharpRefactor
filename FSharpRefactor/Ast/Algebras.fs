@@ -65,6 +65,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k> =
         errorF : unit -> 'b 
         pVarF : 'a -> 'j
         pAppF : 'j -> 'j -> 'j
+        porF : 'j -> 'j -> 'j
         pLitF : Literal -> 'j
         pTupleF : 'j list -> 'j
         pRecordF : (string * 'j) list -> 'j

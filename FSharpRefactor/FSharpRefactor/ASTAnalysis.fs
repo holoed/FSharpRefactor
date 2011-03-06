@@ -336,6 +336,9 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          pAppF =          (fun l r -> state { let! l' = l
                                                               let! r' = r
                                                               return PApp (l', r') }) 
+                         porF =           (fun p1 p2 -> state { let! p1Acc = p1
+                                                                let! p2Acc = p2
+                                                                return POr (p1Acc, p2Acc) })
                          pLitF =          (fun x -> state { return PLit x })
                          pTupleF =        (fun es ->  state { let! es' = mmap (fun e -> state { return! e }) es
                                                               return PTuple es' })
