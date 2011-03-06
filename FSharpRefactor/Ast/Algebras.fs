@@ -19,6 +19,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k> =
         typesF : 'd list -> 'e
         unionF : string -> 'a list -> 'd
         matchF : 'b -> 'f list -> 'b
+        addressofF : 'b -> 'b
         clauseF : 'j -> 'b -> 'f
         forEachF : 'j -> 'b -> 'b -> 'b
         yieldOrRetF : 'b -> 'b

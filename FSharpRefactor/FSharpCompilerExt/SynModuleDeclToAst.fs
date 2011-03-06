@@ -57,6 +57,9 @@ let internal foldDecls decls =
                     return Ast.Member(nAcc, eAcc) }
     and LoopExpr x =
          cont { match x with
+                | SynExpr.AddressOf (_, e, _, _) ->
+                    let! eAcc = LoopExpr e
+                    return Ast.AddressOf eAcc
                 | SynExpr.TypeApp (e, ts, _) ->
                     let! eAcc = LoopExpr e
                     let! tsAcc = mmap LoopType ts
