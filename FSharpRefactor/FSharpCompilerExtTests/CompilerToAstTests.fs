@@ -500,3 +500,8 @@ type CompilerToAstTests() =
     member this.``Anonymous type constraint`` () =
         AssertAreEqual [Let (false, [(PVar "x", Typed (Var "dict",TApp (LongIdent [Ident "IDictionary"],[TAnon; TAnon])))], Lit Unit)]
                        (parse "let x : IDictionary<_, _> = dict")
+
+    [<Test>]
+    member this.``Array type constraint`` () =        
+        AssertAreEqual [Let (false, [(PVar "x", Typed (Var "xs",TArray (1, LongIdent[Ident "int"])))], Lit Unit)]
+                       (parse "let x : int[] = xs")

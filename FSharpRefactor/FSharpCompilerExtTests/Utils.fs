@@ -59,6 +59,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               tvarF                =     (fun t -> TVar t)  
                               tappF                =     (fun t ts -> TApp (t, ts))
                               ttupleF              =     (fun ts -> TTuple ts)
+                              tarrayF              =     (fun n t -> TArray (n, t))
                               tanonF               =     (fun () -> TAnon)
                               tryWithF             =     (fun e cl -> TryWith(e, cl))                           
                               errorF               =     (fun () -> Ast.ArbitraryAfterError) 

@@ -116,6 +116,8 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_>) decl =
                                               return algebra.tappF tAcc tsAcc 
                        | Type.TTuple ts -> let! tsAcc = mmap LoopTypeInst ts
                                            return algebra.ttupleF tsAcc 
+                       | Type.TArray (n, t) -> let! tAcc = LoopTypeInst t
+                                               return algebra.tarrayF n tAcc
                        | Type.TAnon -> return algebra.tanonF () } 
 
       and LoopRecordInst (n, e) = 

@@ -90,6 +90,7 @@ and Type<'a>
     | TVar of Type<'a>
     | TApp of Type<'a> * Type<'a> list
     | TTuple of Type<'a> list
+    | TArray of int * Type<'a>
     | TAnon
 
 and ClassMember<'a>
