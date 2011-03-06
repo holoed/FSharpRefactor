@@ -27,6 +27,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k> =
         moduleF : string list -> 'e list -> 'e
         openF : string list -> 'e
         exceptionF : 'k -> 'e
+        hashdirectiveF : string -> string list -> 'e
         exceptionDefF : string -> 'g list -> 'k
         ifThenElseF : 'b -> 'b -> 'b option -> 'b
         dotGetF : 'b -> 'b -> 'b
@@ -69,5 +70,5 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k> =
         pWildF : unit -> 'j
         pArrayOrListF : 'j list -> 'j
         pLongVarF : 'j list -> 'j
-        pIsInstF : 'i -> 'j
+        pIsInstF : 'i -> 'j        
     }

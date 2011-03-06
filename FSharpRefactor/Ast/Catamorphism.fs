@@ -197,7 +197,8 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_>) decl =
                                              return algebra.moduleF n xsAcc 
                   | Open s -> return algebra.openF s
                   | Exception ex -> let! exAcc = LoopExceptionDef ex
-                                    return algebra.exceptionF exAcc }
+                                    return algebra.exceptionF exAcc
+                  | HashDirective (s, ss) -> return algebra.hashdirectiveF s ss  }
   LoopDecl decl id    
 
 
