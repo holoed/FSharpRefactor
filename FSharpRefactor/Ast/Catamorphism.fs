@@ -43,6 +43,8 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_>) decl =
                                 return algebra.tupleF esAcc
                   | List es -> let! esAcc = mmap LoopExp es
                                return algebra.listF esAcc
+                  | AddressOf e -> let! eAcc = LoopExp e
+                                   return algebra.addressofF eAcc
                   | Match (e, cs) -> let! eAcc = LoopExp e
                                      let! csAcc = mmap  LoopClauses cs
                                      return algebra.matchF eAcc csAcc

@@ -510,4 +510,9 @@ type CompilerToAstTests() =
     member this.``Type Application in instantiation.`` () =
         AssertAreEqual [Let (false,[(PVar "x", TypeApp (Var "Foo",[LongIdent [Ident "int"]]))],Lit Unit)]
                        (parse "let x = Foo<int>")
+
+    [<Test>]
+    member this.``AddressOf in expression`` () =
+        AssertAreEqual [Let (false,[(PVar "x", AddressOf (Var "y"))],Lit Unit)]
+                       (parse "let x = &y")
         

@@ -289,6 +289,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                             return ObjExpr msAcc })
                          doF =     (fun e -> state { let! eAcc = e
                                                      return Do eAcc })
+                         addressofF = (fun e -> state { let! eAcc = e
+                                                        return AddressOf eAcc })
                          doBangF = (fun e -> state { let! eAcc = e
                                                      return DoBang eAcc })
                          downcastF =      (fun e t -> state { let! eAcc = e
