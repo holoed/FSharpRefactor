@@ -261,7 +261,10 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                                 return (n, eAcc) })
                          newF =             (fun ss e -> state { let! ssAcc = ss
                                                                  let! eAcc = e
-                                                                 return New (ssAcc, eAcc) })                                                
+                                                                 return New (ssAcc, eAcc) })    
+                         typeappF =         (fun e ts -> state { let! eAcc= e
+                                                                 let! tsAcc = mmapId ts
+                                                                 return TypeApp (eAcc, tsAcc) })                                            
                          noneF =    (fun name -> state { return None name })
                          classF =   (fun n ms -> state {  let! ic = mmap (fun x -> state { let! xAcc = x
                                                                                            match xAcc with | ImplicitCtor ps -> return ps | _ -> return [] }) ms

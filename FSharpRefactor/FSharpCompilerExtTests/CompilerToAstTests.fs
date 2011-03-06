@@ -505,3 +505,9 @@ type CompilerToAstTests() =
     member this.``Array type constraint`` () =        
         AssertAreEqual [Let (false, [(PVar "x", Typed (Var "xs",TArray (1, LongIdent[Ident "int"])))], Lit Unit)]
                        (parse "let x : int[] = xs")
+
+    [<Test>]
+    member this.``Type Application in instantiation.`` () =
+        AssertAreEqual [Let (false,[(PVar "x", TypeApp (Var "Foo",[LongIdent [Ident "int"]]))],Lit Unit)]
+                       (parse "let x = Foo<int>")
+        
