@@ -164,6 +164,9 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_>) decl =
                                            return algebra.letBindingsF esAcc }
        and LoopPat pat =    
                 cont {    match pat with
+                          | POr(p1, p2) -> let! p1Acc = LoopPat p1
+                                           let! p2Acc = LoopPat p2
+                                           return algebra.porF p1Acc p2Acc
                           | PVar x -> return algebra.pVarF x
                           | PApp (l, r) -> let! lAcc = LoopPat l
                                            let! rAcc = LoopPat r
