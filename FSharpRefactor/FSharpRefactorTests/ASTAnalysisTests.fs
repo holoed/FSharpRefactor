@@ -444,3 +444,9 @@ type ASTAnalysisTests() =
         let ast = parseWithPosDecl ("let x = 42 \n" +
                                     "let y = &x")
         AssertAreEqual [Var ("x", loc(9,10,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of a null pattern`` () =
+        let ast = parseWithPosDecl ("let x = null \n" +
+                                    "let null = x")
+        AssertAreEqual [Var ("x", loc(11,12,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)

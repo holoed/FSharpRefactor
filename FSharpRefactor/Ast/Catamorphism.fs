@@ -18,6 +18,7 @@ open Algebras
 let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_>) decl =
   let rec LoopExp e =
           cont {  match e with
+                  | Null -> return algebra.nullF ()
                   | Var x -> return algebra.varF x 
                   | LongVar xs -> let! xsAcc = mmap LoopExp xs
                                   return algebra.longVarF xsAcc 
@@ -179,7 +180,8 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_>) decl =
                           | PLongVar xs -> let! xsAcc = mmap LoopPat xs
                                            return algebra.pLongVarF xsAcc
                           | PIsInst t -> let! tAcc = LoopTypeInst t
-                                         return algebra.pIsInstF tAcc }
+                                         return algebra.pIsInstF tAcc
+                          | PNull -> return algebra.pnullF () }
 
         and LoopExceptionDef ex =
             cont { match ex with
