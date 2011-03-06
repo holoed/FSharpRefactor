@@ -76,6 +76,9 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_>) decl =
                   | Exp.New (s, e) -> let! sAcc = LoopTypeInst s
                                       let! eAcc = LoopExp e
                                       return algebra.newF sAcc eAcc 
+                  | Exp.TypeApp (e, ts) -> let! eAcc = LoopExp e
+                                           let! tsAcc = mmap LoopTypeInst ts
+                                           return algebra.typeappF eAcc tsAcc
                   | Exp.ObjExpr ms -> let! msAcc = mmap LoopClassMember ms
                                       return algebra.objExprF msAcc
                   | Exp.Do e -> let! eAcc = LoopExp e

@@ -55,6 +55,7 @@ and Exp<'a>
     | List     of Exp<'a> list
     | Match    of Exp<'a> * Clause<'a> list
     | ForEach  of Pat<'a> * Exp<'a> * Exp<'a>
+    | TypeApp  of Exp<'a> * Type<'a> list
     | YieldOrReturn of Exp<'a>
     | YieldOrReturnFrom of Exp<'a>
     | IfThenElse of Exp<'a> * Exp<'a> * Exp<'a> option

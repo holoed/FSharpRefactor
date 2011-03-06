@@ -35,6 +35,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k> =
         recordInstF : 'h list -> 'b
         recordFieldInstF : 'a -> 'b -> 'h
         newF : 'i -> 'b -> 'b
+        typeappF : 'b -> 'i list -> 'b
         noneF : string -> 'd
         classF : string -> 'g list -> 'd
         implicitConF : 'j list -> 'g

@@ -39,6 +39,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               recordInstF          =     (fun fields -> Exp.Record (List.map (fun ((s,l), e) -> (s,e)) fields))
                               recordFieldInstF     =     (fun n e -> (n, e)) 
                               newF                 =     (fun ss e -> Exp.New (ss, e))
+                              typeappF             =     (fun e ts -> Exp.TypeApp (e, ts))
                               noneF                =     (fun name -> TypeDef.None name)
                               classF               =     (fun n ms -> Class (n, ms))
                               implicitConF         =     (fun ps -> Ast.ImplicitCtor ps)
