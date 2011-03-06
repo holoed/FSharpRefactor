@@ -17,6 +17,7 @@ type Literal
    = Char  of  char          // character literal
    | String of string        // string literal
    | Integer of  int         // integer literal
+   | Int64 of int64
    | Float  of  float        // floating point literal   
    | Double of double 
    | Bool of bool

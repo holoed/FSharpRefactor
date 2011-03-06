@@ -202,6 +202,7 @@ let internal foldDecls decls =
     and LoopConst x =
         cont { match x with
                | SynConst.Int32 x -> return Ast.Lit(Ast.Literal.Integer x)
+               | SynConst.Int64 x -> return Ast.Lit(Ast.Literal.Int64 x)
                | SynConst.Double x -> return Ast.Lit(Ast.Literal.Float x)
                | SynConst.Unit -> return Ast.Lit(Ast.Literal.Unit)
                | SynConst.String (x, _) -> return Ast.Lit(Ast.Literal.String x)

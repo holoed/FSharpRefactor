@@ -530,3 +530,8 @@ type CompilerToAstTests() =
     member this.``Null value`` () =
         AssertAreEqual [Let (false,[PVar "x", Null],Lit Unit)]
                        (parse "let x = null")
+
+    [<Test>]
+    member this.``Int64 literal value`` () =
+        AssertAreEqual [Let (false,[PVar "x", Lit(Int64(0L))],Lit Unit)]
+                       (parse "let x = 0L")
