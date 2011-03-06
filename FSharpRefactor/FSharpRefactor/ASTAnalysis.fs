@@ -77,7 +77,8 @@ let flatPat p =
                                           | PLit x -> return [PLit x]
                                           | PTuple es -> let! esAcc = ContinuationMonad.mmap LoopPat es
                                                          return List.concat esAcc
-                                          | PWild -> return [] 
+                                          | PWild -> return []
+                                          | PNull -> return [] 
                                           | PList es -> let! esAcc = ContinuationMonad.mmap LoopPat es
                                                         return List.concat esAcc
                                           | PLongVar xs -> let! xsAcc = ContinuationMonad.mmap LoopPat xs
@@ -113,7 +114,7 @@ let execute action p =
 
 
 let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> = 
-        foldExpAlgebra {
+        foldExpAlgebra { nullF = (fun () -> state { return Null })                         
                          varF =        (fun x -> state { do! addUsage x
                                                          return Var x })
                          longVarF =    (fun xs -> state { let! xs' = mmap (fun x -> state { return! x }) xs
@@ -347,7 +348,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          pLongVarF =      (fun xs -> state { let! xsAcc = mmap (fun x -> state { return! x }) xs 
                                                              return PLongVar xsAcc }) 
                          pIsInstF  =      (fun t -> state { let! tAcc= t
-                                                            return PIsInst tAcc }) }   exp
+                                                            return PIsInst tAcc })
+                         pnullF =         (fun () -> state { return PNull }) }   exp
                      
                                                        
 

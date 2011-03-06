@@ -520,3 +520,13 @@ type CompilerToAstTests() =
     member this.``Hash directive`` () =
         AssertAreEqual [HashDirective ("nowarn",["51"])]
                        (parseModule " #nowarn \"51\"")
+
+    [<Test>]
+    member this.``Null pattern`` () =        
+        AssertAreEqual [Let (false,[(PNull, Var "x")],Lit Unit)]
+                       (parse "let null = x")
+
+    [<Test>]
+    member this.``Null value`` () =
+        AssertAreEqual [Let (false,[PVar "x", Null],Lit Unit)]
+                       (parse "let x = null")

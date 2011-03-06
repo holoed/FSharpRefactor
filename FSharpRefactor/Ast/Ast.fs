@@ -41,6 +41,7 @@ type Pat<'a> =
     | PThis
     | PLongVar of Pat<'a> list
     | PIsInst of Type<'a>
+    | PNull
 
 and Exp<'a> 
     = Var      of 'a                           // variable    
@@ -72,6 +73,7 @@ and Exp<'a>
     | Upcast of Exp<'a> * Type<'a>
     | TryWith of Exp<'a> * Clause<'a> list
     | Typed of Exp<'a> * Type<'a>
+    | Null
     | ArbitraryAfterError
 
 and Clause<'a> = Clause of Pat<'a> * Exp<'a>

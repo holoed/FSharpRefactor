@@ -59,6 +59,8 @@ let internal foldDecls decls =
                     return Ast.Member(nAcc, eAcc) }
     and LoopExpr x =
          cont { match x with
+                | SynExpr.Null _ ->
+                    return Ast.Null
                 | SynExpr.AddressOf (_, e, _, _) ->
                     let! eAcc = LoopExpr e
                     return Ast.AddressOf eAcc
@@ -285,6 +287,8 @@ let internal foldDecls decls =
                     return Ast.Clause(pAcc, eAcc) }
     and LoopPat x =
         cont { match x with
+               | SynPat.Null _ ->
+                    return Ast.PNull
                | SynPat.Typed (pat, _, _) -> 
                     return! LoopPat pat //TODO: Add support for Typed patterns in AST.
                | SynPat.Named (_, x, _, _, _) -> 

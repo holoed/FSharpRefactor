@@ -5,6 +5,7 @@ open StateMonad
 
 type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k> =
     {
+        nullF : Unit -> 'b
         varF : 'a -> 'b
         longVarF : 'b list -> 'b
         longVarSetF : 'b -> 'b -> 'b
@@ -70,5 +71,6 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k> =
         pWildF : unit -> 'j
         pArrayOrListF : 'j list -> 'j
         pLongVarF : 'j list -> 'j
-        pIsInstF : 'i -> 'j        
+        pIsInstF : 'i -> 'j     
+        pnullF : Unit -> 'j   
     }

@@ -9,7 +9,8 @@ open AstCatamorphisms
 let path = sprintf "%s\\%s" (Directory.GetCurrentDirectory()) "test.fs" 
 
 let stripPos (decl:Module<'a*'b>) :Module<'a> =             
-            foldExpAlgebra {  varF                 =     (fun (s, l) -> Var s) 
+            foldExpAlgebra {  nullF                =     (fun () -> Null)
+                              varF                 =     (fun (s, l) -> Var s) 
                               longVarF             =     (fun xs -> LongVar xs)
                               longVarSetF          =     (fun e1 e2 -> LongVarSet (e1, e2))
                               lamF                 =     (fun ps b -> Lam(ps, b)) 
@@ -74,7 +75,8 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               pWildF               =     (fun () -> PWild)
                               pArrayOrListF        =     (fun xs -> PList xs)
                               pLongVarF            =     (fun xs -> PLongVar xs)
-                              pIsInstF             =     (fun t -> PIsInst t) } decl
+                              pIsInstF             =     (fun t -> PIsInst t)
+                              pnullF               =     (fun () -> PNull) } decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
 let parse f s = s |> f |> stripAllPos |> List.map (fun (Exp xs) -> xs) |> List.concat
