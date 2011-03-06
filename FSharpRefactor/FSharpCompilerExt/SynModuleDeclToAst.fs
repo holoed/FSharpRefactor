@@ -19,6 +19,8 @@ open Utils
 let internal foldDecls decls =
     let rec LoopDecl x =
         cont { match x with
+               | SynModuleDecl.HashDirective (ParsedHashDirective(s, ss, _), _) ->
+                    return Ast.Module.HashDirective (s, ss)
                | SynModuleDecl.Let (isRec,xs,_) -> 
                     let! xsAcc = mmap LoopBinding xs
                     let xsAcc' = List.map (fun (nAcc, eAcc) -> Let(isRec, [nAcc, eAcc], Lit(Unit))) xsAcc

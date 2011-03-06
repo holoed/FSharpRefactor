@@ -515,4 +515,8 @@ type CompilerToAstTests() =
     member this.``AddressOf in expression`` () =
         AssertAreEqual [Let (false,[(PVar "x", AddressOf (Var "y"))],Lit Unit)]
                        (parse "let x = &y")
-        
+    
+    [<Test>]
+    member this.``Hash directive`` () =
+        AssertAreEqual [HashDirective ("nowarn",["51"])]
+                       (parseModule " #nowarn \"51\"")

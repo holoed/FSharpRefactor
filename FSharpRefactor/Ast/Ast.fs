@@ -108,5 +108,6 @@ type Module<'a>
     | NestedModule of string list * Module<'a> list
     | Open of string list
     | Exception of ExceptionDef<'a>
+    | HashDirective of string * string list
     
 
