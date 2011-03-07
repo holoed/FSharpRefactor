@@ -27,6 +27,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               matchF               =     (fun e cs -> Match(e, cs))
                               clauseF              =     (fun p e -> Clause(p, e))
                               forEachF             =     (fun p e1 e2 -> ForEach (p, e1, e2))
+                              forF                 =     (fun i e1 e2 e3 -> For(i, e1, e2, e3))
                               yieldOrRetF          =     (fun e -> YieldOrReturn e)
                               yieldOrRetFromF      =     (fun e -> YieldOrReturnFrom e)
                               moduleF              =     (fun n ms -> NestedModule (n,ms))

@@ -225,6 +225,14 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                                     if (e2' <> (Lit Unit)) then
                                                                         do! exitScope (sf, lf)      // ----------------------------------------------------                               
                                                                     return ForEach (p', e1', e2') })
+                         forF =    (fun var startExp endExp bodyExp -> 
+                                                        state{ let! varAcc = var
+                                                               let! startExpAcc = startExp
+                                                               let! endExpAcc = endExp
+                                                               let! _ = execute enterScope varAcc                                                             
+                                                               let! bodyExpAcc = bodyExp
+                                                               let! _ = execute exitScope varAcc 
+                                                               return For(varAcc, startExpAcc, endExpAcc, bodyExpAcc) })
                          yieldOrRetF = (fun e -> state {  let! e' = e
                                                           return YieldOrReturn e' })
                          yieldOrRetFromF = (fun e -> state {  let! e' = e
