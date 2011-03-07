@@ -44,6 +44,10 @@ type Pat<'a> =
     | PIsInst of Type<'a>
     | PNull
     | POr of Pat<'a> * Pat<'a>
+    | PAttribute of Pat<'a> * Attribute<'a> list
+
+and Attribute<'a>
+    = Attribute of Exp<'a>
 
 and Exp<'a> 
     = Var      of 'a                           // variable    

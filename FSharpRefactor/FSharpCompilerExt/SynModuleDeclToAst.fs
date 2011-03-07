@@ -293,6 +293,10 @@ let internal foldDecls decls =
                     return Ast.Clause(pAcc, eAcc) }
     and LoopPat x =
         cont { match x with
+               | SynPat.Attrib (p, attrs, _) ->
+                    let! pAcc = LoopPat p
+                    let! attrsAcc = mmap LoopAttribute attrs
+                    return Ast.PAttribute(pAcc, attrsAcc)
                | SynPat.Or (p1, p2, _) ->
                     let! p1Acc = LoopPat p1
                     let! p2Acc = LoopPat p2
@@ -334,6 +338,10 @@ let internal foldDecls decls =
                | SynPat.IsInst (t, _) ->
                     let! tAcc = LoopType t
                     return Ast.PIsInst tAcc }
+
+    and LoopAttribute (x:SynAttribute) =
+        cont { let! argExprAcc = LoopExpr (x.ArgExpr)
+               return Ast.Attribute(argExprAcc) }
 
     and buildPApp f xs = 
                cont { match xs with
