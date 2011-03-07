@@ -15,7 +15,7 @@ open Ast
 open ContinuationMonad
 open Algebras
 
-let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_>) decl =
+let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_>) decl =
   let rec LoopExp e =
           cont {  match e with
                   | Null -> return algebra.nullF ()
@@ -169,6 +169,9 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_>) decl =
                                            return algebra.letBindingsF esAcc }
        and LoopPat pat =    
                 cont {    match pat with
+                          | PAttribute (p, attrs) -> let! pAcc = LoopPat p
+                                                     let! attrsAcc = mmap LoopAttribute attrs
+                                                     return algebra.pattributeF pAcc attrsAcc
                           | POr(p1, p2) -> let! p1Acc = LoopPat p1
                                            let! p2Acc = LoopPat p2
                                            return algebra.porF p1Acc p2Acc
@@ -190,6 +193,11 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_>) decl =
                           | PIsInst t -> let! tAcc = LoopTypeInst t
                                          return algebra.pIsInstF tAcc
                           | PNull -> return algebra.pnullF () }
+
+        and LoopAttribute x =
+            cont { match x with 
+                   | Attribute e -> let! eAcc = LoopExp e
+                                    return algebra.attributeF eAcc }
 
         and LoopExceptionDef ex =
             cont { match ex with

@@ -3,7 +3,7 @@
 open Ast
 open StateMonad
 
-type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k> =
+type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l> =
     {
         nullF : Unit -> 'b
         varF : 'a -> 'b
@@ -74,5 +74,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k> =
         pArrayOrListF : 'j list -> 'j
         pLongVarF : 'j list -> 'j
         pIsInstF : 'i -> 'j     
-        pnullF : Unit -> 'j   
+        pnullF : Unit -> 'j 
+        attributeF : 'b -> 'l
+        pattributeF : 'j -> 'l list -> 'j  
     }

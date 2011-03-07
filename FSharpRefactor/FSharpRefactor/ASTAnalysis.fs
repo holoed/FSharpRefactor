@@ -360,7 +360,12 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                              return PLongVar xsAcc }) 
                          pIsInstF  =      (fun t -> state { let! tAcc= t
                                                             return PIsInst tAcc })
-                         pnullF =         (fun () -> state { return PNull }) }   exp
+                         pnullF =         (fun () -> state { return PNull }) 
+                         pattributeF =    (fun p attrs -> state { let! pAcc = p
+                                                                  let! attrsAcc = mmap (fun attr -> state { return! attr }) attrs
+                                                                  return PAttribute(pAcc, attrsAcc) })
+                         attributeF =     (fun e -> state { let! eAcc = e
+                                                            return Attribute eAcc })}   exp
                      
                                                        
 

@@ -551,3 +551,25 @@ type CompilerToAstTests() =
                          "   printf \"%i\" i ")
         AssertAreEqual [For (PVar "i",Lit (Integer 0),Lit (Integer 5), App (App (Var "printf",Lit (String "%i")),Var "i"))] ast
 
+
+    [<Test>]
+    member this.``Extern method arguments attributes``() =
+        let ast = parseModule (@"extern bool private HeapSetInformation( 
+                                      UIntPtr _HeapHandle, 
+                                      UInt32  _HeapInformationClass, 
+                                      UIntPtr _HeapInformation, 
+                                      UIntPtr _HeapInformationLength)")
+        AssertAreEqual [Exp [Let (false,
+                                   [(PApp
+                                       (PVar "HeapSetInformation",
+                                        PTuple
+                                          [PAttribute (PVar "_HeapHandle",[]);
+                                           PAttribute (PVar "_HeapInformationClass",[]);
+                                           PAttribute (PVar "_HeapInformation",[]);
+                                           PAttribute (PVar "_HeapInformationLength",[])]),
+                                     Typed
+                                       (App
+                                          (Var "failwith",
+                                           Lit (String "extern was not given a DllImport attribute")),
+                                        TApp (LongIdent [Ident "bool"],[])))],Lit Unit)]] ast
+
