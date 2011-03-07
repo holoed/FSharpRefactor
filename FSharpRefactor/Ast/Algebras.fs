@@ -23,6 +23,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k> =
         addressofF : 'b -> 'b
         clauseF : 'j -> 'b -> 'f
         forEachF : 'j -> 'b -> 'b -> 'b
+        forF : 'j -> 'b -> 'b -> 'b -> 'b
         yieldOrRetF : 'b -> 'b
         yieldOrRetFromF : 'b -> 'b
         moduleF : string list -> 'e list -> 'e

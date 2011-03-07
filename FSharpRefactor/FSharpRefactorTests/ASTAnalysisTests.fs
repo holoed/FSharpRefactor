@@ -450,3 +450,31 @@ type ASTAnalysisTests() =
         let ast = parseWithPosDecl ("let x = null \n" +
                                     "let null = x")
         AssertAreEqual [Var ("x", loc(11,12,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of iterator variable in for loop`` () =
+        let ast = parseWithPosDecl ("for i = 0 to 5 do \n" +
+                                    "   printf \"%i\" i ")
+        AssertAreEqual [Var ("i", loc(15,16,2,2));Var ("i", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Iterator variable should be available only within the body of the loop`` () =
+        let ast = parseWithPosDecl ("for i = 0 to 5 do \n" +
+                                    "   printf \"%i\" i \n" +
+                                    "let x = i ")
+        AssertAreEqual [Var ("i", loc(15,16,2,2));Var ("i", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+        AssertAreEqual [] (findAllReferences (loc (8,9,1,1)) ast)
+
+    [<Test>]
+    member this.``Iterator variable should not be available in the expression used to define the start value of the loop`` () =
+        let ast = parseWithPosDecl ("for i = 0 + i to 5 do \n" +
+                                    "   printf \"%i\" i ")
+        AssertAreEqual [Var ("i", loc(15,16,2,2));Var ("i", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+        AssertAreEqual [] (findAllReferences (loc (12,13,1,1)) ast)
+
+    [<Test>]
+    member this.``Iterator variable should not be available in the expression used to define the end value of the loop`` () =
+        let ast = parseWithPosDecl ("for i = 0 to 5 + i do \n" +
+                                    "   printf \"%i\" i ")
+        AssertAreEqual [Var ("i", loc(15,16,2,2));Var ("i", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+        AssertAreEqual [] (findAllReferences (loc (17,18,1,1)) ast)

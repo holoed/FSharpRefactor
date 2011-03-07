@@ -544,3 +544,10 @@ type CompilerToAstTests() =
         AssertAreEqual [TryWith (App (Var "Foo",Lit Unit), 
                             [Clause (POr (PIsInst (LongIdent [Ident "System"; Ident "ArgumentException"]), 
                                           PIsInst (LongIdent [Ident "System"; Ident "ArgumentNullException"])), Lit (Integer 42))])] ast
+
+    [<Test>]
+    member this.``For loop``() =
+        let ast = parse ("for i = 0 to 5 do \n" +
+                         "   printf \"%i\" i ")
+        AssertAreEqual [For (PVar "i",Lit (Integer 0),Lit (Integer 5), App (App (Var "printf",Lit (String "%i")),Var "i"))] ast
+

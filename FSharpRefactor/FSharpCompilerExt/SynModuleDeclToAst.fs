@@ -59,6 +59,11 @@ let internal foldDecls decls =
                     return Ast.Member(nAcc, eAcc) }
     and LoopExpr x =
          cont { match x with
+                | SynExpr.For(_, id, e1, _, e2, e3, _) ->
+                    let! e1Acc = LoopExpr e1
+                    let! e2Acc = LoopExpr e2
+                    let! e3Acc = LoopExpr e3
+                    return Ast.For(Ast.PVar(id.idText, mkSrcLoc id.idRange), e1Acc, e2Acc, e3Acc)
                 | SynExpr.Null _ ->
                     return Ast.Null
                 | SynExpr.AddressOf (_, e, _, _) ->

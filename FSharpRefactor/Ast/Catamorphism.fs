@@ -53,6 +53,11 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_>) decl =
                                            let! e1Acc = LoopExp e1
                                            let! e2Acc = LoopExp e2
                                            return algebra.forEachF pAcc e1Acc e2Acc
+                  | For (p, e1, e2, e3) ->  let! pAcc = LoopPat p
+                                            let! e1Acc = LoopExp e1
+                                            let! e2Acc = LoopExp e2
+                                            let! e3Acc = LoopExp e3
+                                            return algebra.forF pAcc e1Acc e2Acc e3Acc
                   | YieldOrReturn e -> let! eAcc = LoopExp e
                                        return algebra.yieldOrRetF eAcc
                   | YieldOrReturnFrom e -> let! eAcc = LoopExp e
