@@ -599,6 +599,12 @@ type CompilerToAstTests() =
         let ast = parseTypes ("type MyType() =    \n" +
                               "    [<DefaultValue>] val mutable myInt2 : int")
         AssertAreEqual [[Class ("MyType",[ImplicitCtor []; ValField (Some (Ident "myInt2"), LongIdent [Ident "int"])])]] ast
+
+    [<Test>]
+    member this.``While loop``() =
+        let ast = parse ("while x > 0 do  \n" +
+                         "   foo x ")
+        AssertAreEqual [While (App (App (Var "op_GreaterThan",Var "x"),Lit (Integer 0)), App (Var "foo",Var "x"))] ast
                        
 
 

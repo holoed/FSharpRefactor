@@ -66,6 +66,7 @@ and Exp<'a>
     | For      of Pat<'a> * Exp<'a> * Exp<'a> * Exp<'a>
     | TypeApp  of Exp<'a> * Type<'a> list
     | Assert   of Exp<'a>
+    | While    of Exp<'a> * Exp<'a>
     | AddressOf of Exp<'a>
     | YieldOrReturn of Exp<'a>
     | YieldOrReturnFrom of Exp<'a>
