@@ -47,6 +47,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               typeappF             =     (fun e ts -> Exp.TypeApp (e, ts))
                               noneF                =     (fun name -> TypeDef.None name)
                               classF               =     (fun n ms -> Class (n, ms))
+                              valfieldF            =     (fun t1 t2 -> ValField (t1, t2))
                               implicitConF         =     (fun ps -> Ast.ImplicitCtor ps)
                               memberF              =     (fun n e -> Member (n, e))
                               abstractSlotF        =     (fun n -> AbstractSlot n)

@@ -158,6 +158,13 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_>) decl =
 
       and LoopClassMember ms =
                 cont { match ms with
+                       | ValField (t1,t2) -> let! t1Acc = match t1 with
+                                                          | Some t -> cont { let! x = LoopTypeInst t
+                                                                             return Some x }
+                                                          | Option.None -> cont { return Option.None }
+
+                                             let! t2Acc = LoopTypeInst t2
+                                             return algebra.valfieldF t1Acc t2Acc
                        | ImplicitCtor ps -> let! psAcc = mmap LoopPat ps
                                             return algebra.implicitConF psAcc
                        | Member (p, e) -> let! pAcc = LoopPat p

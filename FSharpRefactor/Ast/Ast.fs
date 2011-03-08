@@ -112,6 +112,7 @@ and ClassMember<'a>
     | LetBindings of Exp<'a> list
     | AbstractSlot of string
     | Interface of Type<'a> * ClassMember<'a> list
+    | ValField of Type<'a> option * Type<'a>
 
 type Module<'a>
     = Exp of Exp<'a> list
