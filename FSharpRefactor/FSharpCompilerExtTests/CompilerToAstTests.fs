@@ -589,3 +589,8 @@ type CompilerToAstTests() =
                                      (PIsInst (LongIdent [Ident "System"; Ident "Boolean"]),
                                       Lit (Integer 42))]))],Lit Unit)] ast
 
+    [<Test>]
+    member this.``assert keyword``() =
+        AssertAreEqual [Let (false, [(PWild,  Assert (App (App (Var "op_LessThanOrEqual",Var "pos_nbits"),Lit (Integer 32))))], Lit Unit)]
+                       (parse "let _ = assert (pos_nbits <= 32)")
+
