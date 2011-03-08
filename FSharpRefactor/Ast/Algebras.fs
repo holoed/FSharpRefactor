@@ -5,6 +5,7 @@ open StateMonad
 
 type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l> =
     {
+        assertF : 'b -> 'b
         nullF : Unit -> 'b
         varF : 'a -> 'b
         longVarF : 'b list -> 'b

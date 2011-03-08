@@ -486,3 +486,9 @@ type ASTAnalysisTests() =
                                     "| :? System.ArgumentException      \n" +
                                     "| :? System.ArgumentNullException -> x")
         AssertAreEqual [Var ("x", loc(37,38,4,4));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of an assert``() = 
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "let _ = assert (x <= 32)")
+        AssertAreEqual [Var ("x", loc(16,17,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)

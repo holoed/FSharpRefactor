@@ -59,6 +59,9 @@ let internal foldDecls decls =
                     return Ast.Member(nAcc, eAcc) }
     and LoopExpr x =
          cont { match x with
+                | SynExpr.Assert(e, _) ->
+                    let! eAcc = LoopExpr e
+                    return Ast.Assert eAcc
                 | SynExpr.For(_, id, e1, _, e2, e3, _) ->
                     let! e1Acc = LoopExpr e1
                     let! e2Acc = LoopExpr e2

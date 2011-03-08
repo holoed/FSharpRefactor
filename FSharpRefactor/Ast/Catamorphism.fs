@@ -18,6 +18,8 @@ open Algebras
 let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_>) decl =
   let rec LoopExp e =
           cont {  match e with
+                  | Assert e -> let! eAcc = LoopExp e
+                                return algebra.assertF eAcc
                   | Null -> return algebra.nullF ()
                   | Var x -> return algebra.varF x 
                   | LongVar xs -> let! xsAcc = mmap LoopExp xs
