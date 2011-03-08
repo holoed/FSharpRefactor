@@ -43,6 +43,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l> =
         typeappF : 'b -> 'i list -> 'b
         noneF : string -> 'd
         classF : string -> 'g list -> 'd
+        valfieldF: 'i option -> 'i -> 'g
         implicitConF : 'j list -> 'g
         memberF : 'j -> 'b -> 'g
         abstractSlotF : string -> 'g

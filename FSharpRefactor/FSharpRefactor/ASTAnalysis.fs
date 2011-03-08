@@ -291,6 +291,12 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                           return Class (n, msAcc) })
                          implicitConF = (fun ps -> state { let! psAcc = mmapId ps
                                                            return ImplicitCtor psAcc })
+                         valfieldF   =  (fun t1 t2 -> state { let! t1Acc = match t1 with
+                                                                           | Some t -> state { let! x = t
+                                                                                               return Some x }
+                                                                           | Option.None -> state { return Option.None }
+                                                              let! t2Acc = t2
+                                                              return ValField (t1Acc, t2Acc) })
                          memberF =      (fun p e -> state {  let! pAcc = p
                                                              let flatpat = flatPat pAcc                                                                   
                                                              let boundName = List.head (let xs = List.tail flatpat

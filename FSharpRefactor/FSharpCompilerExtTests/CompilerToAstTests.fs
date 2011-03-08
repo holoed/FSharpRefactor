@@ -594,3 +594,11 @@ type CompilerToAstTests() =
         AssertAreEqual [Let (false, [(PWild,  Assert (App (App (Var "op_LessThanOrEqual",Var "pos_nbits"),Lit (Integer 32))))], Lit Unit)]
                        (parse "let _ = assert (pos_nbits <= 32)")
 
+    [<Test>]
+    member this.``Val keyword``() =
+        let ast = parseTypes ("type MyType() =    \n" +
+                              "    [<DefaultValue>] val mutable myInt2 : int")
+        AssertAreEqual [[Class ("MyType",[ImplicitCtor []; ValField (Some (Ident "myInt2"), LongIdent [Ident "int"])])]] ast
+                       
+
+
