@@ -478,3 +478,11 @@ type ASTAnalysisTests() =
                                     "   printf \"%i\" i ")
         AssertAreEqual [Var ("i", loc(15,16,2,2));Var ("i", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
         AssertAreEqual [] (findAllReferences (loc (17,18,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of or on pattern matching (POr) ``() =
+        let ast = parseWithPosDecl ("let x = 42  \n"+
+                                    "try Foo() with                     \n" +
+                                    "| :? System.ArgumentException      \n" +
+                                    "| :? System.ArgumentNullException -> x")
+        AssertAreEqual [Var ("x", loc(37,38,4,4));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)

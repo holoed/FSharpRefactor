@@ -573,3 +573,19 @@ type CompilerToAstTests() =
                                            Lit (String "extern was not given a DllImport attribute")),
                                         TApp (LongIdent [Ident "bool"],[])))],Lit Unit)]] ast
 
+    [<Test>]
+    member this.``Unsigned Integer 32``() =
+        AssertAreEqual [Let (false,[(PVar "x", Lit (UnsignedInteger 0u))],Lit Unit)] (parse "let x = 0u")
+
+    [<Test>]
+    member this.``Pattern type switching``() =
+        let ast = parse ("let f x =  match (x:System.Object) with \n" +
+                         "           | :? System.Boolean -> 42")
+        AssertAreEqual [Let (false,
+                             [(PApp (PVar "f",PVar "x"),
+                               Match
+                                 (Typed (Var "x",LongIdent [Ident "System"; Ident "Object"]),
+                                  [Clause
+                                     (PIsInst (LongIdent [Ident "System"; Ident "Boolean"]),
+                                      Lit (Integer 42))]))],Lit Unit)] ast
+

@@ -206,6 +206,7 @@ let internal foldDecls decls =
     
     and LoopConst x =
         cont { match x with
+               | SynConst.UInt32 x -> return Ast.Lit(Ast.Literal.UnsignedInteger x)
                | SynConst.Int32 x -> return Ast.Lit(Ast.Literal.Integer x)
                | SynConst.Int64 x -> return Ast.Lit(Ast.Literal.Int64 x)
                | SynConst.Double x -> return Ast.Lit(Ast.Literal.Float x)

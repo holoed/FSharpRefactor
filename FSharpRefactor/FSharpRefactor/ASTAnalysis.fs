@@ -68,7 +68,12 @@ let exitGlobalScope = state { let! (OpenScopes(map), SymbolTable(table)) = getSt
 
 let flatPat p =
     let rec LoopPat pat =    
-                ContinuationMonad.cont {  match pat with
+                ContinuationMonad.cont {  match pat with   
+                                          | PAttribute(p, attrs) -> let! pAcc = LoopPat p
+                                                                    return pAcc
+                                          | POr (p1, p2) -> let! p1Acc = LoopPat p1
+                                                            let! p2Acc = LoopPat p2
+                                                            return p1Acc @ p2Acc                                       
                                           | PRecord x -> return [PRecord x]
                                           | PVar x -> return [PVar x]
                                           | PApp (l, r) -> let! lAcc = LoopPat l
