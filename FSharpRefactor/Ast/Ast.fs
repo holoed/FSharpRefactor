@@ -83,6 +83,7 @@ and Exp<'a>
     | Upcast of Exp<'a> * Type<'a>
     | TryWith of Exp<'a> * Clause<'a> list
     | Typed of Exp<'a> * Type<'a>
+    | Lazy of Exp<'a>
     | Null
     | ArbitraryAfterError
 

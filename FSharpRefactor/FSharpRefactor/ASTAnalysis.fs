@@ -119,7 +119,9 @@ let execute action p =
 
 
 let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> = 
-        foldExpAlgebra { whileF =  (fun e1 e2 -> state { let! e1Acc = e1
+        foldExpAlgebra { lazyF = (fun e -> state { let! eAcc = e
+                                                   return Lazy eAcc })        
+                         whileF =  (fun e1 e2 -> state { let! e1Acc = e1
                                                          let! e2Acc = e2
                                                          return While (e1Acc, e2Acc) })
                          assertF = (fun e -> state { let! eAcc = e

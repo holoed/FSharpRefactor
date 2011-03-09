@@ -18,6 +18,8 @@ open Algebras
 let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_>) decl =
   let rec LoopExp e =
           cont {  match e with
+                  | Lazy e -> let! eAcc = LoopExp e
+                              return algebra.lazyF eAcc
                   | While (e1, e2) -> let! e1Acc = LoopExp e1
                                       let! e2Acc = LoopExp e2
                                       return algebra.whileF e1Acc e2Acc

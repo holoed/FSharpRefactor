@@ -605,6 +605,11 @@ type CompilerToAstTests() =
         let ast = parse ("while x > 0 do  \n" +
                          "   foo x ")
         AssertAreEqual [While (App (App (Var "op_GreaterThan",Var "x"),Lit (Integer 0)), App (Var "foo",Var "x"))] ast
+
+    [<Test>]
+    member this.``Lazy keyword`` () =
+        AssertAreEqual [Let (false,[(PVar "f", Lazy (Lit (Integer 42)))],Lit Unit)] (parse "let f = lazy 42")
+        
                        
 
 
