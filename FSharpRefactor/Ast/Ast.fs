@@ -16,9 +16,12 @@ open System
 type Literal
    = Char  of  char          // character literal
    | String of string        // string literal
+   | Integer16 of  System.Int16         // integer literal
    | Integer of  int         // integer literal
+   | UnsignedInteger16 of System.UInt16
    | UnsignedInteger of System.UInt32
    | Int64 of int64
+   | Byte of byte
    | Float  of  float        // floating point literal   
    | Double of double 
    | Bool of bool
