@@ -609,6 +609,12 @@ type CompilerToAstTests() =
     [<Test>]
     member this.``Lazy keyword`` () =
         AssertAreEqual [Let (false,[(PVar "f", Lazy (Lit (Integer 42)))],Lit Unit)] (parse "let f = lazy 42")
+
+    [<Test>]
+    member this.``Support for Int16 UInt16 Byte``() =
+        AssertAreEqual [Let (false,[(PVar "x", Lit (UnsignedInteger16 0us))],Lit Unit)] (parse "let x = 0us")
+        AssertAreEqual [Let (false,[(PVar "x", Lit (Integer16  0s))],Lit Unit)] (parse "let x = 0s")
+        AssertAreEqual [Let (false,[(PVar "x", Lit (Byte 0uy))],Lit Unit)] (parse "let x = 0uy")
         
                        
 
