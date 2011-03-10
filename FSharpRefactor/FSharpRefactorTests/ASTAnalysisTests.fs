@@ -515,5 +515,9 @@ type ASTAnalysisTests() =
                                     "   | No  = 1    \n" +
                                     "let x = Yes")
         AssertAreEqual [Var ("Yes", loc(8,11,4,4));Var ("Yes", loc(5,8,2,2))] (findAllReferences (loc (5,8,2,2)) ast)
-
     
+    [<Test>]
+    member this.``Find usages in an inferred downcast``() =
+        let ast = parseWithPosDecl ("let x = 42 :> System.Object \n" +
+                                    "let y:string = downcast x")
+        AssertAreEqual [Var ("x", loc(24,25,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)

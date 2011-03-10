@@ -9,7 +9,8 @@ open AstCatamorphisms
 let path = sprintf "%s\\%s" (Directory.GetCurrentDirectory()) "test.fs" 
 
 let stripPos (decl:Module<'a*'b>) :Module<'a> =             
-            foldExpAlgebra {  lazyF                =     (fun e -> Lazy e)
+            foldExpAlgebra {  inferredDowncastF    =     (fun e -> InferredDowncast e)
+                              lazyF                =     (fun e -> Lazy e)
                               whileF               =     (fun e1 e2 -> While(e1, e2))
                               assertF              =     (fun e -> Assert e)
                               nullF                =     (fun () -> Null)

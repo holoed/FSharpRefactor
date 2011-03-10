@@ -621,8 +621,13 @@ type CompilerToAstTests() =
         let ast = parseTypes ("type Choice = \n" +
                               "   | Yes = 0    \n" +
                               "   | No  = 1      ")
-        let sss = sprintf "%A" ast
         AssertAreEqual [[Enum ("Choice",[("Yes", Integer 0); ("No", Integer 1)])]] ast
+
+    [<Test>]
+    member this.``inferred downcast`` () =
+        let ast = parse "let x:string = downcast foo()"
+        AssertAreEqual [Let  (false,  [(PVar "x",  Typed (InferredDowncast (App (Var "foo",Lit Unit)),LongIdent [Ident "string"]))], Lit Unit)] ast
+        
 
         
                        
