@@ -150,6 +150,7 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_>) decl =
 
       and LoopTypes t = 
                cont { match t with
+                      | Enum (name, cases) -> return algebra.enumF name cases
                       | DisUnion (name, cases) -> return algebra.unionF name cases 
                       | Record (name, fields, ms) -> 
                             let! msAcc = mmap LoopClassMember ms

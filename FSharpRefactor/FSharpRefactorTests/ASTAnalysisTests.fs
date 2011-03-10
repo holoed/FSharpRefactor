@@ -480,7 +480,7 @@ type ASTAnalysisTests() =
         AssertAreEqual [] (findAllReferences (loc (17,18,1,1)) ast)
 
     [<Test>]
-    member this.``Find usages in the presence of or on pattern matching (POr) ``() =
+    member this.``Find usages in the presence of or on pattern matching ``() =
         let ast = parseWithPosDecl ("let x = 42  \n"+
                                     "try Foo() with                     \n" +
                                     "| :? System.ArgumentException      \n" +
@@ -507,3 +507,13 @@ type ASTAnalysisTests() =
         let ast = parseWithPosDecl ("let x = 42 \n" +
                                     "let g = lazy x")
         AssertAreEqual [Var ("x", loc(13,14,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of enum cases``() =
+        let ast = parseWithPosDecl ("type Choice = \n" +
+                                    "   | Yes = 0    \n" +
+                                    "   | No  = 1    \n" +
+                                    "let x = Yes")
+        AssertAreEqual [Var ("Yes", loc(8,11,4,4));Var ("Yes", loc(5,8,2,2))] (findAllReferences (loc (5,8,2,2)) ast)
+
+    

@@ -615,6 +615,15 @@ type CompilerToAstTests() =
         AssertAreEqual [Let (false,[(PVar "x", Lit (UnsignedInteger16 0us))],Lit Unit)] (parse "let x = 0us")
         AssertAreEqual [Let (false,[(PVar "x", Lit (Integer16  0s))],Lit Unit)] (parse "let x = 0s")
         AssertAreEqual [Let (false,[(PVar "x", Lit (Byte 0uy))],Lit Unit)] (parse "let x = 0uy")
+
+    [<Test>]
+    member this.``Enum support``() =
+        let ast = parseTypes ("type Choice = \n" +
+                              "   | Yes = 0    \n" +
+                              "   | No  = 1      ")
+        let sss = sprintf "%A" ast
+        AssertAreEqual [[Enum ("Choice",[("Yes", Integer 0); ("No", Integer 1)])]] ast
+
         
                        
 
