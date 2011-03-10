@@ -205,6 +205,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                           return Types xs' })
                          unionF =      (fun name cases -> state { let! _ = mmap (fun x -> enterScope x) cases
                                                                   return DisUnion(name, cases) })
+                         enumF =       (fun name cases -> state { let! _ = mmap (fun (x, c) -> enterScope x) cases
+                                                                  return Enum(name, cases) })
                          matchF =      (fun e cs -> state { let! e' = e
                                                             let! cs' = mmap (fun c -> state { return! c }) cs
                                                             return Match(e', cs')})

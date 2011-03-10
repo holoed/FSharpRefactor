@@ -26,6 +26,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               expF                 =     (fun xs -> Exp xs)
                               typesF               =     (fun xs -> Types xs)
                               unionF               =     (fun name cases -> DisUnion (name, List.map (fun (s,l) -> s) cases))
+                              enumF               =      (fun name cases -> Enum (name, List.map (fun ((s,l), c) -> (s, c)) cases))
                               addressofF           =     (fun e -> AddressOf e)
                               matchF               =     (fun e cs -> Match(e, cs))
                               clauseF              =     (fun p e -> Clause(p, e))

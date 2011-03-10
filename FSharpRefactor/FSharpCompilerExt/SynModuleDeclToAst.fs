@@ -283,6 +283,9 @@ let internal foldDecls decls =
                    return ClassMember.Interface (tAcc, msAcc) }
     and LoopSimpleTypeRep name ms x =
          cont { match x with
+                | SynTypeDefnSimpleRepr.Enum (ecs, _) ->
+                    let! ecsAcc = mmap LoopEnumCases ecs
+                    return TypeDef.Enum (name, ecsAcc)
                 | SynTypeDefnSimpleRepr.Union (_, xs, _) -> 
                     let! xsAcc = mmap LoopUnionCases xs
                     return TypeDef.DisUnion (name, xsAcc)
@@ -299,6 +302,11 @@ let internal foldDecls decls =
         cont { match x with
                | SynUnionCase.UnionCase(_,x,_,_,_,_) ->
                     return (x.idText, mkSrcLoc x.idRange) }
+    and LoopEnumCases x =
+        cont { match x with
+               | SynEnumCase.EnumCase(_,x,c,_,_) ->
+                    let! Lit(cAcc) = LoopConst c
+                    return ((x.idText, mkSrcLoc x.idRange), cAcc) }
     and LoopRecordFields x =
         cont { match x with 
                | SynField.Field(_, _, identOption, _, _, _, _, _) -> 

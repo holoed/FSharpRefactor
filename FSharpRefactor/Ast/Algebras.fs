@@ -22,6 +22,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l> =
         expF : 'b list -> 'c
         typesF : 'd list -> 'e
         unionF : string -> 'a list -> 'd
+        enumF : string -> ('a * Literal) list -> 'd
         matchF : 'b -> 'f list -> 'b
         addressofF : 'b -> 'b
         clauseF : 'j -> 'b -> 'f
