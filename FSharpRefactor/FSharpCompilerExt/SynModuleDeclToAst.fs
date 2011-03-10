@@ -59,6 +59,9 @@ let internal foldDecls decls =
                     return Ast.Member(nAcc, eAcc) }
     and LoopExpr x =
          cont { match x with
+                | SynExpr.InferredDowncast (e, _) ->
+                    let! eAcc = LoopExpr e
+                    return Ast.InferredDowncast eAcc
                 | SynExpr.Lazy (e, _) ->
                     let! eAcc = LoopExpr e
                     return Ast.Lazy eAcc
