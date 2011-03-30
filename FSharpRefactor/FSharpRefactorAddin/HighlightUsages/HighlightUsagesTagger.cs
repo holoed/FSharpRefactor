@@ -190,9 +190,22 @@ namespace FSharpRefactorVSAddIn.HighlightUsages
         private static List<SnapshotSpan> FindTheNewSpans(SnapshotSpan currentWord)
         {
             var txt = currentWord.Snapshot.GetText();
-            var matches = Regex.Matches(txt, "\\b" + currentWord.GetText().Trim() + "\\b");
+            var word = GetWordIncludingQuotes(currentWord);
+            var matches = Regex.Matches(txt, word);
             var spans = matches.Cast<Match>().Select(m => new SnapshotSpan(currentWord.Snapshot, m.Index, m.Length));           
             return spans.ToList();
+        }
+
+        private static string GetWordIncludingQuotes(SnapshotSpan currentWord)
+        {
+            var endWordPos = currentWord.End.Position;
+            var word = currentWord.GetText().Trim();
+            while (endWordPos < currentWord.Snapshot.Length && currentWord.Snapshot.GetText(endWordPos, 1) == "\'")
+            {
+                word += "\'";
+                endWordPos++;
+            }
+            return word;
         }
 
         private void IfWeAreStillUpToDateDoARealUpdate(SnapshotPoint currentRequest, SnapshotSpan currentWord, List<SnapshotSpan> wordSpans)
@@ -218,13 +231,14 @@ namespace FSharpRefactorVSAddIn.HighlightUsages
 
         private static Tuple<int, int, int, int> GetPosition(SnapshotSpan currentWord)
         {
+            var extraLenght = GetWordIncludingQuotes(currentWord).Length - currentWord.Length;
             var lineStart = currentWord.Snapshot.GetLineNumberFromPosition(currentWord.Start.Position) + 1;
             var lineEnd = currentWord.Snapshot.GetLineNumberFromPosition(currentWord.End.Position) + 1;
             var startLine = currentWord.Snapshot.GetLineFromPosition(currentWord.Start.Position);
             var endLine = currentWord.Snapshot.GetLineFromPosition(currentWord.End.Position);
             var colStart = currentWord.Start.Position - startLine.Start.Position;
             var colEnd = currentWord.End.Position - endLine.Start.Position;
-            return Tuple.Create(colStart, colEnd, lineStart, lineEnd);
+            return Tuple.Create(colStart, colEnd + extraLenght, lineStart, lineEnd);
         }
 
         /// <summary>

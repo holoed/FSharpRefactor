@@ -628,7 +628,9 @@ type CompilerToAstTests() =
         let ast = parse "let x:string = downcast foo()"
         AssertAreEqual [Let  (false,  [(PVar "x",  Typed (InferredDowncast (App (Var "foo",Lit Unit)),LongIdent [Ident "string"]))], Lit Unit)] ast
         
-
+    [<Test>]
+    member this.``Quoted identifier``() =        
+        AssertAreEqual [Let(false,[PVar "x'", Lit(Integer 42)], Lit(Unit))] (parse "let x' = 42")
         
                        
 
