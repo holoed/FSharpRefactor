@@ -47,7 +47,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSharpRefactorAddin", "FSha
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 10
+		SccNumberOfProjects = 9
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs02
 		SccLocalPath0 = .
@@ -71,22 +71,18 @@ Global
 		SccProjectTopLevelParentUniqueName5 = FSharpRefactor.sln
 		SccProjectName5 = FSharpCompilerExtTests
 		SccLocalPath5 = FSharpCompilerExtTests
-		SccProjectUniqueName6 = FSharpRefactorVSAddIn\\FSharpRefactorVSAddIn.csproj
+		SccProjectUniqueName6 = FSharpRefactor\\FSharpRefactor.fsproj
 		SccProjectTopLevelParentUniqueName6 = FSharpRefactor.sln
-		SccProjectName6 = FSharpRefactorVSAddIn
-		SccLocalPath6 = FSharpRefactorVSAddIn
-		SccProjectUniqueName7 = FSharpRefactor\\FSharpRefactor.fsproj
+		SccProjectName6 = FSharpRefactor
+		SccLocalPath6 = FSharpRefactor
+		SccProjectUniqueName7 = FSharpRefactorTests\\FSharpRefactorTests.fsproj
 		SccProjectTopLevelParentUniqueName7 = FSharpRefactor.sln
-		SccProjectName7 = FSharpRefactor
-		SccLocalPath7 = FSharpRefactor
-		SccProjectUniqueName8 = FSharpRefactorTests\\FSharpRefactorTests.fsproj
+		SccProjectName7 = FSharpRefactorTests
+		SccLocalPath7 = FSharpRefactorTests
+		SccProjectUniqueName8 = FSharpRefactorAddin\\FSharpRefactorAddin.csproj
 		SccProjectTopLevelParentUniqueName8 = FSharpRefactor.sln
-		SccProjectName8 = FSharpRefactorTests
-		SccLocalPath8 = FSharpRefactorTests
-		SccProjectUniqueName9 = FSharpRefactorAddin\\FSharpRefactorAddin.csproj
-		SccProjectTopLevelParentUniqueName9 = FSharpRefactor.sln
-		SccProjectName9 = FSharpRefactorAddin
-		SccLocalPath9 = FSharpRefactorAddin
+		SccProjectName8 = FSharpRefactorAddin
+		SccLocalPath8 = FSharpRefactorAddin
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
