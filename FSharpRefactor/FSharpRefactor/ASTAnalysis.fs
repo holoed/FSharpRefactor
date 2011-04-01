@@ -306,6 +306,12 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                                            | Option.None -> state { return Option.None }
                                                               let! t2Acc = t2
                                                               return ValField (t1Acc, t2Acc) })
+                         inheritF   =   (fun t1 t2 -> state { let! t1Acc = t1
+                                                              let! t2Acc = match t2 with
+                                                                           | Some t -> state { let! x = t
+                                                                                               return Some x }
+                                                                           | Option.None -> state { return Option.None }
+                                                              return Inherit (t1Acc, t2Acc) })
                          memberF =      (fun p e -> state {  let! pAcc = p
                                                              let flatpat = flatPat pAcc                                                                   
                                                              let boundName = List.head (let xs = List.tail flatpat
@@ -407,14 +413,16 @@ let buildSymbolTable progs =
 // SymbolTable -> Exp<string * SrcLoc>
 let getAllReferences (SymbolTable(table)) pos = 
         let data = Map.toList table
-        [ for (s,xxs) in data do
-            for xs in xxs do
-                for x in xs do
-                    if (x = pos) then
-                        yield List.map (fun x -> Var(s, x)) xs ] |> List.concat
+        seq [ for (s,xxs) in data do
+              for xs in xxs do
+              for x in xs do
+                 if (x = pos) then
+                    yield List.map (fun x -> Var(s, x)) xs ] |> Seq.concat 
+                                                             |> Seq.distinct 
+                                                             |> Seq.toList
     
        
 // Exp<'a> list -> SrcLoc -> Exp<string * SrcLoc> list                
 let findAllReferences pos progs = 
         let symbolTable = buildSymbolTable progs
-        getAllReferences symbolTable pos
+        getAllReferences symbolTable pos 

@@ -184,7 +184,14 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_>) decl =
                                              return algebra.interfaceF tAcc msAcc
                        | AbstractSlot n -> return algebra.abstractSlotF n
                        | LetBindings es -> let! esAcc = mmap LoopExp es
-                                           return algebra.letBindingsF esAcc }
+                                           return algebra.letBindingsF esAcc
+                       | Inherit (t1,t2) -> let! t1Acc = LoopTypeInst t1
+                                            let! t2Acc = match t2 with
+                                                          | Some t -> cont { let! x = LoopTypeInst t
+                                                                             return Some x }
+                                                          | Option.None -> cont { return Option.None }
+
+                                            return algebra.inheritF t1Acc t2Acc }
        and LoopPat pat =    
                 cont {    match pat with
                           | PAttribute (p, attrs) -> let! pAcc = LoopPat p

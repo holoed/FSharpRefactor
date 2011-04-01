@@ -265,6 +265,10 @@ let internal foldDecls decls =
                         return Ast.Class (name, msAcc) }
     and LoopClassMember x = 
         cont { match x with 
+               | SynMemberDefn.Inherit (t, id, _) ->
+                    let idAcc = Option.map(fun (x:Ident) -> Ast.Ident(x.idText, mkSrcLoc x.idRange)) id
+                    let! tAcc = LoopType t
+                    return ClassMember.Inherit(tAcc, idAcc)
                | SynMemberDefn.ValField(SynField.Field(_,_,id,t,_,_,_,_), _) ->
                     let idAcc = Option.map(fun (x:Ident) -> Ast.Ident(x.idText, mkSrcLoc x.idRange)) id
                     let! tAcc = LoopType t

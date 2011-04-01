@@ -631,7 +631,11 @@ type CompilerToAstTests() =
     [<Test>]
     member this.``Quoted identifier``() =        
         AssertAreEqual [Let(false,[PVar "x'", Lit(Integer 42)], Lit(Unit))] (parse "let x' = 42")
-        
+
+    [<Test>]
+    member this.``Inheriting a type``() =
+        let ast = parseTypes ("type IPartialEqualityComparer<'T> = inherit IEqualityComparer<'T>")
+        AssertAreEqual [[Class ("IPartialEqualityComparer", [Inherit (TApp (LongIdent [Ident "IEqualityComparer"],[TVar (Ident "T")]), Option.None)])]] ast
                        
 
 
