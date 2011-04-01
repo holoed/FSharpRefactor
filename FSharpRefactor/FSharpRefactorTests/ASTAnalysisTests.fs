@@ -527,3 +527,10 @@ type ASTAnalysisTests() =
         let ast = parseWithPosDecl ("let x' = 42 \n" +
                                     "let y = x'")
         AssertAreEqual [Var ("x'", loc(8,10,2,2));Var ("x'", loc(4,6,1,1))] (findAllReferences (loc (4,6,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of inheriting a base type`` () =
+        let ast = parseWithPosDecl  ("type MyClassDerived1 =   \n" +
+                                     "  inherit MyClassBase1   \n" +
+                                     "  override u.function1(a: int) = a + 1")        
+        AssertAreEqual [Var ("a", loc(33,34,3,3));Var ("a", loc(23,24,3,3))] (findAllReferences (loc (23,24,3,3)) ast)
