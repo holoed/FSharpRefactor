@@ -637,5 +637,9 @@ type CompilerToAstTests() =
         let ast = parseTypes ("type IPartialEqualityComparer<'T> = inherit IEqualityComparer<'T>")
         AssertAreEqual [[Class ("IPartialEqualityComparer", [Inherit (TApp (LongIdent [Ident "IEqualityComparer"],[TVar (Ident "T")]), Option.None)])]] ast
                        
-
+    [<Test>]
+    member this.``Assembly level attribute`` () =
+        let ast = parseModule ("[<Dependency(\"FSharp.Compiler\",LoadHint.Always)>] \n" +
+                               "do ()")
+        AssertAreEqual [Attributes [Attribute (Tuple [Lit (String "FSharp.Compiler"); LongVar [Var "LoadHint"; Var "Always"]])]; Exp [Do (Lit Unit)]] ast                               
 

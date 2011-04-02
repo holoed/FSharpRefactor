@@ -129,5 +129,6 @@ type Module<'a>
     | Open of string list
     | Exception of ExceptionDef<'a>
     | HashDirective of string * string list
+    | Attributes of Attribute<'a> list
     
 
