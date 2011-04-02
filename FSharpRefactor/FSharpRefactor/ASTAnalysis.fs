@@ -258,7 +258,9 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          openF =       (fun s -> state { return Open s })
                          exceptionF =  (fun ex -> state { let! ex' = ex
                                                           return Exception ex' })
-                         hashdirectiveF = (fun s ss -> state { return HashDirective (s, ss) })                                                                
+                         hashdirectiveF = (fun s ss -> state { return HashDirective (s, ss) }) 
+                         attributesF = (fun xs -> state { let! xs' = mmapId xs
+                                                          return Attributes xs' })                                                                     
                          exceptionDefF = (fun n ms -> state { let! msAcc = mmap (fun m -> state { return! m }) ms
                                                               return ExceptionDef (n, msAcc) })
                          ifThenElseF = (fun e1 e2 e3 -> state { let! e1' = e1

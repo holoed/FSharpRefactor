@@ -241,7 +241,9 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_>) decl =
                   | Open s -> return algebra.openF s
                   | Exception ex -> let! exAcc = LoopExceptionDef ex
                                     return algebra.exceptionF exAcc
-                  | HashDirective (s, ss) -> return algebra.hashdirectiveF s ss  }
+                  | HashDirective (s, ss) -> return algebra.hashdirectiveF s ss 
+                  | Attributes xs -> let! xsAcc = mmap LoopAttribute xs
+                                     return algebra.attributesF xsAcc }
   LoopDecl decl id    
 
 

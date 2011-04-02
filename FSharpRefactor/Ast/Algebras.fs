@@ -35,6 +35,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l> =
         openF : string list -> 'e
         exceptionF : 'k -> 'e
         hashdirectiveF : string -> string list -> 'e
+        attributesF : 'l list -> 'e
         exceptionDefF : string -> 'g list -> 'k
         ifThenElseF : 'b -> 'b -> 'b option -> 'b
         dotGetF : 'b -> 'b -> 'b

@@ -19,6 +19,9 @@ open Utils
 let internal foldDecls decls =
     let rec LoopDecl x =
         cont { match x with
+               | SynModuleDecl.Attributes (attrs, _) ->
+                    let! attrsAcc = mmap LoopAttribute attrs
+                    return Ast.Module.Attributes attrsAcc
                | SynModuleDecl.HashDirective (ParsedHashDirective(s, ss, _), _) ->
                     return Ast.Module.HashDirective (s, ss)
                | SynModuleDecl.Let (isRec,xs,_) -> 
