@@ -50,6 +50,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l> =
         classF : string -> 'g list -> 'd
         valfieldF: 'i option -> 'i -> 'g
         inheritF: 'i -> 'i option -> 'g
+        implicitInheritF :'i -> 'b -> 'i option -> 'g
         implicitConF : 'j list -> 'g
         memberF : 'j -> 'b -> 'g
         abstractSlotF : string -> 'g

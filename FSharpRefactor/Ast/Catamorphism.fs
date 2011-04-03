@@ -191,7 +191,14 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_>) decl =
                                                                              return Some x }
                                                           | Option.None -> cont { return Option.None }
 
-                                            return algebra.inheritF t1Acc t2Acc }
+                                            return algebra.inheritF t1Acc t2Acc
+                        | ImplicitInherit (t, e, id) -> let! tAcc = LoopTypeInst t
+                                                        let! eAcc = LoopExp e
+                                                        let! idAcc = match id with
+                                                                     | Some t -> cont { let! x = LoopTypeInst t
+                                                                             return Some x }
+                                                                     | Option.None -> cont { return Option.None } 
+                                                        return algebra.implicitInheritF tAcc eAcc idAcc }
        and LoopPat pat =    
                 cont {    match pat with
                           | PAttribute (p, attrs) -> let! pAcc = LoopPat p
