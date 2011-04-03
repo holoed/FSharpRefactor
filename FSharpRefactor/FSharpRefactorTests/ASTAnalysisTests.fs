@@ -541,3 +541,14 @@ type ASTAnalysisTests() =
                                      "  inherit MyClassBase1()   \n" +
                                      "  override u.function1(a: int) = a + 1")        
         AssertAreEqual [Var ("a", loc(33,34,3,3));Var ("a", loc(23,24,3,3))] (findAllReferences (loc (23,24,3,3)) ast)
+
+    [<Test>]
+    member this.``Find usages in a Try finally``() =
+        let ast = parseWithPosDecl ("let divide x y =   \n" +
+                                    "      try          \n" +  
+                                    "          x / y    \n" +
+                                    "      finally      \n" +
+                                    "        printfn \"%A %A\" x y ")
+        AssertAreEqual [Var ("x", loc(24,25,5,5));Var ("x", loc(10,11,3,3));Var ("x", loc(11,12,1,1))] (findAllReferences (loc (11,12,1,1)) ast)
+        AssertAreEqual [Var ("y", loc(26,27,5,5));Var ("y", loc(14,15,3,3));Var ("y", loc(13,14,1,1))] (findAllReferences (loc (13,14,1,1)) ast)
+        

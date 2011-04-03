@@ -85,6 +85,7 @@ and Exp<'a>
     | Downcast of Exp<'a> * Type<'a>
     | Upcast of Exp<'a> * Type<'a>
     | TryWith of Exp<'a> * Clause<'a> list
+    | TryFinally of Exp<'a> * Exp<'a>
     | Typed of Exp<'a> * Type<'a>
     | Lazy of Exp<'a>
     | InferredDowncast of Exp<'a>

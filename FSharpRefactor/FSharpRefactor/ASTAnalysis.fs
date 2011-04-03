@@ -376,6 +376,9 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          tryWithF =       (fun e cs -> state { let! e' = e
                                                                let! cs' = mmap (fun c -> state { return! c }) cs
                                                                return TryWith(e', cs')})
+                         tryFinallyF =    (fun e1 e2 -> state { let! e1Acc = e1
+                                                                let! e2Acc = e2
+                                                                return TryFinally (e1Acc, e2Acc) })
                          errorF =         (fun () -> state { return ArbitraryAfterError }) 
                          
                          pVarF =          (fun x -> state { return PVar x }) 
