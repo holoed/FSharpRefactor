@@ -664,4 +664,6 @@ type CompilerToAstTests() =
                                         TryFinally (App (App (Var "op_Division",Var "x"),Var "y"), 
                                                     App (Var "printfn",Lit (String "Always print this"))))],Lit Unit)] ast
 
-      
+    [<Test>]
+    member this.``Signed byte``() =
+        AssertAreEqual [Let(false,[PVar "x", Lit(SByte 0y)], Lit(Unit))] (parse "let x = 0y")

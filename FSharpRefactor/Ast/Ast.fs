@@ -22,6 +22,7 @@ type Literal
    | UnsignedInteger of System.UInt32
    | Int64 of int64
    | Byte of byte
+   | SByte of sbyte
    | Float  of  float        // floating point literal   
    | Double of double 
    | Bool of bool
