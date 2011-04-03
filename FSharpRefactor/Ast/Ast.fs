@@ -17,12 +17,14 @@ type Literal
    = Char  of  char          // character literal
    | String of string        // string literal
    | Integer16 of  System.Int16         // integer literal
+   | Integer64 of  System.Int64         // integer literal
    | Integer of  int         // integer literal
    | UnsignedInteger16 of System.UInt16
    | UnsignedInteger of System.UInt32
    | Int64 of int64
    | Byte of byte
    | SByte of sbyte
+   | IntPtr of System.IntPtr
    | Float  of  float        // floating point literal   
    | Double of double 
    | Bool of bool
