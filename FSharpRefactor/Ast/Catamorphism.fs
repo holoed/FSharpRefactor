@@ -250,7 +250,8 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_>) decl =
                                     return algebra.exceptionF exAcc
                   | HashDirective (s, ss) -> return algebra.hashdirectiveF s ss 
                   | Attributes xs -> let! xsAcc = mmap LoopAttribute xs
-                                     return algebra.attributesF xsAcc }
+                                     return algebra.attributesF xsAcc
+                  | ModuleAbbrev (s, ss) -> return algebra.moduleAbbrevF s ss }
   LoopDecl decl id    
 
 

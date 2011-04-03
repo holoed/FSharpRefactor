@@ -648,3 +648,8 @@ type CompilerToAstTests() =
         let ast = parseTypes ("type MyClassDerived() = inherit MyClassBase()")
         AssertAreEqual [[Class("MyClassDerived", [ImplicitCtor []; ImplicitInherit (LongIdent [Ident "MyClassBase"],Lit Unit,Option.None)])]] ast
 
+    [<Test>]
+    member this.``Module Abbreviation``() =
+        let ast = parseModule ("module ES = Microsoft.FSharp.Quotations.ExprShape")
+        let txt = sprintf "%A" ast
+        ()

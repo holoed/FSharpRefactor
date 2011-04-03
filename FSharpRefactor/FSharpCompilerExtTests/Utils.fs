@@ -39,6 +39,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               openF                =     (fun s -> Open s)
                               exceptionF           =     (fun ex -> Exception ex)
                               hashdirectiveF       =     (fun s ss -> HashDirective (s, ss))
+                              moduleAbbrevF        =     (fun s ss -> ModuleAbbrev (s, ss))
                               attributesF          =     (fun xs -> Attributes xs)
                               exceptionDefF        =     (fun n ms -> ExceptionDef (n, ms))
                               ifThenElseF          =     (fun e1 e2 e3 -> IfThenElse (e1, e2, e3))

@@ -131,5 +131,6 @@ type Module<'a>
     | Exception of ExceptionDef<'a>
     | HashDirective of string * string list
     | Attributes of Attribute<'a> list
+    | ModuleAbbrev of string * string list
     
 

@@ -19,6 +19,9 @@ open Utils
 let internal foldDecls decls =
     let rec LoopDecl x =
         cont { match x with
+               | SynModuleDecl.ModuleAbbrev (id, lid, _) ->
+                    let lidAcc = List.map (fun (x:Ident) -> x.idText) lid
+                    return Ast.Module.ModuleAbbrev(id.idText, lidAcc)
                | SynModuleDecl.Attributes (attrs, _) ->
                     let! attrsAcc = mmap LoopAttribute attrs
                     return Ast.Module.Attributes attrsAcc
