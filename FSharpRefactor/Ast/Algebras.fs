@@ -73,6 +73,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l> =
         tarrayF : int -> 'i -> 'i
         tanonF : Unit -> 'i
         tryWithF : 'b -> 'f list -> 'b
+        tryFinallyF : 'b -> 'b -> 'b
         errorF : unit -> 'b 
         pVarF : 'a -> 'j
         pAppF : 'j -> 'j -> 'j

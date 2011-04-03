@@ -652,3 +652,16 @@ type CompilerToAstTests() =
     member this.``Module Abbreviation``() =
         let ast = parseModule ("module ES = Microsoft.FSharp.Quotations.ExprShape")
         AssertAreEqual [ModuleAbbrev ("ES",["Microsoft"; "FSharp"; "Quotations"; "ExprShape"])] ast
+
+    [<Test>]
+    member this.``Try finally``() =
+        let ast = parse ("let divide x y =   \n" +
+                         "      try          \n" +  
+                         "          x / y    \n" +
+                         "      finally      \n" +
+                         "        printfn \"Always print this\" ")
+        AssertAreEqual [Let (false,  [(PApp (PApp (PVar "divide",PVar "x"),PVar "y"),  
+                                        TryFinally (App (App (Var "op_Division",Var "x"),Var "y"), 
+                                                    App (Var "printfn",Lit (String "Always print this"))))],Lit Unit)] ast
+
+      
