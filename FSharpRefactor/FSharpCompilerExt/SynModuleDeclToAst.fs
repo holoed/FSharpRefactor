@@ -268,6 +268,11 @@ let internal foldDecls decls =
                         return Ast.Class (name, msAcc) }
     and LoopClassMember x = 
         cont { match x with 
+               | SynMemberDefn.ImplicitInherit (t, e, id, _) ->
+                    let idAcc = Option.map(fun (x:Ident) -> Ast.Ident(x.idText, mkSrcLoc x.idRange)) id
+                    let! tAcc = LoopType t
+                    let! eAcc = LoopExpr e
+                    return ClassMember.ImplicitInherit (tAcc, eAcc, idAcc)
                | SynMemberDefn.Inherit (t, id, _) ->
                     let idAcc = Option.map(fun (x:Ident) -> Ast.Ident(x.idText, mkSrcLoc x.idRange)) id
                     let! tAcc = LoopType t

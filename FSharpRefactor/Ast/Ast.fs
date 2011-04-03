@@ -121,6 +121,7 @@ and ClassMember<'a>
     | Interface of Type<'a> * ClassMember<'a> list
     | ValField of Type<'a> option * Type<'a>
     | Inherit of Type<'a> * Type<'a> option
+    | ImplicitInherit of Type<'a> * Exp<'a> * Type<'a> option
 
 type Module<'a>
     = Exp of Exp<'a> list

@@ -314,6 +314,13 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                                                                return Some x }
                                                                            | Option.None -> state { return Option.None }
                                                               return Inherit (t1Acc, t2Acc) })
+                         implicitInheritF = (fun t e id -> state { let! tAcc = t
+                                                                   let! eAcc = e
+                                                                   let! idAcc = match id with
+                                                                                | Some t -> state { let! x = t
+                                                                                                    return Some x }
+                                                                                | Option.None -> state { return Option.None }
+                                                                   return ImplicitInherit (tAcc, eAcc, idAcc) })
                          memberF =      (fun p e -> state {  let! pAcc = p
                                                              let flatpat = flatPat pAcc                                                                   
                                                              let boundName = List.head (let xs = List.tail flatpat

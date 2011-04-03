@@ -643,3 +643,8 @@ type CompilerToAstTests() =
                                "do ()")
         AssertAreEqual [Attributes [Attribute (Tuple [Lit (String "FSharp.Compiler"); LongVar [Var "LoadHint"; Var "Always"]])]; Exp [Do (Lit Unit)]] ast                               
 
+    [<Test>]
+    member this.``Implicit Inherit``() =
+        let ast = parseTypes ("type MyClassDerived() = inherit MyClassBase()")
+        AssertAreEqual [[Class("MyClassDerived", [ImplicitCtor []; ImplicitInherit (LongIdent [Ident "MyClassBase"],Lit Unit,Option.None)])]] ast
+
