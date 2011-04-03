@@ -651,5 +651,4 @@ type CompilerToAstTests() =
     [<Test>]
     member this.``Module Abbreviation``() =
         let ast = parseModule ("module ES = Microsoft.FSharp.Quotations.ExprShape")
-        let txt = sprintf "%A" ast
-        ()
+        AssertAreEqual [ModuleAbbrev ("ES",["Microsoft"; "FSharp"; "Quotations"; "ExprShape"])] ast
