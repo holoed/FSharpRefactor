@@ -667,3 +667,7 @@ type CompilerToAstTests() =
     [<Test>]
     member this.``Signed byte``() =
         AssertAreEqual [Let(false,[PVar "x", Lit(SByte 0y)], Lit(Unit))] (parse "let x = 0y")
+
+    [<Test>]
+    member this.``64 bit integer``() =
+        AssertAreEqual [Let(false,[PVar "x", Lit(Int64 (0L))], Lit(Unit))] (parse "let x = 0L")
