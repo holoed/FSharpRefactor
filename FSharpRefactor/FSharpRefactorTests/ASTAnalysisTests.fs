@@ -551,4 +551,12 @@ type ASTAnalysisTests() =
                                     "        printfn \"%A %A\" x y ")
         AssertAreEqual [Var ("x", loc(24,25,5,5));Var ("x", loc(10,11,3,3));Var ("x", loc(11,12,1,1))] (findAllReferences (loc (11,12,1,1)) ast)
         AssertAreEqual [Var ("y", loc(26,27,5,5));Var ("y", loc(14,15,3,3));Var ("y", loc(13,14,1,1))] (findAllReferences (loc (13,14,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in a for with a PWild as a bound variable``() = 
+        let ast = parseWithPosDecl ("let Padded initialAlignment (v:byte[]) = \n" +
+                                    "      [| yield! v                        \n" +
+                                    "         for _ in 1..(4 - (initialAlignment + v.Length) % 4) % 4 do  \n" +
+                                    "             yield 0x0uy |]")
+        AssertAreEqual [Var ("v", loc(46,47,3,3));Var ("v", loc(16,17,2,2));Var ("v", loc(29,30,1,1))] (findAllReferences (loc (29,30,1,1)) ast)
         
