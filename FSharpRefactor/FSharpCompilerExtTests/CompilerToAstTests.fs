@@ -671,3 +671,7 @@ type CompilerToAstTests() =
     [<Test>]
     member this.``64 bit integer``() =
         AssertAreEqual [Let(false,[PVar "x", Lit(Int64 (0L))], Lit(Unit))] (parse "let x = 0L")
+
+    [<Test>]
+    member this.``Unsigned 64 bit integer``() =
+        AssertAreEqual [Let(false,[PVar "x", Lit(UnsignedInteger64 (0UL))], Lit(Unit))] (parse "let x = 0UL")

@@ -22,6 +22,7 @@ type Literal
    | UnsignedInteger16 of System.UInt16
    | UnsignedInteger of System.UInt32
    | Int64 of int64
+   | UnsignedInteger64 of uint64
    | Byte of byte
    | SByte of sbyte
    | IntPtr of System.IntPtr
