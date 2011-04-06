@@ -220,9 +220,12 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                            return Clause(pAcc, e') })
                          forEachF =    (fun p e1 e2 -> state{   let! pAcc = p
                                                                 let flatpat = flatPat pAcc
-                                                                let boundName = List.head flatpat
-                                                                let args = List.tail flatpat
+                                                                let boundName, args = if (List.isEmpty flatpat) then pAcc, [] else List.head flatpat, List.tail flatpat            
                                                                 match (boundName, args) with
+                                                                | PWild, _ ->
+                                                                    let! e1' = e1       
+                                                                    let! e2' = e2
+                                                                    return ForEach (PWild, e1', e2') 
                                                                 | PVar (s,l), [] ->                                                 
                                                                     let! p'  = p                                                 
                                                                     let! e1' = e1       
