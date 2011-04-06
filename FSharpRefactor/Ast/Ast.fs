@@ -26,6 +26,7 @@ type Literal
    | Byte of byte
    | SByte of sbyte
    | IntPtr of System.IntPtr
+   | Single of single
    | Float  of  float        // floating point literal   
    | Double of double 
    | Bool of bool
