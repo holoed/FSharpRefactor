@@ -230,9 +230,17 @@ let internal foldDecls decls =
                     return PVar (ident.idText, mkSrcLoc (ident.idRange))
                | SynSimplePat.Typed(p,_,_) ->
                     return! LoopSimplePat p }
-    
+    and LoopMeasure x = 
+        cont { match x with
+               | SynMeasure.Seq (ms, _) -> let! msAcc = mmap LoopMeasure ms
+                                           return Ast.Seq msAcc 
+               | SynMeasure.Named(li, _) -> let liAcc = Ast.LongIdent(List.map (fun (id:Ident) -> Ast.Ident (id.idText, mkSrcLoc id.idRange)) li)
+                                            return Ast.Named liAcc }
     and LoopConst x =
         cont { match x with
+               | SynConst.Measure(c, m) -> let! cAcc = LoopConst c
+                                           let! mAcc = LoopMeasure m
+                                           return Ast.Measure(cAcc, mAcc)
                | SynConst.Single x -> return Ast.Lit(Ast.Literal.Single x)
                | SynConst.SByte x -> return Ast.Lit(Ast.Literal.SByte x)
                | SynConst.Byte x -> return Ast.Lit(Ast.Literal.Byte x)

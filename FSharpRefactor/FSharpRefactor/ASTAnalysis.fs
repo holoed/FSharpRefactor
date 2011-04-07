@@ -119,7 +119,14 @@ let execute action p =
 
 
 let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> = 
-        foldExpAlgebra { quoteF = (fun e1 e2 -> state { let! e1Acc = e1
+        foldExpAlgebra { measureF = (fun e m -> state { let! eAcc = e
+                                                        let! mAcc = m
+                                                        return Ast.Measure(eAcc, mAcc) })
+                         measureSeqF = (fun ms -> state { let! msAcc = mmapId ms
+                                                          return Ast.Seq msAcc })
+                         measureNamedF = (fun e -> state { let! eAcc = e
+                                                           return Ast.Named eAcc })        
+                         quoteF = (fun e1 e2 -> state { let! e1Acc = e1
                                                         let! e2Acc = e2
                                                         return Quote (e1Acc, e2Acc) })
                          inferredDowncastF = (fun e -> state { let! eAcc = e

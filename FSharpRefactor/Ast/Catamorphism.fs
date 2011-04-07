@@ -15,9 +15,13 @@ open Ast
 open ContinuationMonad
 open Algebras
 
-let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_>) decl =
+let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_,_>) decl =
   let rec LoopExp e =
           cont {  match e with
+                  | Measure (e, m) ->
+                            let! eAcc = LoopExp e
+                            let! mAcc = LoopMeasure m
+                            return algebra.measureF eAcc mAcc
                   | Quote (e1, e2) ->
                             let! e1Acc = LoopExp e1
                             let! e2Acc = LoopExp e2
@@ -124,6 +128,13 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_>) decl =
                                         return algebra.typedF eAcc tAcc
                   | ArbitraryAfterError -> return algebra.errorF () }
 
+      and LoopMeasure x = 
+            cont { match x with 
+                   | Seq ms -> let! msAcc = mmap LoopMeasure ms
+                               return algebra.measureSeqF msAcc 
+                   | Named n -> let! nAcc = LoopTypeInst n
+                                return algebra.measureNamedF nAcc}
+      
       and LoopBinding (p, e) =
             cont { let! pAcc = LoopPat p
                    let! eAcc = LoopExp e
