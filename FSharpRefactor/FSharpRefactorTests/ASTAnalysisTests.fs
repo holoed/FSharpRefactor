@@ -571,3 +571,10 @@ type ASTAnalysisTests() =
         let ast = parseWithPosDecl ("let x = 42 \n" +
                                     "let y = <@@ x + 1 @@>")
         AssertAreEqual [Var ("x", loc(12,13,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of unit of measures``() =   
+        let ast = parseWithPosDecl ("[<Measure>] type kg          \n" +
+                                    "let x = 42.5<kg> \n" +
+                                    "let y = x + 12.5<kg>");
+        AssertAreEqual [Var ("x", loc(8,9,3,3));Var ("x", loc(4,5,2,2))] (findAllReferences (loc (4,5,2,2)) ast)

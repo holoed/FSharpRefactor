@@ -14,8 +14,11 @@ module Algebras
 open Ast
 open StateMonad
 
-type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l> =
+type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l, 'm> =
     {
+        measureNamedF : 'i -> 'm
+        measureSeqF : 'm list -> 'm
+        measureF : 'b -> 'm -> 'b
         quoteF : 'b -> 'b -> 'b
         assertF : 'b -> 'b
         lazyF : 'b -> 'b

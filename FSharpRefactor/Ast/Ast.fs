@@ -58,6 +58,10 @@ type Pat<'a> =
 and Attribute<'a>
     = Attribute of Exp<'a>
 
+and Measure<'a> 
+    = Seq of Measure<'a> list
+    | Named of Type<'a> 
+    
 and Exp<'a> 
     = Var      of 'a                           // variable    
     | LongVar of Exp<'a> list
@@ -67,6 +71,7 @@ and Exp<'a>
     | Let      of IsLetRec * (Pat<'a> * Exp<'a>) list * Exp<'a>  // local definition    
     | LetBang  of Pat<'a> * Exp<'a> * Exp<'a>
     | Lit      of Literal                      // literal 
+    | Measure  of Exp<'a> * Measure<'a>
     | Tuple    of Exp<'a> list
     | List     of Exp<'a> list
     | Match    of Exp<'a> * Clause<'a> list
