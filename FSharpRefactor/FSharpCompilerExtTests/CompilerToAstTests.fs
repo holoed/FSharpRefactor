@@ -679,3 +679,13 @@ type CompilerToAstTests() =
     [<Test>]
     member this.``Single``() =
         AssertAreEqual [Let(false,[PVar "x", Lit(Single (0.0f))], Lit(Unit))] (parse "let x = 0.0f")
+
+    [<Test>]
+    member this.``Typed quotation``() =
+        let ast = parse "let x = <@ 2 + 3 @>"
+        AssertAreEqual [Let (false, [(PVar "x", Quote (Var "op_Quotation", App (App (Var "op_Addition",Lit (Integer 2)),Lit (Integer 3))))], Lit Unit)] ast
+
+    [<Test>]
+    member this.``UnTyped quotation``() =
+        let ast = parse "let x = <@@ 2 + 3 @@>"
+        AssertAreEqual [Let (false, [(PVar "x", Quote (Var "op_QuotationUntyped", App (App (Var "op_Addition",Lit (Integer 2)),Lit (Integer 3))))], Lit Unit)] ast

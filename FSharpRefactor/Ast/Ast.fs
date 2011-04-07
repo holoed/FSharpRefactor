@@ -94,6 +94,7 @@ and Exp<'a>
     | Typed of Exp<'a> * Type<'a>
     | Lazy of Exp<'a>
     | InferredDowncast of Exp<'a>
+    | Quote of Exp<'a> * Exp<'a>
     | Null
     | ArbitraryAfterError
 

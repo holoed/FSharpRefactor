@@ -559,4 +559,15 @@ type ASTAnalysisTests() =
                                     "         for _ in 1..(4 - (initialAlignment + v.Length) % 4) % 4 do  \n" +
                                     "             yield 0x0uy |]")
         AssertAreEqual [Var ("v", loc(46,47,3,3));Var ("v", loc(16,17,2,2));Var ("v", loc(29,30,1,1))] (findAllReferences (loc (29,30,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in typed quotation``() =
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "let y = <@ x + 1 @>")
+        AssertAreEqual [Var ("x", loc(11,12,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
         
+    [<Test>]
+    member this.``Find usages in un-typed quotation``() =
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "let y = <@@ x + 1 @@>")
+        AssertAreEqual [Var ("x", loc(12,13,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)

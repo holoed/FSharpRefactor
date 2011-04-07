@@ -119,7 +119,10 @@ let execute action p =
 
 
 let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> = 
-        foldExpAlgebra { inferredDowncastF = (fun e -> state { let! eAcc = e
+        foldExpAlgebra { quoteF = (fun e1 e2 -> state { let! e1Acc = e1
+                                                        let! e2Acc = e2
+                                                        return Quote (e1Acc, e2Acc) })
+                         inferredDowncastF = (fun e -> state { let! eAcc = e
                                                                return InferredDowncast eAcc })                
                          lazyF = (fun e -> state { let! eAcc = e
                                                    return Lazy eAcc })        
