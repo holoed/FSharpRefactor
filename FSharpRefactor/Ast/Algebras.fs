@@ -16,6 +16,7 @@ open StateMonad
 
 type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l> =
     {
+        quoteF : 'b -> 'b -> 'b
         assertF : 'b -> 'b
         lazyF : 'b -> 'b
         inferredDowncastF : 'b -> 'b

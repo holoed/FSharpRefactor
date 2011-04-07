@@ -18,6 +18,10 @@ open Algebras
 let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_>) decl =
   let rec LoopExp e =
           cont {  match e with
+                  | Quote (e1, e2) ->
+                            let! e1Acc = LoopExp e1
+                            let! e2Acc = LoopExp e2
+                            return algebra.quoteF e1Acc e2Acc
                   | InferredDowncast e -> 
                               let! eAcc = LoopExp e
                               return algebra.inferredDowncastF eAcc
