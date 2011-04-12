@@ -10,8 +10,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThirdParty", "ThirdParty", "{DCAECB19-042A-4DD3-9C3B-2965E9FAD41F}"
 	ProjectSection(SolutionItems) = preProject
 		ThirdParty\license.txt = ThirdParty\license.txt
-		ThirdParty\nunit.framework.dll = ThirdParty\nunit.framework.dll
-		ThirdParty\nunit.framework.xml = ThirdParty\nunit.framework.xml
 		ThirdParty\VsSDK_sfx.zip = ThirdParty\VsSDK_sfx.zip
 	EndProjectSection
 EndProject
@@ -27,8 +25,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{F763C0B0
 		Microsoft.FSharpCompiler.Sources\FsSrGen.exe = Microsoft.FSharpCompiler.Sources\FsSrGen.exe
 		Microsoft.FSharpCompiler.Sources\FsSrGen.exe.config = Microsoft.FSharpCompiler.Sources\FsSrGen.exe.config
 	EndProjectSection
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharpCompiler.Tests", "FSharpCompiler.Tests\FSharpCompiler.Tests.fsproj", "{0ED3BC43-C68B-4FD1-A229-4058F3595361}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharpCompilerExt", "FSharpCompilerExt\FSharpCompilerExt.fsproj", "{6C7C81DA-105A-407F-A8AE-72EA4AC2A221}"
 EndProject
@@ -47,7 +43,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSharpRefactorAddin", "FSha
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 9
+		SccNumberOfProjects = 8
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs02
 		SccLocalPath0 = .
@@ -59,30 +55,26 @@ Global
 		SccProjectTopLevelParentUniqueName2 = FSharpRefactor.sln
 		SccProjectName2 = Microsoft.FSharpCompiler.Sources/FSharpCompiler
 		SccLocalPath2 = Microsoft.FSharpCompiler.Sources\\FSharpCompiler
-		SccProjectUniqueName3 = FSharpCompiler.Tests\\FSharpCompiler.Tests.fsproj
+		SccProjectUniqueName3 = FSharpCompilerExt\\FSharpCompilerExt.fsproj
 		SccProjectTopLevelParentUniqueName3 = FSharpRefactor.sln
-		SccProjectName3 = FSharpCompiler.Tests
-		SccLocalPath3 = FSharpCompiler.Tests
-		SccProjectUniqueName4 = FSharpCompilerExt\\FSharpCompilerExt.fsproj
+		SccProjectName3 = FSharpCompilerExt
+		SccLocalPath3 = FSharpCompilerExt
+		SccProjectUniqueName4 = FSharpCompilerExtTests\\FSharpCompilerExtTests.fsproj
 		SccProjectTopLevelParentUniqueName4 = FSharpRefactor.sln
-		SccProjectName4 = FSharpCompilerExt
-		SccLocalPath4 = FSharpCompilerExt
-		SccProjectUniqueName5 = FSharpCompilerExtTests\\FSharpCompilerExtTests.fsproj
+		SccProjectName4 = FSharpCompilerExtTests
+		SccLocalPath4 = FSharpCompilerExtTests
+		SccProjectUniqueName5 = FSharpRefactor\\FSharpRefactor.fsproj
 		SccProjectTopLevelParentUniqueName5 = FSharpRefactor.sln
-		SccProjectName5 = FSharpCompilerExtTests
-		SccLocalPath5 = FSharpCompilerExtTests
-		SccProjectUniqueName6 = FSharpRefactor\\FSharpRefactor.fsproj
+		SccProjectName5 = FSharpRefactor
+		SccLocalPath5 = FSharpRefactor
+		SccProjectUniqueName6 = FSharpRefactorTests\\FSharpRefactorTests.fsproj
 		SccProjectTopLevelParentUniqueName6 = FSharpRefactor.sln
-		SccProjectName6 = FSharpRefactor
-		SccLocalPath6 = FSharpRefactor
-		SccProjectUniqueName7 = FSharpRefactorTests\\FSharpRefactorTests.fsproj
+		SccProjectName6 = FSharpRefactorTests
+		SccLocalPath6 = FSharpRefactorTests
+		SccProjectUniqueName7 = FSharpRefactorAddin\\FSharpRefactorAddin.csproj
 		SccProjectTopLevelParentUniqueName7 = FSharpRefactor.sln
-		SccProjectName7 = FSharpRefactorTests
-		SccLocalPath7 = FSharpRefactorTests
-		SccProjectUniqueName8 = FSharpRefactorAddin\\FSharpRefactorAddin.csproj
-		SccProjectTopLevelParentUniqueName8 = FSharpRefactor.sln
-		SccProjectName8 = FSharpRefactorAddin
-		SccLocalPath8 = FSharpRefactorAddin
+		SccProjectName7 = FSharpRefactorAddin
+		SccLocalPath7 = FSharpRefactorAddin
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -113,16 +105,6 @@ Global
 		{3A2627B6-4909-4820-9A25-DF6BC99A12A7}.Release|Mixed Platforms.Build.0 = Release|x86
 		{3A2627B6-4909-4820-9A25-DF6BC99A12A7}.Release|x86.ActiveCfg = Release|x86
 		{3A2627B6-4909-4820-9A25-DF6BC99A12A7}.Release|x86.Build.0 = Release|x86
-		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Debug|x86.ActiveCfg = Debug|x86
-		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Debug|x86.Build.0 = Debug|x86
-		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Release|Any CPU.ActiveCfg = Release|x86
-		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Release|Mixed Platforms.Build.0 = Release|x86
-		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Release|x86.ActiveCfg = Release|x86
-		{0ED3BC43-C68B-4FD1-A229-4058F3595361}.Release|x86.Build.0 = Release|x86
 		{6C7C81DA-105A-407F-A8AE-72EA4AC2A221}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6C7C81DA-105A-407F-A8AE-72EA4AC2A221}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C7C81DA-105A-407F-A8AE-72EA4AC2A221}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -186,6 +168,5 @@ Global
 		{A6CA343D-D9EA-4798-970A-AB4CBAC8EEF6} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
 		{3A2627B6-4909-4820-9A25-DF6BC99A12A7} = {FDE3D566-DF9B-44DB-862C-8C5568EB4993}
 		{F763C0B0-C2B9-48A7-84CB-65C1FF235730} = {FDE3D566-DF9B-44DB-862C-8C5568EB4993}
-		{0ED3BC43-C68B-4FD1-A229-4058F3595361} = {FDE3D566-DF9B-44DB-862C-8C5568EB4993}
 	EndGlobalSection
 EndGlobal
