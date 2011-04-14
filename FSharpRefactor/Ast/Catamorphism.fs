@@ -130,6 +130,8 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_,_>) decl =
 
       and LoopMeasure x = 
             cont { match x with 
+                   | Power (m, n) -> let! mAcc = LoopMeasure m
+                                     return algebra.powerF mAcc n
                    | Seq ms -> let! msAcc = mmap LoopMeasure ms
                                return algebra.measureSeqF msAcc 
                    | Named n -> let! nAcc = LoopTypeInst n
@@ -157,7 +159,9 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_,_>) decl =
                                            return algebra.ttupleF tsAcc 
                        | Type.TArray (n, t) -> let! tAcc = LoopTypeInst t
                                                return algebra.tarrayF n tAcc
-                       | Type.TAnon -> return algebra.tanonF () } 
+                       | Type.TAnon -> return algebra.tanonF ()
+                       | Type.TMeasurePower (t, n) -> let! tAcc = LoopTypeInst t
+                                                      return algebra.tmeasurePowerF tAcc n } 
 
       and LoopRecordInst (n, e) = 
                 cont { let! eAcc = LoopExp e 

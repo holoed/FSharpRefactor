@@ -232,6 +232,8 @@ let internal foldDecls decls =
                     return! LoopSimplePat p }
     and LoopMeasure x = 
         cont { match x with
+               | SynMeasure.Power (m, n, _) -> let! mAcc = LoopMeasure m
+                                               return Ast.Power (mAcc, n)
                | SynMeasure.Seq (ms, _) -> let! msAcc = mmap LoopMeasure ms
                                            return Ast.Seq msAcc 
                | SynMeasure.Named(li, _) -> let liAcc = Ast.LongIdent(List.map (fun (id:Ident) -> Ast.Ident (id.idText, mkSrcLoc id.idRange)) li)
@@ -261,6 +263,9 @@ let internal foldDecls decls =
                     return! LoopRep ((List.head ident).idText) ms x }
     and LoopType x =
          cont { match x with
+                | SynType.MeasurePower (t, n,_) ->
+                    let! tAcc = LoopType t
+                    return Ast.TMeasurePower(tAcc, n)
                 | SynType.Array (n,t,_) ->
                     let! tAcc = LoopType t
                     return Ast.TArray (n, tAcc)

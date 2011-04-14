@@ -695,3 +695,33 @@ type CompilerToAstTests() =
         let ast = parseModule ("[<Measure>] type kg          \n" +
                                "let x = 42.5<kg> ")
         AssertAreEqual [Types [None "kg"]; Exp [Let(false,[(PVar "x", Measure (Lit (Float 42.5),Seq [Named (LongIdent [Ident "kg"])]))],Lit Unit)]] ast
+
+    [<Test>]
+    member this.``Unit of measure MeasurePower``() =
+        let ast = parseModule ("[<Measure>] type cm \n" +
+                               "[<Measure>] type ml = cm^3")
+        AssertAreEqual [Types [None "cm"]; Types [Abbrev ("ml",TMeasurePower (LongIdent [Ident "cm"],3))]] ast
+
+    [<Test>]
+    member this.``Unit of measure Power``() =
+        let ast = parseModule ("[<Measure>] type cm \n" +
+                               "[<Measure>] type ml = cm^3  \n" +
+                               "let x = 42.5<ml> \n" +
+                               "let y = x + 12.5<cm^3>");
+        AssertAreEqual  [Types [None "cm"];
+                         Types [Abbrev ("ml",TMeasurePower (LongIdent [Ident "cm"],3))];
+                         Exp
+                           [Let
+                              (false,
+                               [(PVar "x",
+                                 Measure (Lit (Float 42.5),Seq [Named (LongIdent [Ident "ml"])]))],
+                               Lit Unit)];
+                         Exp
+                           [Let
+                              (false,
+                               [(PVar "y",
+                                 App
+                                   (App (Var "op_Addition",Var "x"),
+                                    Measure
+                                      (Lit (Float 12.5),Seq [Power (Named (LongIdent [Ident "cm"]),3)])))],
+                               Lit Unit)]] ast

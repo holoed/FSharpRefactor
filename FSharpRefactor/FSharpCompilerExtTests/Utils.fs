@@ -20,7 +20,8 @@ open AstCatamorphisms
 let path = sprintf "%s\\%s" (Directory.GetCurrentDirectory()) "test.fs" 
 
 let stripPos (decl:Module<'a*'b>) :Module<'a> =             
-            foldExpAlgebra {  measureNamedF        =     (fun t -> Measure.Named t)
+            foldExpAlgebra {  powerF               =     (fun m n -> Measure.Power (m, n))
+                              measureNamedF        =     (fun t -> Measure.Named t)
                               measureSeqF          =     (fun ms -> Measure.Seq ms)
                               measureF             =     (fun e m -> Measure(e, m))
                               quoteF               =     (fun e1 e2 -> Quote (e1, e2))
@@ -90,6 +91,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               tappF                =     (fun t ts -> TApp (t, ts))
                               ttupleF              =     (fun ts -> TTuple ts)
                               tarrayF              =     (fun n t -> TArray (n, t))
+                              tmeasurePowerF       =     (fun t n -> TMeasurePower (t, n))
                               tanonF               =     (fun () -> TAnon)
                               tryWithF             =     (fun e cl -> TryWith(e, cl))   
                               tryFinallyF          =     (fun e1 e2 -> TryFinally(e1, e2))                        
