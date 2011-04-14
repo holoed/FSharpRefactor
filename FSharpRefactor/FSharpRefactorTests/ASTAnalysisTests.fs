@@ -578,3 +578,14 @@ type ASTAnalysisTests() =
                                     "let x = 42.5<kg> \n" +
                                     "let y = x + 12.5<kg>");
         AssertAreEqual [Var ("x", loc(8,9,3,3));Var ("x", loc(4,5,2,2))] (findAllReferences (loc (4,5,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of unit of measures power``() =   
+        let ast = parseWithPosDecl ("[<Measure>] type cm \n" +
+                                    "[<Measure>] type ml = cm^3  \n" +
+                                    "let x = 42.5<ml> \n" +
+                                    "let y = x + 12.5<cm^3>");
+        AssertAreEqual [Var ("x", loc(8,9,4,4));Var ("x", loc(4,5,3,3))] (findAllReferences (loc (4,5,3,3)) ast)
+
+        
+

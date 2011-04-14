@@ -119,7 +119,9 @@ let execute action p =
 
 
 let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> = 
-        foldExpAlgebra { measureF = (fun e m -> state { let! eAcc = e
+        foldExpAlgebra { powerF = (fun m n -> state { let! mAcc = m
+                                                      return Ast.Power (mAcc, n) })        
+                         measureF = (fun e m -> state { let! eAcc = e
                                                         let! mAcc = m
                                                         return Ast.Measure(eAcc, mAcc) })
                          measureSeqF = (fun ms -> state { let! msAcc = mmapId ms
@@ -385,6 +387,8 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                              return TTuple tsAcc })
                          tarrayF =        (fun n t -> state { let! tAcc = t
                                                               return TArray (n, tAcc) })
+                         tmeasurePowerF = (fun t n -> state { let! tAcc = t
+                                                              return TMeasurePower (tAcc, n) })                                                                        
                          tanonF =         (fun () -> state { return TAnon })
                          tryWithF =       (fun e cs -> state { let! e' = e
                                                                let! cs' = mmap (fun c -> state { return! c }) cs
