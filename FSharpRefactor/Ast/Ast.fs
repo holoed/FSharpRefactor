@@ -62,6 +62,8 @@ and Measure<'a>
     = Seq of Measure<'a> list
     | Named of Type<'a> 
     | Power of Measure<'a> * int
+    | Divide of Measure<'a> * Measure<'a>
+    | One
     
 and Exp<'a> 
     = Var      of 'a                           // variable    
@@ -126,6 +128,7 @@ and Type<'a>
     | TArray of int * Type<'a>
     | TAnon
     | TMeasurePower of Type<'a> * int
+    | TMeasureOne
 
 and ClassMember<'a>
     = ImplicitCtor of Pat<'a> list

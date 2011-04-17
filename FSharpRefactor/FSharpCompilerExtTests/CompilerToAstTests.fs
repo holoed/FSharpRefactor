@@ -725,3 +725,29 @@ type CompilerToAstTests() =
                                     Measure
                                       (Lit (Float 12.5),Seq [Power (Named (LongIdent [Ident "cm"]),3)])))],
                                Lit Unit)]] ast
+
+    [<Test>]
+    member this.``Unit of measure One Divide``() =
+        let ast = parseModule ("[<Measure>] type foo \n" +
+                               "[<Measure>] type bar = foo/3  \n" +
+                               "let x = 42.5<bar> \n" +
+                               "let y = x + 12.5<foo/3>");
+        AssertAreEqual  [Types [None "foo"];
+                         Types [Abbrev ("bar",TTuple [LongIdent [Ident "foo"]; TMeasureOne])];
+                         Exp
+                           [Let
+                              (false,
+                               [(PVar "x",
+                                 Measure (Lit (Float 42.5),Seq [Named (LongIdent [Ident "bar"])]))],
+                               Lit Unit)];
+                         Exp
+                           [Let
+                              (false,
+                               [(PVar "y",
+                                 App
+                                   (App (Var "op_Addition",Var "x"),
+                                    Measure
+                                      (Lit (Float 12.5),
+                                       Divide (Seq [Named (LongIdent [Ident "foo"])],Seq [One]))))],
+                               Lit Unit)]] ast
+        
