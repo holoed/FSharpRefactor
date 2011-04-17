@@ -15,7 +15,8 @@ open Ast
 open StateMonad
 
 type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l, 'm> =
-    {
+    {   measureOneF : unit -> 'm
+        measureDivideF: 'm -> 'm -> 'm
         powerF : 'm -> int -> 'm
         measureNamedF : 'i -> 'm
         measureSeqF : 'm list -> 'm
@@ -88,6 +89,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l, 'm> =
         ttupleF : 'i list -> 'i
         tarrayF : int -> 'i -> 'i
         tmeasurePowerF : 'i -> int -> 'i
+        tmeasureOneF : unit -> 'i
         tanonF : Unit -> 'i
         tryWithF : 'b -> 'f list -> 'b
         tryFinallyF : 'b -> 'b -> 'b
