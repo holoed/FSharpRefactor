@@ -97,6 +97,10 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_,_>) decl =
                   | DotGet (e, li) -> let! eAcc = LoopExp e
                                       let! liAcc = LoopExp li
                                       return algebra.dotGetF eAcc liAcc
+                  | DotSet (e1, li, e2) -> let! e1Acc = LoopExp e1
+                                           let! liAcc = LoopExp li
+                                           let! e2Acc = LoopExp e2
+                                           return algebra.dotSetF e1Acc liAcc e2Acc
                   | DotIndexedSet (e1, es, e3) -> let! e1Acc = LoopExp e1
                                                   let! esAcc = mmap LoopExp es
                                                   let! e2Acc = LoopExp e3

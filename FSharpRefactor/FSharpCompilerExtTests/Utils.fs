@@ -64,6 +64,7 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               exceptionDefF        =     (fun n ms -> ExceptionDef (n, ms))
                               ifThenElseF          =     (fun e1 e2 e3 -> IfThenElse (e1, e2, e3))
                               dotGetF              =     (fun e li -> DotGet (e, li))
+                              dotSetF              =     (fun e1 li e2 -> DotSet(e1, li, e2))
                               dotIndexedSetF       =     (fun e1 es e3 -> DotIndexedSet (e1, es, e3))
                               dotIndexedGetF       =     (fun e1 es -> DotIndexedGet (e1, es))
                               recordDefF           =     (fun name fields ms -> Record (name, List.map (fun x -> Option.map (fun (s,l) -> s) x) fields, ms))

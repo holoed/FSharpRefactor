@@ -59,6 +59,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l, 'm> =
         exceptionDefF : string -> 'g list -> 'k
         ifThenElseF : 'b -> 'b -> 'b option -> 'b
         dotGetF : 'b -> 'b -> 'b
+        dotSetF : 'b -> 'b -> 'b -> 'b
         dotIndexedSetF : 'b -> 'b list -> 'b -> 'b
         dotIndexedGetF : 'b -> 'b list -> 'b
         recordDefF : string -> 'a option list -> 'g list -> 'd
