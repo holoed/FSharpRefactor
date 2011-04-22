@@ -523,6 +523,13 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("x", loc(24,25,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
 
     [<Test>]
+    member this.``Find usages in an inferred upcast``() =
+        let ast = parseWithPosDecl ("let x = 42 :> System.Object \n" +
+                                    "let y:string = upcast x")
+        AssertAreEqual [Var ("x", loc(22,23,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+
+
+    [<Test>]
     member this.``Quoted identifier``() =        
         let ast = parseWithPosDecl ("let x' = 42 \n" +
                                     "let y = x'")

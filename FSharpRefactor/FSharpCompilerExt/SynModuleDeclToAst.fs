@@ -72,6 +72,9 @@ let internal foldDecls decls =
                 | SynExpr.InferredDowncast (e, _) ->
                     let! eAcc = LoopExpr e
                     return Ast.InferredDowncast eAcc
+                | SynExpr.InferredUpcast (e, _) ->
+                    let! eAcc = LoopExpr e
+                    return Ast.InferredUpcast eAcc
                 | SynExpr.Lazy (e, _) ->
                     let! eAcc = LoopExpr e
                     return Ast.Lazy eAcc

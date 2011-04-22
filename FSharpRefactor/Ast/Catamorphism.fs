@@ -29,6 +29,9 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_,_>) decl =
                   | InferredDowncast e -> 
                               let! eAcc = LoopExp e
                               return algebra.inferredDowncastF eAcc
+                  | InferredUpcast e -> 
+                              let! eAcc = LoopExp e
+                              return algebra.inferredUpcastF eAcc
                   | Lazy e -> let! eAcc = LoopExp e
                               return algebra.lazyF eAcc
                   | While (e1, e2) -> let! e1Acc = LoopExp e1
