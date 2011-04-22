@@ -750,4 +750,9 @@ type CompilerToAstTests() =
                                       (Lit (Float 12.5),
                                        Divide (Seq [Named (LongIdent [Ident "foo"])],Seq [One]))))],
                                Lit Unit)]] ast
+
+    [<Test>]
+    member this.``Inferred upcast``() =
+        let ast = parseModule ("let x = upcast y")
+        AssertAreEqual [Exp [Let (false,[(PVar "x", InferredUpcast (Var "y"))],Lit Unit)]] ast
         

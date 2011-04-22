@@ -25,6 +25,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l, 'm> =
         assertF : 'b -> 'b
         lazyF : 'b -> 'b
         inferredDowncastF : 'b -> 'b
+        inferredUpcastF: 'b -> 'b
         whileF : 'b -> 'b -> 'b
         nullF : Unit -> 'b
         varF : 'a -> 'b
