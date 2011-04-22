@@ -760,3 +760,8 @@ type CompilerToAstTests() =
     member this.``Type test``() =
         let ast = parse "let x = 2 :? double"
         AssertAreEqual [Let (false,[(PVar "x", TypeTest (Lit (Integer 2),LongIdent [Ident "double"]))], Lit Unit)] ast
+
+    [<Test>]
+    member this.``Dot set``() =
+        let ast = parse ("(List.head xs).Value <- 42")
+        AssertAreEqual [DotSet (App (LongVar [Var "List"; Var "head"],Var "xs"),LongVar [Var "Value"], Lit (Integer 42))] ast

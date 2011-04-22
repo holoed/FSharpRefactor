@@ -69,7 +69,6 @@ let internal foldDecls decls =
                 | SynExpr.DeprecatedTypeOf _ -> return Ast.NotSupported
                 | SynExpr.DiscardAfterError _ -> return Ast.NotSupported
                 | SynExpr.DotNamedIndexedPropertySet _ -> return Ast.NotSupported
-                | SynExpr.DotSet _ -> return Ast.NotSupported
                 | SynExpr.ImplicitZero _ -> return Ast.NotSupported
                 | SynExpr.LibraryOnlyILAssembly _ -> return Ast.NotSupported
                 | SynExpr.LibraryOnlyStaticOptimization _ -> return Ast.NotSupported
@@ -184,6 +183,11 @@ let internal foldDecls decls =
                     let! eAcc = LoopExpr e
                     let liAcc = Ast.LongVar (List.map (fun (id:Ident) -> Ast.Var (id.idText, mkSrcLoc id.idRange)) li)
                     return Ast.DotGet (eAcc, liAcc)
+                | SynExpr.DotSet (e1, li, e2, _) -> 
+                    let! e1Acc = LoopExpr e1
+                    let! e2Acc = LoopExpr e2
+                    let liAcc = Ast.LongVar (List.map (fun (id:Ident) -> Ast.Var (id.idText, mkSrcLoc id.idRange)) li)
+                    return Ast.DotSet (e1Acc, liAcc, e2Acc)
                 | SynExpr.IfThenElse (e1,e2,e3,_,_,_) -> 
                     let! e1Acc = LoopExpr e1
                     let! e2Acc = LoopExpr e2

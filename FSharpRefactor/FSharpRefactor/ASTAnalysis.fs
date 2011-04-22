@@ -299,6 +299,10 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          dotGetF        = (fun e li -> state { let! e' = e
                                                                let! li' = li
                                                                return DotGet (e', li') })
+                         dotSetF        = (fun e1 li e2 -> state { let! e1Acc = e1
+                                                                   let! liAcc = li
+                                                                   let! e2Acc = e2
+                                                                   return DotSet(e1Acc, liAcc, e2Acc) })                                                                        
                          dotIndexedSetF =  (fun e1 es e3 -> state { let! e1' = e1
                                                                     let! es' = mmap (fun e -> state { return! e }) es
                                                                     let! e3' = e3
