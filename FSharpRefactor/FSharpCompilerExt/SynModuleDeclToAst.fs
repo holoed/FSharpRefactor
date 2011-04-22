@@ -65,6 +65,23 @@ let internal foldDecls decls =
                     return Ast.Member(nAcc, eAcc) }
     and LoopExpr x =
          cont { match x with
+                // Not implemented AST sections
+                | SynExpr.DeprecatedTypeOf _ -> return Ast.NotSupported
+                | SynExpr.DiscardAfterError _ -> return Ast.NotSupported
+                | SynExpr.DotNamedIndexedPropertySet _ -> return Ast.NotSupported
+                | SynExpr.DotSet _ -> return Ast.NotSupported
+                | SynExpr.ImplicitZero _ -> return Ast.NotSupported
+                | SynExpr.LibraryOnlyILAssembly _ -> return Ast.NotSupported
+                | SynExpr.LibraryOnlyStaticOptimization _ -> return Ast.NotSupported
+                | SynExpr.LibraryOnlyUnionCaseFieldGet _ -> return Ast.NotSupported
+                | SynExpr.LibraryOnlyUnionCaseFieldSet _ -> return Ast.NotSupported
+                | SynExpr.NamedIndexedPropertySet _ -> return Ast.NotSupported
+                | SynExpr.TraitCall _ -> return Ast.NotSupported
+                
+                | SynExpr.TypeTest (e,t,_) ->
+                    let! eAcc = LoopExpr e
+                    let! tAcc = LoopType t
+                    return Ast.TypeTest (eAcc, tAcc)                                
                 | SynExpr.Quote (e1, _, e2, _) ->
                     let! e1Acc = LoopExpr e1
                     let! e2Acc = LoopExpr e2

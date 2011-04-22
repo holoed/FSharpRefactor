@@ -756,3 +756,7 @@ type CompilerToAstTests() =
         let ast = parseModule ("let x = upcast y")
         AssertAreEqual [Exp [Let (false,[(PVar "x", InferredUpcast (Var "y"))],Lit Unit)]] ast
         
+    [<Test>]
+    member this.``Type test``() =
+        let ast = parse "let x = 2 :? double"
+        AssertAreEqual [Let (false,[(PVar "x", TypeTest (Lit (Integer 2),LongIdent [Ident "double"]))], Lit Unit)] ast

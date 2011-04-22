@@ -18,6 +18,10 @@ open Algebras
 let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_,_>) decl =
   let rec LoopExp e =
           cont {  match e with
+                  | TypeTest (e, t) ->
+                            let! eAcc = LoopExp e
+                            let! tAcc = LoopTypeInst t
+                            return algebra.typetestF eAcc tAcc
                   | Measure (e, m) ->
                             let! eAcc = LoopExp e
                             let! mAcc = LoopMeasure m
