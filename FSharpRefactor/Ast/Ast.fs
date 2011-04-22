@@ -104,8 +104,10 @@ and Exp<'a>
     | InferredDowncast of Exp<'a>
     | InferredUpcast of Exp<'a>
     | Quote of Exp<'a> * Exp<'a>
+    | TypeTest of Exp<'a> * Type<'a>
     | Null
     | ArbitraryAfterError
+    | NotSupported
 
 and Clause<'a> = Clause of Pat<'a> * Exp<'a>
 

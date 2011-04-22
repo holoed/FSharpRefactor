@@ -15,7 +15,8 @@ open Ast
 open StateMonad
 
 type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l, 'm> =
-    {   measureOneF : unit -> 'm
+    {   typetestF : 'b -> 'i -> 'b
+        measureOneF : unit -> 'm
         measureDivideF: 'm -> 'm -> 'm
         powerF : 'm -> int -> 'm
         measureNamedF : 'i -> 'm

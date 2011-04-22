@@ -602,3 +602,8 @@ type ASTAnalysisTests() =
                                     "let y = x + 12.5<foo/3>");
         AssertAreEqual [Var ("x", loc(8,9,4,4));Var ("x", loc(4,5,3,3))] (findAllReferences (loc (4,5,3,3)) ast)
 
+    [<Test>]
+    member this.``Find usages in the presence of a type test``() =
+        let ast = parseWithPosDecl ("let x = 2 :? double \n" +
+                                    "let y = x :? int ")
+        AssertAreEqual [Var ("x", loc(8,9,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
