@@ -772,3 +772,12 @@ type CompilerToAstTests() =
                                "    interface IFoo")
         AssertAreEqual [Types [Class ("SomeClass",[Interface (LongIdent [Ident "IFoo"], Option.None)])]] ast
 
+    [<Test>]
+    member this.``Generic measure type instantiation``() =
+        let ast = parseModule ("let f<'a> = 42<'a> ")
+        AssertAreEqual [Exp [Let (false,[(PVar "f", Measure (Lit (Integer 42),Seq [MVar "a"]))],Lit Unit)]] ast
+
+    [<Test>]
+    member this.``Anonymous measure type instantiation``() =
+        let ast = parseModule ("let f = 0.0<_>")
+        AssertAreEqual [Exp [Let (false,[(PVar "f", Measure (Lit (Float 0.0), Anon))],Lit Unit)]] ast

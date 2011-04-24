@@ -122,7 +122,9 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
         foldExpAlgebra { typetestF = (fun e t -> state { let! eAcc = e
                                                          let! tAcc = t
                                                          return Ast.TypeTest (eAcc, tAcc) })
-                         measureOneF =   (fun unit -> state { return Ast.One })
+                         measureVarF =    (fun s -> state { return Ast.MVar s })                                                                        
+                         measureOneF =    (fun unit -> state { return Ast.One })
+                         measureAnonF =   (fun unit -> state { return Ast.Anon })
                          measureDivideF = (fun m1 m2 -> state { let! m1Acc = m1
                                                                 let! m2Acc = m2
                                                                 return Ast.Divide (m1Acc, m2Acc) })
