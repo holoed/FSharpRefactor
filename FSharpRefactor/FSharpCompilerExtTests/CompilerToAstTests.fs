@@ -781,3 +781,26 @@ type CompilerToAstTests() =
     member this.``Anonymous measure type instantiation``() =
         let ast = parseModule ("let f = 0.0<_>")
         AssertAreEqual [Exp [Let (false,[(PVar "f", Measure (Lit (Float 0.0), Anon))],Lit Unit)]] ast
+
+    [<Test>]
+    member this.``Ands patterns``() = 
+        let ast = parseModule ("let detectZeroAND point =               \n" +
+                               "       match point with                 \n" +
+                               "       | (0, 0) -> 0                    \n" +
+                               "       | (var1, var2) & (0, _) -> 1     \n" +
+                               "       | (var1, var2)  & (_, 0) -> 2    \n" +
+                               "       | _ -> 3")
+        AssertAreEqual [Exp [Let (false, [(PApp (PVar "detectZeroAND",PVar "point"),
+                                             Match
+                                               (Var "point",
+                                                [Clause
+                                                   (PTuple [PLit (Integer 0); PLit (Integer 0)],Lit (Integer 0));
+                                                 Clause
+                                                   (PAnds
+                                                      [PTuple [PVar "var1"; PVar "var2"];
+                                                       PTuple [PLit (Integer 0); PWild]],Lit (Integer 1));
+                                                 Clause
+                                                   (PAnds
+                                                      [PTuple [PVar "var1"; PVar "var2"];
+                                                       PTuple [PWild; PLit (Integer 0)]],Lit (Integer 2));
+                                                 Clause (PWild,Lit (Integer 3))]))],Lit Unit)]] ast
