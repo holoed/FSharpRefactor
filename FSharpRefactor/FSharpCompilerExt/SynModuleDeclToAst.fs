@@ -19,6 +19,7 @@ open Utils
 let internal foldDecls decls =
     let rec LoopDecl x =
         cont { match x with
+               | SynModuleDecl.NamespaceFragment _ -> return Ast.Module.NotSupported
                | SynModuleDecl.ModuleAbbrev (id, lid, _) ->
                     let lidAcc = List.map (fun (x:Ident) -> x.idText) lid
                     return Ast.Module.ModuleAbbrev(id.idText, lidAcc)
@@ -47,7 +48,7 @@ let internal foldDecls decls =
                     return Ast.Exception edAcc }
     and LoopExceptionDef x =
         cont { match x with
-               | SynExceptionDefn.ExceptionDefn (SynExceptionRepr.ExceptionDefnRepr(_,uc,Option.None,_,_,_), ms, _) ->
+               | SynExceptionDefn.ExceptionDefn (SynExceptionRepr.ExceptionDefnRepr(_,uc,_,_,_,_), ms, _) ->
                     let! (name, _) = LoopUnionCases uc
                     let! msAcc = mmap LoopClassMember ms                    
                     return Ast.ExceptionDef (name, msAcc) }
@@ -256,6 +257,9 @@ let internal foldDecls decls =
                     return! LoopSimplePat p }
     and LoopMeasure x = 
         cont { match x with
+               | SynMeasure.Var ((SynTypar.Typar (id, _, _)), _) -> 
+                                      return Ast.MVar (id.idText)
+               | SynMeasure.Anon _ -> return Ast.Anon
                | SynMeasure.One -> return Ast.One
                | SynMeasure.Divide (m1, m2, _) -> let! m1Acc = LoopMeasure m1
                                                   let! m2Acc = LoopMeasure m2
@@ -324,7 +328,10 @@ let internal foldDecls decls =
                         let! msAcc = mmap LoopClassMember ms
                         return Ast.Class (name, msAcc) }
     and LoopClassMember x = 
-        cont { match x with 
+        cont { match x with                
+               | SynMemberDefn.NestedType _ -> return ClassMember.NotSupported
+               | SynMemberDefn.Open _ -> return ClassMember.NotSupported
+
                | SynMemberDefn.ImplicitInherit (t, e, id, _) ->
                     let idAcc = Option.map(fun (x:Ident) -> Ast.Ident(x.idText, mkSrcLoc x.idRange)) id
                     let! tAcc = LoopType t

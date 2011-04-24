@@ -64,6 +64,8 @@ and Measure<'a>
     | Power of Measure<'a> * int
     | Divide of Measure<'a> * Measure<'a>
     | One
+    | Anon
+    | MVar of string
     
 and Exp<'a> 
     = Var      of 'a                           // variable    
@@ -143,6 +145,7 @@ and ClassMember<'a>
     | ValField of Type<'a> option * Type<'a>
     | Inherit of Type<'a> * Type<'a> option
     | ImplicitInherit of Type<'a> * Exp<'a> * Type<'a> option
+    | NotSupported
 
 type Module<'a>
     = Exp of Exp<'a> list
@@ -153,5 +156,6 @@ type Module<'a>
     | HashDirective of string * string list
     | Attributes of Attribute<'a> list
     | ModuleAbbrev of string * string list
+    | NotSupported
     
 

@@ -613,3 +613,12 @@ type ASTAnalysisTests() =
         let ast = parseWithPosDecl ("let x = 2 :? double \n" +
                                     "let y = x :? int ")
         AssertAreEqual [Var ("x", loc(8,9,2,2));Var ("x", loc(4,5,1,1))] (findAllReferences (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of an anoymous measure``() =
+        let ast = parseWithPosDecl ("[<Measure>]                \n" +
+                                    "type m                     \n" +
+                                    "                           \n" +
+                                    "let x = 0.0<_>             \n" +
+                                    "let y = x + 4.0<m>           ")
+        AssertAreEqual [Var ("x", loc(8,9,5,5));Var ("x", loc(4,5,4,4))] (findAllReferences (loc (4,5,4,4)) ast)

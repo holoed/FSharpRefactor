@@ -21,7 +21,9 @@ let path = sprintf "%s\\%s" (Directory.GetCurrentDirectory()) "test.fs"
 
 let stripPos (decl:Module<'a*'b>) :Module<'a> =             
             foldExpAlgebra {  typetestF            =     (fun e t -> Ast.TypeTest (e, t))
+                              measureVarF          =     (fun s -> Measure.MVar s)
                               measureOneF          =     (fun unit -> Measure.One) 
+                              measureAnonF         =     (fun unit -> Measure.Anon)
                               measureDivideF       =     (fun m1 m2 -> Measure.Divide(m1, m2))
                               powerF               =     (fun m n -> Measure.Power (m, n))
                               measureNamedF        =     (fun t -> Measure.Named t)
