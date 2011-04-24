@@ -217,9 +217,12 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_,_>) decl =
                        | Member (p, e) -> let! pAcc = LoopPat p
                                           let! eAcc = LoopExp e
                                           return algebra.memberF pAcc eAcc
-                       | Interface(t, ms) -> let! tAcc = LoopTypeInst t
-                                             let! msAcc = mmap LoopClassMember ms
-                                             return algebra.interfaceF tAcc msAcc
+                       | Interface(t, msOption) -> let! tAcc = LoopTypeInst t
+                                                   let! msAcc = match msOption with
+                                                                | Some ms -> cont { let! msAcc = mmap LoopClassMember ms
+                                                                                    return Some msAcc }
+                                                                | Option.None -> cont { return Option.None }
+                                                   return algebra.interfaceF tAcc msAcc
                        | AbstractSlot n -> return algebra.abstractSlotF n
                        | LetBindings es -> let! esAcc = mmap LoopExp es
                                            return algebra.letBindingsF esAcc

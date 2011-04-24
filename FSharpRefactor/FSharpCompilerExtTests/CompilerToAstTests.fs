@@ -365,7 +365,7 @@ type CompilerToAstTests() =
     [<Test>]
     member this.InterfaceImplementation() =
         let ast = parseTypes "type Foo = interface IDisposable with member this.Dispose () = ()" |> List.concat
-        AssertAreEqual [Class("Foo", [Interface(LongIdent [Ident "IDisposable"], [Member (PApp(PLongVar [PVar "this"; PVar "Dispose"], PLit(Unit)), Lit Unit)])])] ast
+        AssertAreEqual [Class("Foo", [Interface(LongIdent [Ident "IDisposable"], Some [Member (PApp(PLongVar [PVar "this"; PVar "Dispose"], PLit(Unit)), Lit Unit)])])] ast
    
     [<Test>]
     member this.``Assignment of a mutable variable``() =
@@ -765,3 +765,10 @@ type CompilerToAstTests() =
     member this.``Dot set``() =
         let ast = parse ("(List.head xs).Value <- 42")
         AssertAreEqual [DotSet (App (LongVar [Var "List"; Var "head"],Var "xs"),LongVar [Var "Value"], Lit (Integer 42))] ast
+
+    [<Test>]
+    member this.``Interface implementation with no members``() =
+        let ast = parseModule ("type SomeClass =  \n" +
+                               "    interface IFoo")
+        AssertAreEqual [Types [Class ("SomeClass",[Interface (LongIdent [Ident "IFoo"], Option.None)])]] ast
+

@@ -139,7 +139,7 @@ and ClassMember<'a>
     | Member of Pat<'a> * Exp<'a>
     | LetBindings of Exp<'a> list
     | AbstractSlot of string
-    | Interface of Type<'a> * ClassMember<'a> list
+    | Interface of Type<'a> * ClassMember<'a> list option
     | ValField of Type<'a> option * Type<'a>
     | Inherit of Type<'a> * Type<'a> option
     | ImplicitInherit of Type<'a> * Exp<'a> * Type<'a> option
