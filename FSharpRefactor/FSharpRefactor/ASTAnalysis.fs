@@ -378,9 +378,12 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          typedF =         (fun e t -> state { let! eAcc = e
                                                               let! tAcc = t
                                                               return Typed (eAcc, tAcc) })
-                         interfaceF =     (fun t ms -> state { let! (tAcc:Type<_>) = t
-                                                               let! msAcc = mmap (fun e -> state { return! e }) ms
-                                                               return Interface (tAcc, msAcc) })
+                         interfaceF =     (fun t msOption -> state { let! (tAcc:Type<_>) = t
+                                                                     let! msAcc = match msOption with
+                                                                                  | Some ms -> state { let! msAcc = mmap (fun e -> state { return! e }) ms
+                                                                                                       return Some msAcc }
+                                                                                  | Option.None -> state { return Option.None }
+                                                                     return Interface (tAcc, msAcc) })
                          letBindingsF =   (fun es -> state { let! esAcc = mmap (fun e -> state { return! e }) es
                                                              return LetBindings esAcc })
                          abbrevF =        (fun n t -> state { let! (tAcc:Type<_>) = t

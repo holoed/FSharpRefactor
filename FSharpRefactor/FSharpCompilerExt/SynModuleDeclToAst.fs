@@ -349,9 +349,12 @@ let internal foldDecls decls =
                    return ClassMember.LetBindings esAcc'
                | SynMemberDefn.AbstractSlot(SynValSig.ValSpfn(_, ident, _, _, _, _, _, _, _, _, _),_,_) ->
                    return ClassMember.AbstractSlot (ident.idText)
-               | SynMemberDefn.Interface(t, Some ms, _) ->
+               | SynMemberDefn.Interface(t, msOption, _) ->
                    let! tAcc = LoopType t 
-                   let! msAcc = mmap LoopClassMember ms
+                   let! msAcc = match msOption with
+                                | Some ms -> cont { let! msAcc = mmap LoopClassMember ms 
+                                                    return Some msAcc }
+                                | Option.None -> cont { return Option.None }
                    return ClassMember.Interface (tAcc, msAcc) }
     and LoopSimpleTypeRep name ms x =
          cont { match x with

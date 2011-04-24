@@ -81,7 +81,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l, 'm> =
         downcastF : 'b -> 'i -> 'b
         upcastF : 'b -> 'i -> 'b
         typedF : 'b -> 'i -> 'b
-        interfaceF : 'i -> 'g list -> 'g
+        interfaceF : 'i -> 'g list option -> 'g
         letBindingsF : 'b list -> 'g
         abbrevF : string -> 'i -> 'd
         tfunF : 'i -> 'i -> 'i
