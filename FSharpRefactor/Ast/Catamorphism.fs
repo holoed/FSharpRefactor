@@ -250,6 +250,8 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_,_>) decl =
                           | POr(p1, p2) -> let! p1Acc = LoopPat p1
                                            let! p2Acc = LoopPat p2
                                            return algebra.porF p1Acc p2Acc
+                          | PAnds ps -> let! psAcc = mmap LoopPat ps
+                                        return algebra.pandsF psAcc
                           | PVar x -> return algebra.pVarF x
                           | PApp (l, r) -> let! lAcc = LoopPat l
                                            let! rAcc = LoopPat r

@@ -102,6 +102,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l, 'm> =
         pVarF : 'a -> 'j
         pAppF : 'j -> 'j -> 'j
         porF : 'j -> 'j -> 'j
+        pandsF : 'j list -> 'j
         pLitF : Literal -> 'j
         pTupleF : 'j list -> 'j
         pRecordF : (string * 'j) list -> 'j

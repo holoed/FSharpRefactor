@@ -622,3 +622,15 @@ type ASTAnalysisTests() =
                                     "let x = 0.0<_>             \n" +
                                     "let y = x + 4.0<m>           ")
         AssertAreEqual [Var ("x", loc(8,9,5,5));Var ("x", loc(4,5,4,4))] (findAllReferences (loc (4,5,4,4)) ast)
+
+    [<Test>]
+    member this.``Find usages in ands patterns``() = 
+        let ast = parseWithPosDecl ("let detectZeroAND point =               \n" +
+                                    "       match point with                 \n" +
+                                    "       | (0, 0) -> 0                    \n" +
+                                    "       | (var1, var2) & (0, _) -> var1     \n" +
+                                    "       | (var1, var2)  & (_, 0) -> var2    \n" +
+                                    "       | _ -> 3")
+        AssertAreEqual [Var ("var1", loc(34,38,4,4));Var ("var1", loc(10,14,4,4))] (findAllReferences (loc (10,14,4,4)) ast)
+        AssertAreEqual [Var ("var2", loc(35,39,5,5));Var ("var2", loc(16,20,5,5))] (findAllReferences (loc (16,20,5,5)) ast)
+        

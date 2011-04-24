@@ -409,6 +409,9 @@ let internal foldDecls decls =
                     let! p1Acc = LoopPat p1
                     let! p2Acc = LoopPat p2
                     return Ast.POr(p1Acc, p2Acc)
+               | SynPat.Ands (ps, _) ->
+                    let! psAcc = mmap LoopPat ps
+                    return Ast.PAnds psAcc
                | SynPat.Null _ ->
                     return Ast.PNull
                | SynPat.Typed (pat, _, _) -> 

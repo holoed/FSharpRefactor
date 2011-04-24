@@ -73,7 +73,9 @@ let flatPat p =
                                                                     return pAcc
                                           | POr (p1, p2) -> let! p1Acc = LoopPat p1
                                                             let! p2Acc = LoopPat p2
-                                                            return p1Acc @ p2Acc                                       
+                                                            return p1Acc @ p2Acc  
+                                          | PAnds ps -> let! psAcc = ContinuationMonad.mmap LoopPat ps
+                                                        return List.concat psAcc                                                                                                 
                                           | PRecord x -> return [PRecord x]
                                           | PVar x -> return [PVar x]
                                           | PApp (l, r) -> let! lAcc = LoopPat l
@@ -154,7 +156,7 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          nullF = (fun () -> state { return Null })                         
                          varF =        (fun x -> state { do! addUsage x
                                                          return Var x })
-                         longVarF =    (fun xs -> state { let! xs' = mmap (fun x -> state { return! x }) xs
+                         longVarF =    (fun xs -> state { let! xs' = mmapId xs
                                                           return LongVar xs' })
                          longVarSetF = (fun e1 e2 -> state { let! e1Acc = e1
                                                              let! e2Acc = e2
@@ -220,13 +222,13 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                                                 do ()
                                                                             return LetBang (p', e1', e2') })
                          litF =        (fun x -> state { return Lit x })
-                         tupleF =      (fun es -> state { let! es' = mmap (fun e -> state { return! e }) es
+                         tupleF =      (fun es -> state { let! es' = mmapId es
                                                           return Tuple es' })
-                         listF =       (fun es -> state { let! es' = mmap (fun e -> state { return! e }) es
+                         listF =       (fun es -> state { let! es' = mmapId es
                                                           return List es' })
-                         expF =        (fun es -> state { let! es' = mmap (fun e -> state { return! e }) es
+                         expF =        (fun es -> state { let! es' = mmapId es
                                                           return Exp es' })
-                         typesF =      (fun xs -> state { let! xs' = mmap (fun x -> state { return! x }) xs
+                         typesF =      (fun xs -> state { let! xs' = mmapId xs
                                                           return Types xs' })
                          unionF =      (fun name cases -> state { let! _ = mmap (fun x -> enterScope x) cases
                                                                   return DisUnion(name, cases) })
@@ -306,15 +308,15 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                                    let! e2Acc = e2
                                                                    return DotSet(e1Acc, liAcc, e2Acc) })                                                                        
                          dotIndexedSetF =  (fun e1 es e3 -> state { let! e1' = e1
-                                                                    let! es' = mmap (fun e -> state { return! e }) es
+                                                                    let! es' = mmapId es
                                                                     let! e3' = e3
                                                                     return DotIndexedSet (e1', es', e3') })
                          dotIndexedGetF =  (fun e1 es -> state { let! e1' = e1
-                                                                 let! es' = mmap (fun e -> state { return! e }) es
+                                                                 let! es' = mmapId es
                                                                  return DotIndexedGet (e1', es') }) 
                          recordDefF =      (fun name fields ms -> state { let! msAcc = mmap (fun m -> state { return! m }) ms
                                                                           return Record(name, fields, msAcc) })
-                         recordInstF =     (fun fields -> state { let! fields' = mmap (fun e -> state { return! e }) fields
+                         recordInstF =     (fun fields -> state { let! fields' = mmapId fields
                                                                   return Exp.Record fields'})
                          recordFieldInstF = (fun n e -> state { let! eAcc = e
                                                                 return (n, eAcc) })
@@ -363,7 +365,7 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                              let! _ = mmap (fun x -> execute exitScope x) args
                                                              return Member(pAcc, eAcc) })
                          abstractSlotF = (fun n -> state { return AbstractSlot n })
-                         objExprF =      (fun ms -> state { let! msAcc = mmap (fun e -> state { return! e }) ms
+                         objExprF =      (fun ms -> state { let! msAcc = mmapId ms
                                                             return ObjExpr msAcc })
                          doF =     (fun e -> state { let! eAcc = e
                                                      return Do eAcc })
@@ -382,11 +384,11 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                               return Typed (eAcc, tAcc) })
                          interfaceF =     (fun t msOption -> state { let! (tAcc:Type<_>) = t
                                                                      let! msAcc = match msOption with
-                                                                                  | Some ms -> state { let! msAcc = mmap (fun e -> state { return! e }) ms
+                                                                                  | Some ms -> state { let! msAcc = mmapId ms
                                                                                                        return Some msAcc }
                                                                                   | Option.None -> state { return Option.None }
                                                                      return Interface (tAcc, msAcc) })
-                         letBindingsF =   (fun es -> state { let! esAcc = mmap (fun e -> state { return! e }) es
+                         letBindingsF =   (fun es -> state { let! esAcc = mmapId es
                                                              return LetBindings esAcc })
                          abbrevF =        (fun n t -> state { let! (tAcc:Type<_>) = t
                                                               return Abbrev (n, tAcc) })
@@ -394,14 +396,14 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                                 let! (t2Acc:Type<_>) = t2
                                                                 return TFun (t1Acc, t2Acc) })
                          tIdentF =        (fun s -> state { return Ident s })
-                         tLongIdentF =    (fun ts -> state { let! tsAcc = mmap (fun t -> state { return! t}) ts
+                         tLongIdentF =    (fun ts -> state { let! tsAcc = mmapId ts
                                                              return LongIdent tsAcc })  
                          tvarF =          (fun t -> state { let! tAcc = t
                                                             return TVar tAcc })
                          tappF =          (fun t ts -> state { let! tAcc = t
-                                                               let! tsAcc = mmap (fun t -> state { return! t}) ts
+                                                               let! tsAcc = mmapId ts
                                                                return TApp (tAcc, tsAcc) })
-                         ttupleF  =       (fun ts -> state { let! tsAcc = mmap (fun t -> state { return! t}) ts
+                         ttupleF  =       (fun ts -> state { let! tsAcc = mmapId ts
                                                              return TTuple tsAcc })
                          tarrayF =        (fun n t -> state { let! tAcc = t
                                                               return TArray (n, tAcc) })
@@ -410,7 +412,7 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          tanonF =         (fun () -> state { return TAnon })
                          tmeasureOneF =   (fun () -> state { return TMeasureOne })
                          tryWithF =       (fun e cs -> state { let! e' = e
-                                                               let! cs' = mmap (fun c -> state { return! c }) cs
+                                                               let! cs' = mmapId cs
                                                                return TryWith(e', cs')})
                          tryFinallyF =    (fun e1 e2 -> state { let! e1Acc = e1
                                                                 let! e2Acc = e2
@@ -424,22 +426,24 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          porF =           (fun p1 p2 -> state { let! p1Acc = p1
                                                                 let! p2Acc = p2
                                                                 return POr (p1Acc, p2Acc) })
+                         pandsF =         (fun ps -> state { let! psAcc = mmapId ps
+                                                             return Ast.PAnds psAcc })
                          pLitF =          (fun x -> state { return PLit x })
-                         pTupleF =        (fun es ->  state { let! es' = mmap (fun e -> state { return! e }) es
+                         pTupleF =        (fun es ->  state { let! es' = mmapId es
                                                               return PTuple es' })
                          pRecordF =       (fun es ->  state { let! esAcc = mmap (fun (i, e) -> state { let! eAcc = e
                                                                                                        return i, eAcc }) es
                                                               return PRecord esAcc })
                          pWildF =         (fun () -> state { return PWild } ) 
-                         pArrayOrListF =  (fun es ->  state { let! es' = mmap (fun e -> state { return! e }) es
+                         pArrayOrListF =  (fun es ->  state { let! es' = mmapId es
                                                               return PList es' })
-                         pLongVarF =      (fun xs -> state { let! xsAcc = mmap (fun x -> state { return! x }) xs 
+                         pLongVarF =      (fun xs -> state { let! xsAcc = mmapId xs 
                                                              return PLongVar xsAcc }) 
                          pIsInstF  =      (fun t -> state { let! tAcc= t
                                                             return PIsInst tAcc })
                          pnullF =         (fun () -> state { return PNull }) 
                          pattributeF =    (fun p attrs -> state { let! pAcc = p
-                                                                  let! attrsAcc = mmap (fun attr -> state { return! attr }) attrs
+                                                                  let! attrsAcc = mmapId attrs
                                                                   return PAttribute(pAcc, attrsAcc) })
                          attributeF =     (fun e -> state { let! eAcc = e
                                                             return Attribute eAcc })}   exp

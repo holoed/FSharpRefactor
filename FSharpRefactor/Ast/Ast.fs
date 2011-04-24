@@ -54,6 +54,7 @@ type Pat<'a> =
     | PNull
     | POr of Pat<'a> * Pat<'a>
     | PAttribute of Pat<'a> * Attribute<'a> list
+    | PAnds of Pat<'a> list
 
 and Attribute<'a>
     = Attribute of Exp<'a>
