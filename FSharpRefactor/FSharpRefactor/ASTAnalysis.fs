@@ -121,7 +121,12 @@ let execute action p =
 
 
 let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> = 
-        foldExpAlgebra { typetestF = (fun e t -> state { let! eAcc = e
+        foldExpAlgebra { memberSigF = (fun t -> state { let! tAcc = t
+                                                        return Ast.MemberSig tAcc })
+                         traitCallF = (fun ss msig e -> state { let! msigAcc = msig
+                                                                let! eAcc = e
+                                                                return Ast.TraitCall (ss, msigAcc, eAcc) })        
+                         typetestF = (fun e t -> state { let! eAcc = e
                                                          let! tAcc = t
                                                          return Ast.TypeTest (eAcc, tAcc) })
                          measureVarF =    (fun s -> state { return Ast.MVar s })                                                                        

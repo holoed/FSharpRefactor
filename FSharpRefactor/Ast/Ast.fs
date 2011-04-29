@@ -109,6 +109,7 @@ and Exp<'a>
     | InferredUpcast of Exp<'a>
     | Quote of Exp<'a> * Exp<'a>
     | TypeTest of Exp<'a> * Type<'a>
+    | TraitCall of string list * MemberSig<'a> * Exp<'a>
     | Null
     | ArbitraryAfterError
     | NotSupported
@@ -147,6 +148,9 @@ and ClassMember<'a>
     | Inherit of Type<'a> * Type<'a> option
     | ImplicitInherit of Type<'a> * Exp<'a> * Type<'a> option
     | NotSupported
+
+and MemberSig<'a> 
+    = MemberSig of Type<'a>
 
 type Module<'a>
     = Exp of Exp<'a> list

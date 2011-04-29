@@ -634,3 +634,11 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("var1", loc(34,38,4,4));Var ("var1", loc(10,14,4,4))] (findAllReferences (loc (10,14,4,4)) ast)
         AssertAreEqual [Var ("var2", loc(35,39,5,5));Var ("var2", loc(16,20,5,5))] (findAllReferences (loc (16,20,5,5)) ast)
         
+    [<Test>]
+    member this.``Find usages in the presence of statically resolved typed parameters``() =    
+        let ast = parseWithPosDecl ("let inline joinM b m =          \n" +
+                                    "   let (>>=) m f = (^x: (member Bind: ^m -> (^n -> ^n) -> ^n) b, m, f) \n" +
+                                    "   m >>= id")   
+        AssertAreEqual [Var ("m", loc(3,4,3,3));Var ("m", loc(19,20,1,1))] (findAllReferences (loc (19,20,1,1)) ast)
+        AssertAreEqual [Var ("m", loc(65,66,2,2));Var ("m", loc(13,14,2,2))] (findAllReferences (loc (13,14,2,2)) ast)
+        

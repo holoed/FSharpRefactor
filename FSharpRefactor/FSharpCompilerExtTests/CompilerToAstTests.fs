@@ -804,3 +804,18 @@ type CompilerToAstTests() =
                                                       [PTuple [PVar "var1"; PVar "var2"];
                                                        PTuple [PWild; PLit (Integer 0)]],Lit (Integer 2));
                                                  Clause (PWild,Lit (Integer 3))]))],Lit Unit)]] ast
+
+    [<Test>]
+    member this.``Statically resolved typed parameters``() = 
+        let ast = parseModule ("let inline joinM b m =          \n" +
+                                "   let (>>=) m f = (^x: (member Bind: ^m -> (^n -> ^n) -> ^n) b, m, f) \n" +
+                                "   m >>= id")   
+        AssertAreEqual [Exp [Let (false, [(PApp (PApp (PVar "joinM",PVar "b"),PVar "m"),
+                                             Let (false, [(PApp (PApp (PVar "op_GreaterGreaterEquals",PVar "m"),PVar "f"),
+                                                              TraitCall (["x"], 
+                                                                MemberSig (TFun (TVar (Ident "m"), 
+                                                                               TFun (TFun (TVar (Ident "n"),TVar (Ident "n")), 
+                                                                                    TVar (Ident "n")))),
+                                                                                        Tuple [Var "b"; Var "m"; Var "f"]))],
+                                                            App (App (Var "op_GreaterGreaterEquals",Var "m"),Var "id")))],
+                                                       Lit Unit)]] ast
