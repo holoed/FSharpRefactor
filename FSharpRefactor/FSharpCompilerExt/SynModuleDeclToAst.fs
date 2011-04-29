@@ -76,7 +76,13 @@ let internal foldDecls decls =
                 | SynExpr.LibraryOnlyUnionCaseFieldGet _ -> return Ast.NotSupported
                 | SynExpr.LibraryOnlyUnionCaseFieldSet _ -> return Ast.NotSupported
                 | SynExpr.NamedIndexedPropertySet _ -> return Ast.NotSupported
-                | SynExpr.TraitCall _ -> return Ast.NotSupported
+
+
+                | SynExpr.TraitCall (ts, msig, e, _) ->
+                    let idsAcc = List.map (fun (SynTypar.Typar(i, _, b)) -> i.idText) ts
+                    let! msigAcc = LoopMemberSig msig
+                    let! eAcc = LoopExpr e
+                    return Ast.TraitCall (idsAcc, msigAcc, eAcc)
                 
                 | SynExpr.TypeTest (e,t,_) ->
                     let! eAcc = LoopExpr e
@@ -239,6 +245,12 @@ let internal foldDecls decls =
                         return Ast.Typed (eAcc, tAcc)
                 | SynExpr.ArbitraryAfterError _ -> 
                     return Ast.ArbitraryAfterError }
+
+    and LoopMemberSig x =
+        cont { match x with
+               | SynMemberSig.Member (ValSpfn(_,_,_,t,_,_,_,_,_,_,_), _, _) ->
+                    let! tAcc= LoopType t
+                    return Ast.MemberSig tAcc }
 
     and LoopRecordFieldInst ((_,(x:Ident)), e) =
         cont {  let! eAcc = LoopExpr e

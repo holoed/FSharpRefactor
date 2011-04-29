@@ -14,8 +14,10 @@ module Algebras
 open Ast
 open StateMonad
 
-type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l, 'm> =
-    {   typetestF : 'b -> 'i -> 'b        
+type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l, 'm, 'n> =
+    {   memberSigF : 'i -> 'n
+        traitCallF : string list -> 'n -> 'b -> 'b
+        typetestF : 'b -> 'i -> 'b        
         measureVarF : string -> 'm
         measureOneF : unit -> 'm
         measureAnonF : unit -> 'm
