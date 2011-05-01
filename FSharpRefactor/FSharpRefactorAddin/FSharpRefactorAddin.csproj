@@ -12,7 +12,7 @@
     <AssemblyName>FSharpRefactorAddin</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <PublishUrl>publish\</PublishUrl>
-<SccProjectName>SAK</SccProjectName>
+    <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
@@ -54,9 +54,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="FSharpRefactor">
-      <HintPath>..\FSharpRefactor\bin\Debug\FSharpRefactor.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualStudio.CoreUtility, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.OLE.Interop" />
@@ -156,6 +153,10 @@
     <ProjectReference Include="..\FSharpCompilerExt\FSharpCompilerExt.fsproj">
       <Project>{6C7C81DA-105A-407F-A8AE-72EA4AC2A221}</Project>
       <Name>FSharpCompilerExt</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FSharpRefactor\FSharpRefactor.fsproj">
+      <Project>{23C87110-7BF5-4E92-A91C-61E8E63F5947}</Project>
+      <Name>FSharpRefactor</Name>
     </ProjectReference>
     <ProjectReference Include="..\Microsoft.FSharpCompiler.Sources\FSharpCompiler\FSharpCompiler.fsproj">
       <Project>{3A2627B6-4909-4820-9A25-DF6BC99A12A7}</Project>
