@@ -20,7 +20,8 @@ using Microsoft.VisualStudio.Utilities;
 namespace FSharpRefactorVSAddIn.HighlightUsages
 {
     [Export(typeof(IViewTaggerProvider))]
-    [ContentType("text")]
+    [ContentType("F#")]
+    [FileExtension(".fs")]
     [TagType(typeof(HighlightUsagesTag))]
     public class HighlightUsagesTaggerProvider : IViewTaggerProvider
     {

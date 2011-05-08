@@ -13,23 +13,6 @@ namespace FSharpRefactorAddin.VsPackage
 	[ComVisible(true)]
 	public sealed class MenuCommandsPackage : Package
 	{			
-        [SecurityPermission(SecurityAction.Demand, Flags=SecurityPermissionFlag.UnmanagedCode)]
-		protected override void Initialize()
-		{
-			base.Initialize();
-
-			var mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
-			if (null != mcs)
-			{			
-				var id = new CommandID(GuidsList.guidMenuAndCommandsCmdSet, PkgCmdIDList.CmdidMyCommand);			
-				var command = new OleMenuCommand(MenuCommandCallback, id);
-				mcs.AddCommand(command);			
-			}
-		}
-
-	    private void MenuCommandCallback(object sender, EventArgs e)
-	    {
-	        
-	    }
+       
 	}
 }

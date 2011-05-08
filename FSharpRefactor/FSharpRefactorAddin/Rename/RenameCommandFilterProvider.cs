@@ -21,7 +21,8 @@ using Microsoft.VisualStudio.Utilities;
 namespace FSharpRefactorAddin.Rename
 {
     [Export(typeof(IVsTextViewCreationListener))]
-    [ContentType("text")]
+    [ContentType("F#")]
+    [FileExtension(".fs")]
     [TextViewRole(PredefinedTextViewRoles.Editable)]
     internal class RenameCommandFilterProvider : IVsTextViewCreationListener
     {
