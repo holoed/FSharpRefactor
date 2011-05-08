@@ -18,9 +18,9 @@ open Algebras
 let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_,_,_>) decl =
   let rec LoopExp e =
           cont {  match e with
-                  | TraitCall (ids, msig, e) ->
+                  | TraitCall (ids, msig, e1) ->
                             let! msigAcc= LoopMemberSig msig
-                            let! eAcc = LoopExp e
+                            let! eAcc = LoopExp e1
                             return algebra.traitCallF ids msigAcc eAcc
                   | TypeTest (e, t) ->
                             let! eAcc = LoopExp e

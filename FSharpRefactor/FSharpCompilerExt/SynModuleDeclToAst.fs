@@ -67,15 +67,15 @@ let internal foldDecls decls =
     and LoopExpr x =
          cont { match x with
                 // Not implemented AST sections
-                | SynExpr.DeprecatedTypeOf _ -> return Ast.NotSupported
-                | SynExpr.DiscardAfterError _ -> return Ast.NotSupported
-                | SynExpr.DotNamedIndexedPropertySet _ -> return Ast.NotSupported
-                | SynExpr.ImplicitZero _ -> return Ast.NotSupported
-                | SynExpr.LibraryOnlyILAssembly _ -> return Ast.NotSupported
-                | SynExpr.LibraryOnlyStaticOptimization _ -> return Ast.NotSupported
-                | SynExpr.LibraryOnlyUnionCaseFieldGet _ -> return Ast.NotSupported
-                | SynExpr.LibraryOnlyUnionCaseFieldSet _ -> return Ast.NotSupported
-                | SynExpr.NamedIndexedPropertySet _ -> return Ast.NotSupported
+                | SynExpr.DeprecatedTypeOf _ -> return Ast.ArbitraryAfterError
+                | SynExpr.DiscardAfterError _ -> return Ast.ArbitraryAfterError
+                | SynExpr.DotNamedIndexedPropertySet _ -> return Ast.ArbitraryAfterError
+                | SynExpr.ImplicitZero _ -> return Ast.ArbitraryAfterError
+                | SynExpr.LibraryOnlyILAssembly _ -> return Ast.ArbitraryAfterError
+                | SynExpr.LibraryOnlyStaticOptimization _ -> return Ast.ArbitraryAfterError
+                | SynExpr.LibraryOnlyUnionCaseFieldGet _ -> return Ast.ArbitraryAfterError
+                | SynExpr.LibraryOnlyUnionCaseFieldSet _ -> return Ast.ArbitraryAfterError
+                | SynExpr.NamedIndexedPropertySet _ -> return Ast.ArbitraryAfterError
 
 
                 | SynExpr.TraitCall (ts, msig, e, _) ->
