@@ -56,7 +56,7 @@
         <CommandFlag>DynamicVisibility</CommandFlag>        
         <Strings>
           <ButtonText>Refactor</ButtonText>
-          <CommandName>Refactor</CommandName>
+          <CommandName>FSharpRefactor</CommandName>
         </Strings>
       </Menu>
     </Menus>
