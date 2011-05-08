@@ -49,6 +49,18 @@
     the guid attribute for the command set and the id attribute for the numeric part.
     -->
 
+    <Menus>
+      <Menu guid="guidMenuAndCommandsCmdSet" id="SubMenu"
+      priority="0x0100" type="Menu">
+        <Parent guid="guidMenuAndCommandsCmdSet" id="MyEditorCtxGroup"/>
+        <Strings>
+          <ButtonText>F# Refactorings</ButtonText>
+          <CommandName>F# Refactorings</CommandName>
+        </Strings>
+      </Menu>
+    </Menus>
+    
+
     <!--
     In this section we define new menu groups. A menu group is a container for other menus or
     buttons (commands); from a visual point of view you can see the group as the part of a menu
@@ -62,6 +74,10 @@
       <Group guid="guidMenuAndCommandsCmdSet" id="MyEditorCtxGroup" priority="0x600">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN"/>
       </Group>
+
+      <Group guid="guidMenuAndCommandsCmdSet" id="SubMenuGroup"   priority="0x0000">
+        <Parent guid="guidMenuAndCommandsCmdSet" id="SubMenu"/>
+      </Group>
     </Groups>
 
     <!--
@@ -74,29 +90,11 @@
       priority, an image, a type, some visibility flags (optional) and a default text.
       -->
       <Button guid="guidMenuAndCommandsCmdSet" id="cmdidMyCommand" priority="0x100" type="Button">
-        <Icon guid="guidGenericCmdBmp" id="bmpArrow"/>
         <Strings>
-          <ButtonText>F# Rename</ButtonText>
+          <ButtonText>Rename...</ButtonText>
         </Strings>
       </Button>
-    </Buttons>
-
-    <!--
-    The bitmaps section is used to define the bitmaps that are used for the commands.
-    -->
-    <Bitmaps>
-      <!--
-      The Bitmap id is defined in a way that is a little bit different from the others:
-      the definition must provide a GUID (guid attribute) for the bitmap strip, a resource id (resID attribute)
-      of the bitmap strip containing the bitmaps and then the numeric ids of the elements used
-      inside a button definition (usedList attribute). An important aspect of this declaration is that 
-      the element id must be the actual index (1-based) of the bitmap inside the bitmap strip.
-      In this example we have a bitmap strip with resource id 300 and that contains only one
-      element; we want to define as ID for this element guidMenuAndCommandsCmdSet:bmpArrow, so we
-      have to define bmpArrow as 1 and is the delaration of the bitmap:
-      -->
-      <Bitmap guid="guidGenericCmdBmp" href="GenericCmd.bmp" usedList="bmpArrow"/>
-    </Bitmaps>
+    </Buttons>   
   </Commands>
 
   
@@ -109,7 +107,7 @@
   <CommandPlacements>
     <!--Here we place two commands inside the empty menu group we created in the Groups section.-->
     <CommandPlacement guid="guidMenuAndCommandsCmdSet" id="cmdidMyCommand" priority="0x100">
-      <Parent guid="guidMenuAndCommandsCmdSet" id="MyEditorCtxGroup"/>
+      <Parent guid="guidMenuAndCommandsCmdSet" id="SubMenuGroup"/>
     </CommandPlacement>
   </CommandPlacements>
 
@@ -167,7 +165,11 @@
       <!--Groups-->      
       <IDSymbol name="MyEditorCtxGroup" value="0x1013" />
       <!--Commands-->
-      <IDSymbol name="cmdidMyCommand" value="0x2001" />      
+      <IDSymbol name="cmdidMyCommand" value="0x2001" />
+
+      <IDSymbol name="SubMenu" value="0x1100"/>
+      <IDSymbol name="SubMenuGroup" value="0x1150"/>
+
     </GuidSymbol>
     
     <!--Last is the definition of the GUID used for the Bitmap and the ID of its used slots.-->
