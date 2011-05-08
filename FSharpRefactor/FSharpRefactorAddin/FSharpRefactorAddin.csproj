@@ -149,7 +149,6 @@
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
-    <None Include="VsPackage\GenericCmd.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ast\Ast.fsproj">
@@ -171,6 +170,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Apache License.txt" />
+    <Content Include="FSharpRefactor.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="highlightUsages.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Rename\RenameDialog.xaml">

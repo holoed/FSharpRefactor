@@ -5,10 +5,14 @@
     <Author>Edmondo Pentangelo</Author>
     <Version>0.1</Version>
     <Description xml:space="preserve">Highlight all usages of an identifier.
-Rename identifiers.</Description>
+Rename identifiers.
+
+Currently does not support cross files rename.</Description>
     <Locale>1033</Locale>
     <MoreInfoUrl>http://fsharprefactor.codeplex.com</MoreInfoUrl>
     <License>Apache License.txt</License>
+    <Icon>FSharpRefactor.gif</Icon>
+    <PreviewImage>highlightUsages.gif</PreviewImage>
     <SupportedProducts>
       <VisualStudio Version="10.0">
         <Edition>Ultimate</Edition>
