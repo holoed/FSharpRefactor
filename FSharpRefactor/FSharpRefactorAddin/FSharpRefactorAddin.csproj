@@ -56,6 +56,7 @@
     <Reference Include="FSharp.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualStudio.CoreUtility, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Editor, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.OLE.Interop" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.8.0" />
@@ -71,6 +72,7 @@
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Immutable.10.0" />
     <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
@@ -78,7 +80,9 @@
     <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
@@ -113,9 +117,11 @@
     <Compile Include="HighlightUsages\HighlightUsagesTagger.cs" />
     <Compile Include="HighlightUsages\HighlightUsagesTaggerProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rename\RenameTag.cs" />
-    <Compile Include="Rename\RenameTagger.cs" />
-    <Compile Include="Rename\RenameTaggerProvider.cs" />
+    <Compile Include="Rename\RenameCommandFilterProvider.cs" />
+    <Compile Include="Rename\RenameDialog.xaml.cs">
+      <DependentUpon>RenameDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Rename\RenameCommandFilter.cs" />
     <Compile Include="VsPackage\Guids.cs" />
     <Compile Include="VsPackage\PkgCmdId.cs" />
     <Compile Include="VsPackage\VSPackage.Designer.cs">
@@ -165,6 +171,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Apache License.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Rename\RenameDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <PropertyGroup>
     <!--
