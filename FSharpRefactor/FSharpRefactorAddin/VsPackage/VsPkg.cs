@@ -21,7 +21,7 @@ namespace FSharpRefactorAddin.VsPackage
 			var mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
 			if (null != mcs)
 			{			
-				var id = new CommandID(GuidsList.guidMenuAndCommandsCmdSet, PkgCmdIDList.cmdidMyCommand);			
+				var id = new CommandID(GuidsList.guidMenuAndCommandsCmdSet, PkgCmdIDList.CmdidMyCommand);			
 				var command = new OleMenuCommand(MenuCommandCallback, id);
 				mcs.AddCommand(command);			
 			}
