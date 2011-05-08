@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
             WindowStyle="ToolWindow"
-            Width="512" Height="215" Background="White">
+            Width="512" Height="215" Background="White" FocusManager.FocusedElement="{Binding ElementName=textBox1}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="32" />
@@ -15,7 +15,7 @@
         <Button Content="Cancel" Height="23" HorizontalAlignment="Right" Margin="0,0,100,6" VerticalAlignment="Bottom" Width="75" Grid.Row="2" Click="HandleCancel" IsCancel="True" />
         <Button Content="Ok" Height="23" HorizontalAlignment="Right" Margin="0,0,12,6" VerticalAlignment="Bottom" Width="75" Grid.Row="2" Click="HandleOk" IsDefault="true"/>
         <Grid Background="LightGray" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <TextBox Height="23" HorizontalAlignment="Stretch" Margin="12,0,12,0" Name="textBox1" VerticalAlignment="Center" Text="{Binding TextToRename}"  />
+            <TextBox Height="23" HorizontalAlignment="Stretch" Margin="12,0,12,0" Name="textBox1" VerticalAlignment="Center" Text="{Binding TextToRename}" />
             <Label Content="Name:" Height="28" HorizontalAlignment="Left" Margin="12,19,0,0" VerticalAlignment="Top" />
         </Grid>
         <Label Content="Give a new name" HorizontalAlignment="Left" Margin="12,0,0,0" VerticalAlignment="Top" FontWeight="Bold" />
