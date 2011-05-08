@@ -20,5 +20,6 @@ namespace FSharpRefactorAddin.VsPackage
 	{
 		// Now define the list a set of public static members.
 		public const int CmdidMyCommand = 0x2001;
+        public const int CmdidMyMenu = 0x1100;
 	}
 }

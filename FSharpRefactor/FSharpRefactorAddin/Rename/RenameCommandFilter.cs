@@ -15,6 +15,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using FSharpRefactorAddin.VsPackage;
 using FSharpRefactorVSAddIn.Common;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
@@ -44,9 +45,25 @@ namespace FSharpRefactorAddin.Rename
         public IOleCommandTarget NextTarget { get; set; }
 
         int IOleCommandTarget.QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
-        {
+        {            
+            if (pguidCmdGroup == Guid.Parse("{19492BCB-32B3-4EC3-8826-D67CD5526653}") && 
+                prgCmds.Any(x => x.cmdID == (uint)PkgCmdIDList.CmdidMyMenu))
+            {
+                prgCmds[0].cmdf = (uint)OLECMDF.OLECMDF_SUPPORTED | (uint)OLECMDF.OLECMDF_ENABLED;
+                return VSConstants.S_OK;
+            }
+
+            if (pguidCmdGroup == Guid.Parse("{19492BCB-32B3-4EC3-8826-D67CD5526653}") && 
+                prgCmds.Any(x => x.cmdID == (uint)PkgCmdIDList.CmdidMyCommand) &&
+                CurrentWord.Success &&
+                IsRenameableIdentifier) 
+            {
+                prgCmds[0].cmdf = (uint)OLECMDF.OLECMDF_SUPPORTED | (uint)OLECMDF.OLECMDF_ENABLED;
+                return VSConstants.S_OK;
+            }
+
             return NextTarget.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
-        }
+        }        
 
         int IOleCommandTarget.Exec(ref Guid pguidCmdGroup, uint nCmdId, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
@@ -137,20 +154,32 @@ namespace FSharpRefactorAddin.Rename
 
         private void RenameAllOccurences(Maybe<SnapshotSpan> wordBefore, string newText)
         {
-            var position = GetPosition(wordBefore.Value);
-            position = Tuple.Create(position.Item1, position.Item2, position.Item3, position.Item4);
-            var usagesOfModifiedWord =
-                FSharpRefactor.findAllReferencesInSymbolTable(_symbolTable, position);
-
-            var spans = FindTheNewSpans(wordBefore.Value);
-            var foundUsages = spans.Where(x => ReferencesContains(usagesOfModifiedWord, x)).ToList();
-
+            var foundUsages = FindUsages(wordBefore);
             var afterSnapshot = _textView.TextSnapshot;
             foreach (var usage in foundUsages)
             {                
                 var newUsage = usage.TranslateTo(afterSnapshot, SpanTrackingMode.EdgeExclusive);
                 afterSnapshot = _textView.TextBuffer.Replace(newUsage, newText);                
             }
+        }
+
+        private IEnumerable<SnapshotSpan> FindUsages(Maybe<SnapshotSpan> word)
+        {
+            if (!word.Success)
+                Enumerable.Empty<SnapshotSpan>();
+
+            var position = GetPosition(word.Value);
+            position = Tuple.Create(position.Item1, position.Item2, position.Item3, position.Item4);
+            var usagesOfModifiedWord =
+                FSharpRefactor.findAllReferencesInSymbolTable(_symbolTable, position);
+
+            var spans = FindTheNewSpans(word.Value);
+            return spans.Where(x => ReferencesContains(usagesOfModifiedWord, x)).ToList();
+        }
+
+        protected bool IsRenameableIdentifier
+        {
+            get { return FindUsages(CurrentWord).Any(); }
         }
 
         private static bool ReferencesContains(IEnumerable<Tuple<int, int, int, int>> references, SnapshotSpan currentWord)

@@ -50,12 +50,13 @@
     -->
 
     <Menus>
-      <Menu guid="guidMenuAndCommandsCmdSet" id="SubMenu"
-      priority="0x0100" type="Menu">
+      <Menu guid="guidMenuAndCommandsCmdSet" id="SubMenu" priority="0x001" type="Menu">
         <Parent guid="guidMenuAndCommandsCmdSet" id="MyEditorCtxGroup"/>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>        
         <Strings>
-          <ButtonText>F# Refactorings</ButtonText>
-          <CommandName>F# Refactorings</CommandName>
+          <ButtonText>Refactor</ButtonText>
+          <CommandName>Refactor</CommandName>
         </Strings>
       </Menu>
     </Menus>
@@ -75,7 +76,7 @@
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN"/>
       </Group>
 
-      <Group guid="guidMenuAndCommandsCmdSet" id="SubMenuGroup"   priority="0x0000">
+      <Group guid="guidMenuAndCommandsCmdSet" id="SubMenuGroup"   priority="0x001">
         <Parent guid="guidMenuAndCommandsCmdSet" id="SubMenu"/>
       </Group>
     </Groups>
@@ -89,7 +90,8 @@
       An element inside this section is defined by its ID and must specify a parent group, a display
       priority, an image, a type, some visibility flags (optional) and a default text.
       -->
-      <Button guid="guidMenuAndCommandsCmdSet" id="cmdidMyCommand" priority="0x100" type="Button">
+      <Button guid="guidMenuAndCommandsCmdSet" id="cmdidMyCommand" priority="0x100" type="Button">        
+        <CommandFlag>DefaultDisabled</CommandFlag>
         <Strings>
           <ButtonText>Rename...</ButtonText>
         </Strings>
@@ -170,11 +172,6 @@
       <IDSymbol name="SubMenu" value="0x1100"/>
       <IDSymbol name="SubMenuGroup" value="0x1150"/>
 
-    </GuidSymbol>
-    
-    <!--Last is the definition of the GUID used for the Bitmap and the ID of its used slots.-->
-    <GuidSymbol name="guidGenericCmdBmp" value="{0A4C51BD-3239-4370-8869-16E0AE8C0A46}">
-      <IDSymbol name="bmpArrow" value="1" />
-    </GuidSymbol>
+    </GuidSymbol>        
   </Symbols>
 </CommandTable>
