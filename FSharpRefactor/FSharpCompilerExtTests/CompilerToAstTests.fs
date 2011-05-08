@@ -819,3 +819,9 @@ type CompilerToAstTests() =
                                                                                         Tuple [Var "b"; Var "m"; Var "f"]))],
                                                             App (App (Var "op_GreaterGreaterEquals",Var "m"),Var "id")))],
                                                        Lit Unit)]] ast
+
+    [<Test>]
+    member this.``Support for DiscardAfterError``() = 
+        let ast = parseModule ("let product = List.")   
+        let txt = sprintf "%A" ast
+        AssertAreEqual [Exp [Let (false,[(PVar "product", ArbitraryAfterError)],Lit Unit)]] ast
