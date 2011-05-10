@@ -21,6 +21,7 @@ type Literal
    | Integer of  int         // integer literal
    | UnsignedInteger16 of System.UInt16
    | UnsignedInteger of System.UInt32
+   | BigInt of Numerics.BigInteger
    | Int64 of int64
    | UnsignedInteger64 of uint64
    | Byte of byte
