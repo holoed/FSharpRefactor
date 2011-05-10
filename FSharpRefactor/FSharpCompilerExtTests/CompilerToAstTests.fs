@@ -825,3 +825,8 @@ type CompilerToAstTests() =
         let ast = parseModule ("let product = List.")   
         let txt = sprintf "%A" ast
         AssertAreEqual [Exp [Let (false,[(PVar "product", ArbitraryAfterError)],Lit Unit)]] ast
+
+    [<Test>]
+    member this.``Support for bigint literals`` () =
+        AssertAreEqual [Exp [Let (false,[(PVar "v", Lit (Literal.BigInt 256I))],Lit Unit)]] 
+                       (parseModule "let v = 256I")
