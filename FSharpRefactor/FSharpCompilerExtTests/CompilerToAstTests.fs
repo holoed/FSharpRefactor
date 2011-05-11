@@ -830,3 +830,12 @@ type CompilerToAstTests() =
     member this.``Support for bigint literals`` () =
         AssertAreEqual [Exp [Let (false,[(PVar "v", Lit (Literal.BigInt 256I))],Lit Unit)]] 
                        (parseModule "let v = 256I")
+
+    [<Test>]
+    member this.``Type extension``() =
+        let ast = parseModule ("type A () = do () with member x.A b c d = b + c * d")
+        AssertAreEqual [Types [Class ("A", [ImplicitCtor [];
+                                            LetBindings [Let (false,[(PLit Unit, Lit Unit)],Lit Unit)];
+                                            Member (PApp (PApp (PApp (PLongVar [PVar "x"; PVar "A"],PVar "b"),PVar "c"), PVar "d"),
+                                                    App (App (Var "op_Addition",Var "b"), App (App (Var "op_Multiply",Var "c"),Var "d")))])]] ast
+
