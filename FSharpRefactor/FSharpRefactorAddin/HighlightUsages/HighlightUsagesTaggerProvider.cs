@@ -17,7 +17,7 @@ using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
 
-namespace FSharpRefactorVSAddIn.HighlightUsages
+namespace FSharpRefactorAddin.HighlightUsages
 {
     [Export(typeof(IViewTaggerProvider))]
     [ContentType("F#")]
