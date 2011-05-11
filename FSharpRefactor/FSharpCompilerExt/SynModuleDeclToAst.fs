@@ -338,9 +338,10 @@ let internal foldDecls decls =
          cont { match x with
                 | SynTypeDefnRepr.Simple(x, _) -> 
                         return! LoopSimpleTypeRep name ms x
-                | SynTypeDefnRepr.ObjectModel(_,ms,_) ->
-                        let! msAcc = mmap LoopClassMember ms
-                        return Ast.Class (name, msAcc) }
+                | SynTypeDefnRepr.ObjectModel(_,ms',_) ->
+                        let! msAcc1 = mmap LoopClassMember ms'
+                        let! msAcc2 = mmap LoopClassMember ms
+                        return Ast.Class (name, msAcc1 @ msAcc2) }
     and LoopClassMember x = 
         cont { match x with                
                | SynMemberDefn.NestedType _ -> return ClassMember.NotSupported

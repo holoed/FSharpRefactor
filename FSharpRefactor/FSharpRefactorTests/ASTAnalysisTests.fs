@@ -642,3 +642,9 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("m", loc(3,4,3,3));Var ("m", loc(19,20,1,1))] (findAllReferences (loc (19,20,1,1)) ast)
         AssertAreEqual [Var ("m", loc(65,66,2,2));Var ("m", loc(13,14,2,2))] (findAllReferences (loc (13,14,2,2)) ast)
         
+    [<Test>]
+    member this.``Find usages in a type extension``() =
+        let ast = parseWithPosDecl ("type A () = do () with member x.A b c d = b + c * d")
+        AssertAreEqual [Var ("b", loc(42,43,1,1));Var ("b", loc(34,35,1,1))] (findAllReferences (loc (34,35,1,1)) ast)
+        AssertAreEqual [Var ("c", loc(46,47,1,1));Var ("c", loc(36,37,1,1))] (findAllReferences (loc (36,37,1,1)) ast)
+        AssertAreEqual [Var ("d", loc(50,51,1,1));Var ("d", loc(38,39,1,1))] (findAllReferences (loc (50,51,1,1)) ast)
