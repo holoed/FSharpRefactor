@@ -13,6 +13,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using FSharpRefactorVSAddIn.Common;
@@ -21,15 +23,17 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Text.Tagging;
 
-namespace FSharpRefactorVSAddIn.HighlightUsages
+namespace FSharpRefactorAddin.HighlightUsages
 {
     /// <summary>
     /// This tagger will provide tags for every word in the buffer that
     /// matches the word currently under the cursor.
     /// </summary>
-    public class HighlightUsagesTagger : ITagger<HighlightUsagesTag>
+    public class HighlightUsagesTagger : ITagger<HighlightUsagesTag>, IDisposable
     {
         private readonly object _updateLock = new object();
+        private readonly IDisposable _disposable;
+        private const double ThrottlingTime = 500;
 
         public HighlightUsagesTagger(ITextView view, ITextBuffer sourceBuffer,
                                      ITextStructureNavigator textStructureNavigator)
@@ -43,9 +47,32 @@ namespace FSharpRefactorVSAddIn.HighlightUsages
 
             // Subscribe to both change events in the view - any time the view is updated
             // or the caret is moved, we refresh our list of highlighted words.
-            View.Caret.PositionChanged += CaretPositionChanged;
-            View.LayoutChanged += ViewLayoutChanged;
-        }        
+            _disposable = new[]
+                {
+                    WireCaretPositionChangedEvent(), 
+                    WireLayoutChangedEvent()
+                }.Merge().Subscribe();
+        }
+
+        private IObservable<Unit> WireCaretPositionChangedEvent()
+        {
+            return Observable
+                .FromEventPattern<CaretPositionChangedEventArgs>(value => View.Caret.PositionChanged += value,
+                                                                 value => View.Caret.PositionChanged -= value)
+                .Throttle(TimeSpan.FromMilliseconds(ThrottlingTime))
+                .Do(x => CaretPositionChanged(x.EventArgs))
+                .Select(_ => Unit.Default);
+        }
+
+        private IObservable<Unit> WireLayoutChangedEvent()
+        {
+            return Observable
+                .FromEventPattern<TextViewLayoutChangedEventArgs>(value => View.LayoutChanged += value,
+                                                                  value => View.LayoutChanged -= value)
+                .Throttle(TimeSpan.FromMilliseconds(ThrottlingTime))
+                .Do(x => ViewLayoutChanged(x.EventArgs))
+                .Select(_ => Unit.Default);
+        }
 
         private ITextView View { get; set; }
         private ITextBuffer SourceBuffer { get; set; }
@@ -94,14 +121,14 @@ namespace FSharpRefactorVSAddIn.HighlightUsages
 
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
 
-        private void ViewLayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
+        private void ViewLayoutChanged(TextViewLayoutChangedEventArgs e)
         {
             // If a new snapshot wasn't generated, then skip this layout
             if (e.NewViewState.EditSnapshot != e.OldViewState.EditSnapshot)
                 UpdateAtCaretPosition(View.Caret.Position);
         }
 
-        private void CaretPositionChanged(object sender, CaretPositionChangedEventArgs e)
+        private void CaretPositionChanged(CaretPositionChangedEventArgs e)
         {
             UpdateAtCaretPosition(e.NewPosition);
         }
@@ -269,6 +296,11 @@ namespace FSharpRefactorVSAddIn.HighlightUsages
                               new SnapshotSpanEventArgs(new SnapshotSpan(SourceBuffer.CurrentSnapshot, 0,
                                                                          SourceBuffer.CurrentSnapshot.Length)));
             }
+        }
+
+        public void Dispose()
+        {
+            _disposable.Dispose();
         }
     }
 }

@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using FSharpRefactorAddin.VsPackage;
 using FSharpRefactorVSAddIn.Common;
@@ -25,36 +27,75 @@ namespace FSharpRefactorAddin.Rename
 {
     //TODO: This is a spike. Needs to be cleaned up and test it.
     //TODO: Remove duplication with HighlightTagger
-    public class RenameCommandFilter : IOleCommandTarget
+    public class RenameCommandFilter : IOleCommandTarget, IDisposable
     {
         private readonly IWpfTextView _textView;
         private readonly ITextStructureNavigator _textStructureNavigator;
         private ASTAnalysis.SymbolTable _symbolTable;
+        private readonly IDisposable _disposable;
+        private const int ThrottlingTime = 500;
 
         public RenameCommandFilter(IWpfTextView textView, ITextStructureNavigator textStructureNavigator)
         {
             _textView = textView;
             _textStructureNavigator = textStructureNavigator;
-            _textView.LayoutChanged += ViewLayoutChanged;
-            _textView.Caret.PositionChanged += CaretPositionChanged;
-            _textView.TextBuffer.Changed += HandleTextChanged;
+
+            _disposable = new[]
+                {
+                    WireLayoutChangedEvent(),
+                    WireCaretPositionChangedEvent(),
+                    WireTextContentChangedEvent()
+                }.Merge().Subscribe();
+
             RefreshSymbolTable(_textView.TextSnapshot.GetText());
         }
-        
+
+        private IObservable<Unit> WireTextContentChangedEvent()
+        {
+            return Observable
+                .FromEventPattern<TextContentChangedEventArgs>(value => _textView.TextBuffer.Changed += value,
+                                                               value => _textView.TextBuffer.Changed -= value)
+                .Throttle(TimeSpan.FromMilliseconds(ThrottlingTime))
+                .Do(x => HandleTextChanged(x.EventArgs))
+                .Select(_ => Unit.Default);
+        }
+
+        private IObservable<Unit> WireCaretPositionChangedEvent()
+        {
+            return Observable
+                .FromEventPattern<CaretPositionChangedEventArgs>(value => _textView.Caret.PositionChanged += value,
+                                                                 value => _textView.Caret.PositionChanged -= value)
+                .Throttle(TimeSpan.FromMilliseconds(ThrottlingTime))
+                .Do(x => CaretPositionChanged(x.EventArgs))
+                .Select(_ => Unit.Default);
+        }
+
+        private IObservable<Unit> WireLayoutChangedEvent()
+        {
+            return Observable
+                .FromEventPattern<TextViewLayoutChangedEventArgs>(value => _textView.LayoutChanged += value,
+                                                                  value => _textView.LayoutChanged -= value)
+                .Throttle(TimeSpan.FromMilliseconds(ThrottlingTime))
+                .Do(x => ViewLayoutChanged(x.EventArgs))
+                .Select(_ => Unit.Default);
+        }
+
         public bool Added { get; set; }
         public IOleCommandTarget NextTarget { get; set; }
 
         int IOleCommandTarget.QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
-        {            
-            if (pguidCmdGroup == Guid.Parse("{19492BCB-32B3-4EC3-8826-D67CD5526653}") && 
-                prgCmds.Any(x => x.cmdID == (uint)PkgCmdIDList.CmdidMyMenu))
+        {
+            const string guidMenuAndCommandsCmdSet = "{19492BCB-32B3-4EC3-8826-D67CD5526653}";
+
+            if (pguidCmdGroup == Guid.Parse(guidMenuAndCommandsCmdSet) && 
+                prgCmds.Any(x => x.cmdID == PkgCmdIDList.CmdidMyMenu))
             {
                 prgCmds[0].cmdf = (uint)OLECMDF.OLECMDF_SUPPORTED | (uint)OLECMDF.OLECMDF_ENABLED;
                 return VSConstants.S_OK;
             }
 
-            if (pguidCmdGroup == Guid.Parse("{19492BCB-32B3-4EC3-8826-D67CD5526653}") && 
-                prgCmds.Any(x => x.cmdID == (uint)PkgCmdIDList.CmdidMyCommand) &&
+            if (pguidCmdGroup == Guid.Parse(guidMenuAndCommandsCmdSet) && 
+                prgCmds.Any(x => x.cmdID == PkgCmdIDList.CmdidMyCommand) &&
                 CurrentWord.Success &&
                 IsRenameableIdentifier) 
             {
@@ -67,7 +108,7 @@ namespace FSharpRefactorAddin.Rename
 
         int IOleCommandTarget.Exec(ref Guid pguidCmdGroup, uint nCmdId, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
-            if (pguidCmdGroup == Guid.Parse("{19492BCB-32B3-4EC3-8826-D67CD5526653}") && nCmdId == (uint)PkgCmdIDList.CmdidMyCommand)
+            if (pguidCmdGroup == Guid.Parse("{19492BCB-32B3-4EC3-8826-D67CD5526653}") && nCmdId == PkgCmdIDList.CmdidMyCommand)
                 HandleRename();
             return NextTarget.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
         }
@@ -83,14 +124,14 @@ namespace FSharpRefactorAddin.Rename
             }
         }
 
-        private void ViewLayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
+        private void ViewLayoutChanged(TextViewLayoutChangedEventArgs e)
         {
             // If a new snapshot wasn't generated, then skip this layout
             if (e.NewViewState.EditSnapshot != e.OldViewState.EditSnapshot)
                 UpdateAtCaretPosition(_textView.Caret.Position);
         }
 
-        private void CaretPositionChanged(object sender, CaretPositionChangedEventArgs e)
+        private void CaretPositionChanged(CaretPositionChangedEventArgs e)
         {
             UpdateAtCaretPosition(e.NewPosition);
         }
@@ -207,7 +248,7 @@ namespace FSharpRefactorAddin.Rename
             return Tuple.Create(colStart, colEnd, lineStart, lineEnd);
         }
 
-        private void HandleTextChanged(object sender, TextContentChangedEventArgs e)
+        private void HandleTextChanged(TextContentChangedEventArgs e)
         {
             RefreshSymbolTable(e.After.GetText());
         }
@@ -215,6 +256,11 @@ namespace FSharpRefactorAddin.Rename
         private void RefreshSymbolTable(string allText)
         {
             _symbolTable = ASTAnalysis.buildSymbolTable(FSharpRefactor.parseWithPos(allText));
+        }
+
+        public void Dispose()
+        {
+            _disposable.Dispose();
         }
     }
 }
