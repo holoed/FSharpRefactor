@@ -648,3 +648,15 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("b", loc(42,43,1,1));Var ("b", loc(34,35,1,1))] (findAllReferences (loc (34,35,1,1)) ast)
         AssertAreEqual [Var ("c", loc(46,47,1,1));Var ("c", loc(36,37,1,1))] (findAllReferences (loc (36,37,1,1)) ast)
         AssertAreEqual [Var ("d", loc(50,51,1,1));Var ("d", loc(38,39,1,1))] (findAllReferences (loc (50,51,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages when using record aliases`` () =
+        let ast = parseWithPosDecl("type AParameters = { a : int }\n" +
+                                   "type X = | A of AParameters | B\n" +
+                                   "let f (r : X) =\n" +
+                                   " match r with\n" +
+                                   " | X.A ( { a = aValue } as t )-> aValue\n" +
+                                   " | X.B -> 0\n")
+        AssertAreEqual [Var ("aValue", loc(33,39,5,5));Var ("aValue", loc(15,21,5,5))] (findAllReferences (loc (15,21,5,5)) ast)
+        
+        

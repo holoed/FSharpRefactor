@@ -839,3 +839,18 @@ type CompilerToAstTests() =
                                             Member (PApp (PApp (PApp (PLongVar [PVar "x"; PVar "A"],PVar "b"),PVar "c"), PVar "d"),
                                                     App (App (Var "op_Addition",Var "b"), App (App (Var "op_Multiply",Var "c"),Var "d")))])]] ast
 
+    [<Test>]
+    member this.``Record alias`` () =
+        let ast = parseModule("type AParameters = { a : int }\n" +
+                              "type X = | A of AParameters | B\n" +
+                              "let f (r : X) =\n" +
+                              " match r with\n" +
+                              " | X.A ( { a = aValue } as t )-> aValue\n" +
+                              " | X.B -> 0\n")
+        AssertAreEqual [Types [Record ("AParameters",[Some "a"],[])]; Types [DisUnion ("X",["A"; "B"])];
+                         Exp [Let (false, [(PApp (PVar "f",PVar "r"),
+                                                 Match (Var "r",
+                                                    [Clause (PApp (PLongVar [PVar "X"; PVar "A"], 
+                                                                PNamed (PRecord [("a", PVar "aValue")],PVar "t")), Var "aValue");
+                                                     Clause (PLongVar [PVar "X"; PVar "B"],Lit (Integer 0))]))],Lit Unit)]] ast
+

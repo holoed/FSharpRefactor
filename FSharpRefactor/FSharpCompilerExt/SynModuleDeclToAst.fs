@@ -431,8 +431,11 @@ let internal foldDecls decls =
                     return Ast.PNull
                | SynPat.Typed (pat, _, _) -> 
                     return! LoopPat pat //TODO: Add support for Typed patterns in AST.
-               | SynPat.Named (_, x, _, _, _) -> 
-                    return Ast.PVar (x.idText, mkSrcLoc x.idRange)
+               | SynPat.Named (p, x, _, _, _) -> 
+                    let! pAcc = LoopPat p
+                    match pAcc with
+                    | PWild -> return Ast.PVar (x.idText, mkSrcLoc x.idRange)
+                    | _ -> return Ast.PNamed(pAcc, Ast.PVar (x.idText, mkSrcLoc x.idRange))
                | SynPat.LongIdent (xs, _, _, ys, _, _) -> 
                     let x = xs |> Seq.map (fun (x:Ident) -> PVar (x.idText, mkSrcLoc x.idRange)) 
                                |> Seq.toList                               

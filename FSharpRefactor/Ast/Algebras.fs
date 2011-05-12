@@ -115,4 +115,5 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l, 'm, 'n> =
         pnullF : Unit -> 'j 
         attributeF : 'b -> 'l
         pattributeF : 'j -> 'l list -> 'j  
+        pnamedF: 'j -> 'j -> 'j
     }

@@ -90,7 +90,10 @@ let flatPat p =
                                                         return List.concat esAcc
                                           | PLongVar xs -> let! xsAcc = ContinuationMonad.mmap LoopPat xs
                                                            return List.concat xsAcc
-                                          | PIsInst t -> return [] }
+                                          | PIsInst t -> return []
+                                          | PNamed (p1, p2) -> let! p1Acc = LoopPat p1
+                                                               let! p2Acc = LoopPat p2
+                                                               return p1Acc @ p2Acc }
     LoopPat p id
 
 let execute action p =
@@ -451,7 +454,10 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                                   let! attrsAcc = mmapId attrs
                                                                   return PAttribute(pAcc, attrsAcc) })
                          attributeF =     (fun e -> state { let! eAcc = e
-                                                            return Attribute eAcc })}   exp
+                                                            return Attribute eAcc })
+                         pnamedF =        (fun p1 p2 -> state { let! p1Acc = p1
+                                                                let! p2Acc = p2
+                                                                return PNamed(p1Acc, p2Acc) }) }   exp
                      
                                                        
 
