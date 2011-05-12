@@ -119,7 +119,8 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               pIsInstF             =     (fun t -> PIsInst t)
                               pnullF               =     (fun () -> PNull) 
                               pattributeF          =     (fun p attrs -> PAttribute(p, attrs))
-                              attributeF           =     (fun e -> Attribute e)} decl
+                              attributeF           =     (fun e -> Attribute e)
+                              pnamedF              =     (fun p1 p2 -> PNamed (p1, p2))} decl
 let stripAllPos exps = List.map (fun exp -> stripPos exp) exps
 
 let parse f s = s |> f |> stripAllPos |> List.map (fun (Exp xs) -> xs) |> List.concat

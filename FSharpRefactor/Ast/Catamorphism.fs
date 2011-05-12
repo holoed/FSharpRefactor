@@ -254,6 +254,9 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_,_,_>) decl =
                                                         return algebra.implicitInheritF tAcc eAcc idAcc }
        and LoopPat pat =    
                 cont {    match pat with
+                          | PNamed (p1, p2) -> let! p1Acc = LoopPat p1
+                                               let! p2Acc = LoopPat p2
+                                               return algebra.pnamedF p1Acc p2Acc
                           | PAttribute (p, attrs) -> let! pAcc = LoopPat p
                                                      let! attrsAcc = mmap LoopAttribute attrs
                                                      return algebra.pattributeF pAcc attrsAcc
