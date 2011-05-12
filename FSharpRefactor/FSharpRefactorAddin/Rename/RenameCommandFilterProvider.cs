@@ -32,6 +32,8 @@ namespace FSharpRefactorAddin.Rename
         [Import]
         internal ITextStructureNavigatorSelectorService TextStructureNavigatorSelector { get; set; }
 
+        [Import]
+        internal ITextUndoHistoryRegistry UndoHistoryRegistry { get; set; }
 
         public void VsTextViewCreated(IVsTextView textViewAdapter)
         {
@@ -39,9 +41,14 @@ namespace FSharpRefactorAddin.Rename
             if (textView == null)
                 return;
 
+            IVsTextLines buffer;
+            if (textViewAdapter.GetBuffer(out buffer) != VSConstants.S_OK)
+                return;
+
             AddCommandFilter(textViewAdapter, new RenameCommandFilter(
-                textView, 
-                TextStructureNavigatorSelector.GetTextStructureNavigator(textView.TextBuffer)));
+                textView,
+                TextStructureNavigatorSelector.GetTextStructureNavigator(textView.TextBuffer), 
+                UndoHistoryRegistry.RegisterHistory(EditorFactory.GetDocumentBuffer(buffer))));
         }
 
         private static void AddCommandFilter(IVsTextView viewAdapter, RenameCommandFilter commandFilter)

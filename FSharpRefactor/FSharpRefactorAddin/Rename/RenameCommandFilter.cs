@@ -31,14 +31,16 @@ namespace FSharpRefactorAddin.Rename
     {
         private readonly IWpfTextView _textView;
         private readonly ITextStructureNavigator _textStructureNavigator;
+        private readonly ITextUndoHistory _textUndoHistory;
         private ASTAnalysis.SymbolTable _symbolTable;
         private readonly IDisposable _disposable;
         private const int ThrottlingTime = 500;
 
-        public RenameCommandFilter(IWpfTextView textView, ITextStructureNavigator textStructureNavigator)
+        public RenameCommandFilter(IWpfTextView textView, ITextStructureNavigator textStructureNavigator, ITextUndoHistory textUndoHistory)
         {
             _textView = textView;
             _textStructureNavigator = textStructureNavigator;
+            _textUndoHistory = textUndoHistory;
 
             _disposable = new[]
                 {
@@ -197,11 +199,18 @@ namespace FSharpRefactorAddin.Rename
         {
             var foundUsages = FindUsages(wordBefore);
             var afterSnapshot = _textView.TextSnapshot;
-            foreach (var usage in foundUsages)
-            {                
-                var newUsage = usage.TranslateTo(afterSnapshot, SpanTrackingMode.EdgeExclusive);
-                afterSnapshot = _textView.TextBuffer.Replace(newUsage, newText);                
+            
+            var description = String.Format("Rename -> '{0}'", newText);
+            using (var transaction = _textUndoHistory.CreateTransaction(description))
+            {
+                foreach (var usage in foundUsages)
+                {
+                    var newUsage = usage.TranslateTo(afterSnapshot, SpanTrackingMode.EdgeExclusive);
+                    afterSnapshot = _textView.TextBuffer.Replace(newUsage, newText);
+                }
+                transaction.Complete();
             }
+
         }
 
         private IEnumerable<SnapshotSpan> FindUsages(Maybe<SnapshotSpan> word)
