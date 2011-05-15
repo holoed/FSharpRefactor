@@ -53,10 +53,13 @@ let internal foldDecls (decls:TypedAssembly) =
         cont { match x with 
                | Binding.TBind (v,e,_) ->
                     let! eAcc = LoopExpr e
-                    return Ast.Let(false, [Pat.PVar(v.DisplayName, mkSrcLoc v.Range), eAcc], Lit(Unit)) }
+                    return Ast.Let(false, [Pat.PVar(v.DisplayName, mkSrcLoc v.Range, (int64)v.Stamp), eAcc], Lit(Unit)) }
 
     and LoopExpr x =
         cont { match x with
+               | Expr.App (e,_,_,es,_) ->
+                    let! eAcc = LoopExpr e
+                    return! buildApp eAcc es
                | Expr.Let (b, e, _, _) ->
                     let! eAcc = LoopExpr e
                     return eAcc
@@ -68,12 +71,22 @@ let internal foldDecls (decls:TypedAssembly) =
                     return eAcc
                | Expr.Lambda (_,sv,_,svs,e,_,_) ->
                     let! eAcc = LoopExpr e
-                    let svs' = List.map (fun (v:Val) -> PVar (v.DisplayName, mkSrcLoc (v.Range)))  svs
+                    let svs' = List.map (fun (v:Val) -> PVar (v.DisplayName, mkSrcLoc (v.Range), (int64)v.Stamp))  svs
                     return Ast.Lam(svs', eAcc)                    
-               | Expr.Val (v,_,_) ->                    
-                    return Ast.Var(v.DisplayName, mkSrcLoc (v.Range)) }                      
+               | Expr.Val (v,_,_) ->     
+                    return Ast.Var(v.DisplayName, mkSrcLoc (v.Range), (int64)v.ResolvedTarget.Stamp) }                      
     and LoopConst x =
         cont { match x with
                | Const.Int32 x -> return Literal.Integer x }
+
+    and buildApp f xs = 
+               cont { match List.rev xs with
+                      | x::[] -> 
+                        let! xAcc = LoopExpr x
+                        return Ast.App (f, xAcc)
+                      | x::xs' -> 
+                        let! xAcc = LoopExpr x
+                        let! pAcc = buildApp f xs'
+                        return Ast.App(pAcc, xAcc) }
 
     LoopDecl decls id
