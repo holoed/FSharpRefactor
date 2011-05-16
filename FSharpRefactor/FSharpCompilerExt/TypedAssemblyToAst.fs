@@ -53,16 +53,20 @@ let internal foldDecls (decls:TypedAssembly) =
         cont { match x with 
                | Binding.TBind (v,e,_) ->
                     let! eAcc = LoopExpr e
-                    return Ast.Let(false, [Pat.PVar(v.DisplayName, mkSrcLoc v.Id.idRange, (int64)v.Stamp), eAcc], Lit(Unit)) }
+                    return Ast.Let(false, [Pat.PVar(v.DisplayName, mkSrcLoc v.Id.idRange, (int64)v.Stamp, true), eAcc], Lit(Unit)) }
 
     and LoopExpr x =
-        cont { match x with
+        cont { match x with                   
+               | Expr.Op (f,_,es,_) -> 
+                    let! fAcc = LoopTOp f
+                    return! buildApp fAcc es
                | Expr.App (e,_,_,es,_) ->
                     let! eAcc = LoopExpr e
                     return! buildApp eAcc es
-               | Expr.Let (b, e, _, _) ->
-                    let! eAcc = LoopExpr e
-                    return eAcc
+               | Expr.Let (Binding.TBind(v, e1, _), e2, _, _) ->
+                    let! e1Acc = LoopExpr e1
+                    let! e2Acc = LoopExpr e2
+                    return Exp.Let(false, [PVar (v.DisplayName, mkSrcLoc (v.Id.idRange), (int64)v.Stamp, true), e1Acc], e2Acc)
                | Expr.Const (c, _, _) ->
                     let! cAcc = LoopConst c
                     return Lit(cAcc)
@@ -71,14 +75,22 @@ let internal foldDecls (decls:TypedAssembly) =
                     return eAcc
                | Expr.Lambda (_,sv,_,svs,e,_,_) ->
                     let! eAcc = LoopExpr e
-                    let svs' = List.map (fun (v:Val) -> PVar (v.DisplayName, mkSrcLoc (v.Id.idRange), (int64)v.Stamp))  svs
+                    let svs' = List.map (fun (v:Val) -> PVar (v.DisplayName, mkSrcLoc (v.Id.idRange), (int64)v.Stamp, true))  svs
                     return Ast.Lam(svs', eAcc)                    
                | Expr.Val (v,_,range) ->     
                     let vx = v.binding.Range
-                    return Ast.Var(v.DisplayName, mkSrcLoc range, (int64)v.ResolvedTarget.Stamp) }                      
+                    return Ast.Var(v.DisplayName, mkSrcLoc range, (int64)v.Stamp, false) }   
+    and LoopTOp x =
+        cont { match x with
+               | TOp.UnionCase(UCRef(t, s)) ->
+                    return Var (s, mkSrcLoc t.Range, t.Stamp, false)
+               | TOp.Coerce -> return Ast.Null 
+               | TOp.Tuple -> return Ast.Null }                    
+                                       
     and LoopConst x =
         cont { match x with
-               | Const.Int32 x -> return Literal.Integer x }
+               | Const.Int32 x -> return Literal.Integer x 
+               | Const.String s -> return Literal.String s }
 
     and buildApp f xs = 
                cont { match List.rev xs with
@@ -88,6 +100,7 @@ let internal foldDecls (decls:TypedAssembly) =
                       | x::xs' -> 
                         let! xAcc = LoopExpr x
                         let! pAcc = buildApp f xs'
-                        return Ast.App(pAcc, xAcc) }
+                        return Ast.App(pAcc, xAcc)
+                       | [] -> return f }
 
     LoopDecl decls id

@@ -18,7 +18,7 @@ open PurelyFunctionalDataStructures
 open System.IO
 open CompilerToAstTyped
 
-let buildTypedSymbolTable (decl:Module<string * SrcLoc * int64>) : (string * SrcLoc * int64) list =             
+let buildTypedSymbolTable (decl:Module<string * SrcLoc * int64 * bool>) : (string * SrcLoc * int64 * bool) list =             
             foldExpAlgebra {  memberSigF           =     (fun t -> [])
                               traitCallF           =     (fun ss msig e -> e)
                               typetestF            =     (fun e t -> e)
@@ -37,7 +37,7 @@ let buildTypedSymbolTable (decl:Module<string * SrcLoc * int64>) : (string * Src
                               whileF               =     (fun e1 e2 -> List.concat [e1;e2])
                               assertF              =     (fun e -> e)
                               nullF                =     (fun () -> [])
-                              varF                 =     (fun (s, l, t) -> [(s,l,t)]) 
+                              varF                 =     (fun (s, l, t, b) -> [(s,l,t,b)]) 
                               longVarF             =     (fun xs -> List.concat xs)
                               longVarSetF          =     (fun e1 e2 -> List.concat [e1;e2])
                               lamF                 =     (fun ps b -> List.concat [List.concat ps ; b]) 
@@ -50,7 +50,7 @@ let buildTypedSymbolTable (decl:Module<string * SrcLoc * int64>) : (string * Src
                               expF                 =     (fun xs -> List.concat xs)
                               typesF               =     (fun xs -> List.concat xs)
                               unionF               =     (fun name cases -> cases)
-                              enumF               =      (fun name cases -> List.map (fun ((s,l,t), c) -> (s,l,t)) cases)
+                              enumF               =      (fun name cases -> List.map (fun ((s,l,t,b), c) -> (s,l,t,b)) cases)
                               addressofF           =     (fun e -> e)
                               matchF               =     (fun e cs -> e)
                               clauseF              =     (fun p e -> e)
@@ -93,7 +93,7 @@ let buildTypedSymbolTable (decl:Module<string * SrcLoc * int64>) : (string * Src
                               letBindingsF         =     (fun es -> [])
                               abbrevF              =     (fun n t -> [])
                               tfunF                =     (fun t1 t2 -> [])
-                              tIdentF              =     (fun (s,l,t) -> [])
+                              tIdentF              =     (fun (s,l,t,b) -> [])
                               tLongIdentF          =     (fun ts -> [])
                               tvarF                =     (fun t -> [])  
                               tappF                =     (fun t ts -> [])
@@ -105,7 +105,7 @@ let buildTypedSymbolTable (decl:Module<string * SrcLoc * int64>) : (string * Src
                               tryWithF             =     (fun e cl -> [])   
                               tryFinallyF          =     (fun e1 e2 -> [])                        
                               errorF               =     (fun () -> []) 
-                              pVarF                =     (fun (s,l,t) -> [(s,l,t)]) 
+                              pVarF                =     (fun (s,l,t,b) -> [(s,l,t,b)]) 
                               pAppF                =     (fun l r -> List.concat [l;r]) 
                               porF                 =     (fun p1 p2 -> [])
                               pandsF               =     (fun ps -> [])
@@ -125,15 +125,18 @@ let buildTypeSymbolTable' exps = List.map (fun exp -> buildTypedSymbolTable exp)
 
 let findAllReferences pos progs =
     let table = buildTypeSymbolTable' progs
-    let (s,l,t) = table  |> List.toSeq 
-                         |> Seq.filter (fun (s,l,t) -> l = pos)
-                         |> Seq.distinct
-                         |> Seq.head         
-    table |> List.filter (fun (_,_,t') -> t = t')          
-          |> Seq.filter  (fun (_, l',_) -> l <> l')
-          |> fun xs -> Seq.append xs (seq [(s,l,t)])
-          |> Seq.map (fun (s,l,t) -> Var(s, l))          
-          |> Seq.toList          
+    let (s,l,t,b) = table  |> List.toSeq 
+                           |> Seq.filter (fun (s,l,t,b) -> l = pos)
+                           |> Seq.distinct
+                           |> Seq.head         
+    let xs = table |> List.filter (fun (_,_,t',_) -> t = t')          
+    let defs = xs |> List.filter (fun (_,_,_,b) -> b)
+    let refs = xs |> List.filter (fun (_,_,_,b) -> b <> true)
+    let all = refs @ defs
+    all |> Seq.map (fun (s,l,t,b) -> Var(s, l)) 
+        |> Seq.toList     
+
+    
 
 
 
