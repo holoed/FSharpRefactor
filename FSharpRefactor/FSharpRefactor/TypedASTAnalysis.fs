@@ -125,13 +125,15 @@ let buildTypeSymbolTable' exps = List.map (fun exp -> buildTypedSymbolTable exp)
 
 let findAllReferences pos progs =
     let table = buildTypeSymbolTable' progs
-    table |> List.toSeq 
-          |> Seq.filter (fun (s,l,t) -> l = pos)
-          |> Seq.map (fun (s,l,t) -> t) 
-          |> Seq.distinct
-          |> Seq.map (fun t' -> List.filter (fun (s,l,t) -> t = t') table)
-          |> Seq.concat
-          |> Seq.map (fun (s,l,t) -> Var(s, l))
-          |> Seq.toList
+    let (s,l,t) = table  |> List.toSeq 
+                         |> Seq.filter (fun (s,l,t) -> l = pos)
+                         |> Seq.distinct
+                         |> Seq.head         
+    table |> List.filter (fun (_,_,t') -> t = t')          
+          |> Seq.filter  (fun (_, l',_) -> l <> l')
+          |> fun xs -> Seq.append xs (seq [(s,l,t)])
+          |> Seq.map (fun (s,l,t) -> Var(s, l))          
+          |> Seq.toList          
+
 
 
