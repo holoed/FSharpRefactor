@@ -23,7 +23,7 @@ let parseWithPosDecl s =
         let [xs:_] = parseToTypedAst [path]
         [xs]
 
-let stripPosTyped (decl:Module<string * SrcLoc * int64>) : Module<string> =             
+let stripPosTyped (decl:Module<string * SrcLoc * int64 * bool>) : Module<string> =             
             foldExpAlgebra {  memberSigF           =     (fun t -> Ast.MemberSig t)
                               traitCallF           =     (fun ss msig e -> Ast.TraitCall (ss, msig, e))
                               typetestF            =     (fun e t -> Ast.TypeTest (e, t))
@@ -42,7 +42,7 @@ let stripPosTyped (decl:Module<string * SrcLoc * int64>) : Module<string> =
                               whileF               =     (fun e1 e2 -> While(e1, e2))
                               assertF              =     (fun e -> Assert e)
                               nullF                =     (fun () -> Null)
-                              varF                 =     (fun (s, l, t) -> Var s) 
+                              varF                 =     (fun (s, l, t, b) -> Var s) 
                               longVarF             =     (fun xs -> LongVar xs)
                               longVarSetF          =     (fun e1 e2 -> LongVarSet (e1, e2))
                               lamF                 =     (fun ps b -> Lam(ps, b)) 
@@ -54,8 +54,8 @@ let stripPosTyped (decl:Module<string * SrcLoc * int64>) : Module<string> =
                               listF                =     (fun xs -> List xs)
                               expF                 =     (fun xs -> Exp xs)
                               typesF               =     (fun xs -> Types xs)
-                              unionF               =     (fun name cases -> DisUnion (name, List.map (fun (s,l,t) -> s) cases))
-                              enumF               =      (fun name cases -> Enum (name, List.map (fun ((s,l,t), c) -> (s, c)) cases))
+                              unionF               =     (fun name cases -> DisUnion (name, List.map (fun (s,l,t,b) -> s) cases))
+                              enumF               =      (fun name cases -> Enum (name, List.map (fun ((s,l,t,b), c) -> (s, c)) cases))
                               addressofF           =     (fun e -> AddressOf e)
                               matchF               =     (fun e cs -> Match(e, cs))
                               clauseF              =     (fun p e -> Clause(p, e))
@@ -75,8 +75,8 @@ let stripPosTyped (decl:Module<string * SrcLoc * int64>) : Module<string> =
                               dotSetF              =     (fun e1 li e2 -> DotSet(e1, li, e2))
                               dotIndexedSetF       =     (fun e1 es e3 -> DotIndexedSet (e1, es, e3))
                               dotIndexedGetF       =     (fun e1 es -> DotIndexedGet (e1, es))
-                              recordDefF           =     (fun name fields ms -> Record (name, List.map (fun x -> Option.map (fun (s,l,t) -> s) x) fields, ms))
-                              recordInstF          =     (fun fields -> Exp.Record (List.map (fun ((s,l,t), e) -> (s,e)) fields))
+                              recordDefF           =     (fun name fields ms -> Record (name, List.map (fun x -> Option.map (fun (s,l,t,b) -> s) x) fields, ms))
+                              recordInstF          =     (fun fields -> Exp.Record (List.map (fun ((s,l,t,b), e) -> (s,e)) fields))
                               recordFieldInstF     =     (fun n e -> (n, e)) 
                               newF                 =     (fun ss e -> Exp.New (ss, e))
                               typeappF             =     (fun e ts -> Exp.TypeApp (e, ts))
@@ -98,7 +98,7 @@ let stripPosTyped (decl:Module<string * SrcLoc * int64>) : Module<string> =
                               letBindingsF         =     (fun es -> LetBindings es)
                               abbrevF              =     (fun n t -> Abbrev(n, t))
                               tfunF                =     (fun t1 t2 -> TFun(t1, t2))
-                              tIdentF              =     (fun (s,l,t) -> Ident s)
+                              tIdentF              =     (fun (s,l,t,b) -> Ident s)
                               tLongIdentF          =     (fun ts -> LongIdent ts)
                               tvarF                =     (fun t -> TVar t)  
                               tappF                =     (fun t ts -> TApp (t, ts))
@@ -110,7 +110,7 @@ let stripPosTyped (decl:Module<string * SrcLoc * int64>) : Module<string> =
                               tryWithF             =     (fun e cl -> TryWith(e, cl))   
                               tryFinallyF          =     (fun e1 e2 -> TryFinally(e1, e2))                        
                               errorF               =     (fun () -> Ast.ArbitraryAfterError) 
-                              pVarF                =     (fun (s,l,t) -> PVar s) 
+                              pVarF                =     (fun (s,l,t,b) -> PVar s) 
                               pAppF                =     (fun l r -> PApp(l,r)) 
                               porF                 =     (fun p1 p2 -> POr(p1, p2))
                               pandsF               =     (fun ps -> PAnds ps)
@@ -152,9 +152,21 @@ type CompilerToAstTypedTests() =
         AssertAreEqual [Lit (Integer 42)] (parse "42")
 
     [<Test>]
-    member this.SimpleDecls() =        
+    member this.SimpleCurriedFunction() =        
         let ast = parse "let f x y = x + y"
         AssertAreEqual [Let  (false,  [(PVar "f",   
                                             Lam ([PVar "x"],  Lam ([PVar "y"], App (App (Var "( + )",Var "x"),Var "y"))))],
                                         Lit Unit)] ast
+
+    [<Test>]
+    member this.SimpleDecls() =        
+        let ast = parse ("let f x = let g x = x  \n" +  
+                         "          g x")
+        AssertAreEqual [Let (false, [(PVar "f", Lam ([PVar "x"], Let (false,[(PVar "g", Lam ([PVar "x"],Var "x"))],App (Var "g",Var "x"))))], Lit Unit)] ast
+
+    [<Test>]
+    member this.SimpleDecls2() =        
+        let ast = parse ("type Exp = Var of string\n" + 
+                         "let exp = Var(\"x\")")
+        AssertAreEqual [Let (false,[(PVar "exp", App (Var "Var",Lit (String "x")))],Lit Unit)] ast
 
