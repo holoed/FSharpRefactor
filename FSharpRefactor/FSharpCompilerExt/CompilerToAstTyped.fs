@@ -9,7 +9,7 @@
 // * You must not remove this notice, or any other, from this software.
 // * **********************************************************************************************
 
-module CompilerToTypedAst
+module CompilerToAstTyped
 
 open Microsoft.FSharp.Compiler
 open Microsoft.FSharp.Compiler.Build

@@ -53,7 +53,7 @@ let internal foldDecls (decls:TypedAssembly) =
         cont { match x with 
                | Binding.TBind (v,e,_) ->
                     let! eAcc = LoopExpr e
-                    return Ast.Let(false, [Pat.PVar(v.DisplayName, mkSrcLoc v.Range, (int64)v.Stamp), eAcc], Lit(Unit)) }
+                    return Ast.Let(false, [Pat.PVar(v.DisplayName, mkSrcLoc v.Id.idRange, (int64)v.Stamp), eAcc], Lit(Unit)) }
 
     and LoopExpr x =
         cont { match x with
@@ -71,10 +71,11 @@ let internal foldDecls (decls:TypedAssembly) =
                     return eAcc
                | Expr.Lambda (_,sv,_,svs,e,_,_) ->
                     let! eAcc = LoopExpr e
-                    let svs' = List.map (fun (v:Val) -> PVar (v.DisplayName, mkSrcLoc (v.Range), (int64)v.Stamp))  svs
+                    let svs' = List.map (fun (v:Val) -> PVar (v.DisplayName, mkSrcLoc (v.Id.idRange), (int64)v.Stamp))  svs
                     return Ast.Lam(svs', eAcc)                    
-               | Expr.Val (v,_,_) ->     
-                    return Ast.Var(v.DisplayName, mkSrcLoc (v.Range), (int64)v.ResolvedTarget.Stamp) }                      
+               | Expr.Val (v,_,range) ->     
+                    let vx = v.binding.Range
+                    return Ast.Var(v.DisplayName, mkSrcLoc range, (int64)v.ResolvedTarget.Stamp) }                      
     and LoopConst x =
         cont { match x with
                | Const.Int32 x -> return Literal.Integer x }

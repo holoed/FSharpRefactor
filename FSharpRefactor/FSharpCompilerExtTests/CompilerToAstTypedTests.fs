@@ -13,7 +13,7 @@ module CompilerToAstTypedTests
 
 open NUnit.Framework
 open Ast
-open CompilerToTypedAst
+open CompilerToAstTyped
 open System.IO
 open AstCatamorphisms
 open Utils
