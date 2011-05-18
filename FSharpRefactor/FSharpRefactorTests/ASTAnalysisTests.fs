@@ -658,5 +658,10 @@ type ASTAnalysisTests() =
                                    " | X.A ( { a = aValue } as t )-> aValue\n" +
                                    " | X.B -> 0\n")
         AssertAreEqual [Var ("aValue", loc(33,39,5,5));Var ("aValue", loc(15,21,5,5))] (findAllReferences (loc (15,21,5,5)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of optional arguments in class members``() =
+        let ast = parseWithPosDecl ("type Foo() = member this.Foo ?x = defaultArg x 42")
+        AssertAreEqual [Var ("x", loc(45,46,1,1));Var ("x", loc(30,31,1,1))] (findAllReferences (loc (30,31,1,1)) ast)
         
         
