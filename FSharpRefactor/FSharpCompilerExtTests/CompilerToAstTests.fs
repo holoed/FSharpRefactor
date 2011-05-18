@@ -854,3 +854,8 @@ type CompilerToAstTests() =
                                                                 PNamed (PRecord [("a", PVar "aValue")],PVar "t")), Var "aValue");
                                                      Clause (PLongVar [PVar "X"; PVar "B"],Lit (Integer 0))]))],Lit Unit)]] ast
 
+    [<Test>]
+    member this.``Optional arguments in class members``() =
+        let ast = parseModule ("type Foo() = member this.Foo ?x = defaultArg x 42")
+        AssertAreEqual [Types [Class ("Foo", [ImplicitCtor []; 
+                                              Member (PApp (PLongVar [PVar "this"; PVar "Foo"],PVar "x"), App (App (Var "defaultArg",Var "x"),Lit (Integer 42)))])]] ast            

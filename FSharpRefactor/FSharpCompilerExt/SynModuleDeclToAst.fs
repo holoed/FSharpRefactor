@@ -416,6 +416,8 @@ let internal foldDecls decls =
                     return Ast.Clause(pAcc, eAcc) }
     and LoopPat x =
         cont { match x with
+               | SynPat.OptionalVal (x, _) -> 
+                    return PVar (x.idText, mkSrcLoc x.idRange)
                | SynPat.Attrib (p, attrs, _) ->
                     let! pAcc = LoopPat p
                     let! attrsAcc = mmap LoopAttribute attrs
