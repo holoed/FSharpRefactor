@@ -27,9 +27,23 @@ let internal foldDecls (decls:TypedAssembly) =
                     return! LoopModuleOrNamespace m }
     and LoopModuleOrNamespace x =
         cont { match x with
-               | ModuleOrNamespaceExprWithSig.ModuleOrNamespaceExprWithSig(_, m, _) ->
-                    let! mAcc = LoopModuleOrNamespaceExpr m
-                    return Ast.Module.Exp mAcc }
+               | ModuleOrNamespaceExprWithSig.ModuleOrNamespaceExprWithSig(t, e, _) ->
+                    let! eAcc = LoopModuleOrNamespaceExpr e
+                    return [Ast.Module.Exp eAcc] }
+                    //let tAcc = LoopModuleOrNamespaceType t
+                    //return [Ast.Module.Exp eAcc; Ast.Module.Types tAcc] }
+//    and LoopModuleOrNamespaceType t =
+//                         t.ModuleAndNamespaceDefinitions
+//                         |> Seq.map (fun x -> x.ModuleOrNamespaceType)    
+//                         |> Seq.map (fun x -> x.AllEntities)
+//                         |> Seq.concat
+//                         |> Seq.map (fun e -> if (e.IsUnionTycon) then
+//                                                TypeDef.DisUnion(e.DisplayName, e.UnionCasesAsList 
+//                                                                                |> List.map (fun x -> (x.Id.idText, mkSrcLoc (x.Id.idRange), (int64)e.Stamp, true)))
+//                                              else
+//                                                TypeDef.None "Foo") 
+//                         |> Seq.toList
+
     and LoopModuleOrNamespaceExpr x =
         cont { match x with
                | ModuleOrNamespaceExpr.TMDefs es ->
@@ -57,8 +71,8 @@ let internal foldDecls (decls:TypedAssembly) =
 
     and LoopExpr x =
         cont { match x with                   
-               | Expr.Op (f,_,es,_) -> 
-                    let! fAcc = LoopTOp f
+               | Expr.Op (f,_,es,range) -> 
+                    let! fAcc = LoopTOp f range
                     return! buildApp fAcc es
                | Expr.App (e,_,_,es,_) ->
                     let! eAcc = LoopExpr e
@@ -80,10 +94,11 @@ let internal foldDecls (decls:TypedAssembly) =
                | Expr.Val (v,_,range) ->     
                     let vx = v.binding.Range
                     return Ast.Var(v.DisplayName, mkSrcLoc range, (int64)v.Stamp, false) }   
-    and LoopTOp x =
+    and LoopTOp x range =
         cont { match x with
-               | TOp.UnionCase(UCRef(t, s)) ->
-                    return Var (s, mkSrcLoc t.Range, t.Stamp, false)
+               | TOp.UnionCase(y) ->
+                    let (UCRef(t, s)) = y
+                    return LongVar([Var (s, mkSrcLoc (y.Range), t.Stamp, true) ;  Var (s, mkSrcLoc range, t.Stamp, false)])
                | TOp.Coerce -> return Ast.Null 
                | TOp.Tuple -> return Ast.Null }                    
                                        

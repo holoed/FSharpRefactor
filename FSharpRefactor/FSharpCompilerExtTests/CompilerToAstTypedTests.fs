@@ -21,7 +21,7 @@ open Utils
 let parseWithPosDecl s = 
         File.WriteAllText("test.fs", s)        
         let [xs:_] = parseToTypedAst [path]
-        [xs]
+        xs
 
 let stripPosTyped (decl:Module<string * SrcLoc * int64 * bool>) : Module<string> =             
             foldExpAlgebra {  memberSigF           =     (fun t -> Ast.MemberSig t)
@@ -164,9 +164,4 @@ type CompilerToAstTypedTests() =
                          "          g x")
         AssertAreEqual [Let (false, [(PVar "f", Lam ([PVar "x"], Let (false,[(PVar "g", Lam ([PVar "x"],Var "x"))],App (Var "g",Var "x"))))], Lit Unit)] ast
 
-    [<Test>]
-    member this.SimpleDecls2() =        
-        let ast = parse ("type Exp = Var of string\n" + 
-                         "let exp = Var(\"x\")")
-        AssertAreEqual [Let (false,[(PVar "exp", App (Var "Var",Lit (String "x")))],Lit Unit)] ast
 

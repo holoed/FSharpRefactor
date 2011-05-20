@@ -129,7 +129,7 @@ let findAllReferences pos progs =
                            |> Seq.filter (fun (s,l,t,b) -> l = pos)
                            |> Seq.distinct
                            |> Seq.head         
-    let xs = table |> List.filter (fun (_,_,t',_) -> t = t')          
+    let xs = table |> List.filter (fun (s',_,t',_) -> t = t' && s = s')          
     let defs = xs |> List.filter (fun (_,_,_,b) -> b)
     let refs = xs |> List.filter (fun (_,_,_,b) -> b <> true)
     let all = refs @ defs
