@@ -166,6 +166,11 @@ type TypedASTAnalysisTests() =
         AssertAreEqual [Var ("x", loc(15,16,1,1));Var ("x", loc(7,8,1,1))] (findAllReferences (loc(15,16,1,1)) ast) 
 
     [<Test>]
+    member this.``Find usage of x given its definition in sample 11`` () =
+        let ast = parseWithPosDecl sample11
+        AssertAreEqual [Var ("x", loc(32,33,1,1));Var ("x", loc(24,25,1,1))] (findAllReferences (loc(24,25,1,1)) ast) 
+
+    [<Test>]
     member this.``Find usage of x given its definition in sample 12`` () =
         let ast = parseWithPosDecl sample12
         AssertAreEqual [Var ("i", loc(38,39,1,1));Var ("i", loc(19,20,1,1))] (findAllReferences (loc(19,20,1,1)) ast) 
@@ -174,6 +179,27 @@ type TypedASTAnalysisTests() =
     member this.``Find definition of x given its usage in sample 12`` () =
         let ast = parseWithPosDecl sample12
         AssertAreEqual [Var ("i", loc(38,39,1,1));Var ("i", loc(19,20,1,1))] (findAllReferences (loc(38,39,1,1)) ast)    
+
+    [<Test>]
+    member this.``Find usage of x given its definition in sample 13`` () =
+        let ast = parseWithPosDecl sample13
+        AssertAreEqual [Var ("x", loc(28,29,1,1));Var ("x", loc(8,9,1,1))] (findAllReferences (loc(8,9,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find definition of x given its usage in sample 13`` () =
+        let ast = parseWithPosDecl sample13
+        AssertAreEqual [Var ("x", loc(28,29,1,1));Var ("x", loc(8,9,1,1))] (findAllReferences (loc(28,29,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find usage of y given its definition in sample 13`` () =
+        let ast = parseWithPosDecl sample13
+        AssertAreEqual [Var ("y", loc(35,36,1,1));Var ("y", loc(10,11,1,1))] (findAllReferences (loc(10,11,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find definition of y given its usage in sample 13`` () =
+        let ast = parseWithPosDecl sample13
+        AssertAreEqual [Var ("y", loc(35,36,1,1));Var ("y", loc(10,11,1,1))] (findAllReferences (loc(35,36,1,1)) ast) 
+
 
     [<Test>]
     member this.``Find usages of x in lambda expression`` () =

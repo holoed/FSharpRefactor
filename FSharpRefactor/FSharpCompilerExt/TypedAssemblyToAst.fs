@@ -70,7 +70,10 @@ let internal foldDecls (decls:TypedAssembly) =
                     return Ast.Let(false, [Pat.PVar(v.DisplayName, mkSrcLoc v.Id.idRange, (int64)v.Stamp, true), eAcc], Lit(Unit)) }
 
     and LoopExpr x =
-        cont { match x with                   
+        cont { match x with  
+               | Expr.Match(_,_,_,xs,_,_) ->                   
+                    let! xsAcc = mmap (fun (DecisionTreeTarget.TTarget(x,y,z)) -> cont { return! LoopExpr y }) (Array.toList xs)
+                    return Exp.Match(Exp.LongVar(xsAcc) ,[])
                | Expr.Op (f,_,es,range) -> 
                     let! fAcc = LoopTOp f range
                     return! buildApp fAcc es
@@ -98,9 +101,11 @@ let internal foldDecls (decls:TypedAssembly) =
         cont { match x with
                | TOp.UnionCase(y) ->
                     let (UCRef(t, s)) = y
-                    return LongVar([Var (s, mkSrcLoc (y.Range), t.Stamp, true) ;  Var (s, mkSrcLoc range, t.Stamp, false)])
+                    return LongVar([Var (s, mkSrcLoc (y.Range), t.Stamp, true) ;  Var (s, mkSrcLoc range, t.Stamp, false)])            
                | TOp.Coerce -> return Ast.Null 
-               | TOp.Tuple -> return Ast.Null }                    
+               | TOp.Tuple -> return Ast.Null
+               | TOp.TupleFieldGet x -> return Ast.Null
+                }                    
                                        
     and LoopConst x =
         cont { match x with
