@@ -674,4 +674,17 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("Bar.Var", loc(12,15,4,4));Var ("Bar.Var", loc(11,14,2,2))] (findAllReferences (loc (12,15,4,4)) ast)        
         AssertAreEqual [Var ("Foo.Var", loc(12,15,3,3));Var ("Foo.Var", loc(11,14,1,1))] (findAllReferences (loc (11,14,1,1)) ast)
         AssertAreEqual [Var ("Bar.Var", loc(12,15,4,4));Var ("Bar.Var", loc(11,14,2,2))] (findAllReferences (loc (11,14,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages should distinguish between two different discriminated unions in a match expression``() =
+        let ast = parseWithPosDecl ("type Foo = Yes | No  \n" +
+                                    "type Bar = Yes | No  \n" +
+                                    "let f x = match x with \n" +
+                                    "          | Bar.Yes -> Foo.Yes \n" +
+                                    "          | Bar.No -> Foo.No ")
+        AssertAreEqual [Var ("Foo.Yes", loc(27,30,4,4));Var ("Foo.Yes", loc(11,14,1,1))] (findAllReferences (loc (11,14,1,1)) ast)
+        AssertAreEqual [Var ("Bar.Yes", loc(16,19,4,4));Var ("Bar.Yes", loc(11,14,2,2))] (findAllReferences (loc (11,14,2,2)) ast)
+        AssertAreEqual [Var ("Foo.No", loc(26,28,5,5));Var ("Foo.No", loc(17,19,1,1))] (findAllReferences (loc (17,19,1,1)) ast)
+        AssertAreEqual [Var ("Bar.No", loc(16,18,5,5));Var ("Bar.No", loc(17,19,2,2))] (findAllReferences (loc (17,19,2,2)) ast)
+
         
