@@ -144,24 +144,3 @@ let parseTypes = parseTypedTypes parseWithPosDecl
 
 let parseModule = parseTypedModule parseWithPosDecl
 
-[<TestFixture>]
-type CompilerToAstTypedTests() =
-     
-    [<Test>]
-    member this.Const() =                
-        AssertAreEqual [Lit (Integer 42)] (parse "42")
-
-    [<Test>]
-    member this.SimpleCurriedFunction() =        
-        let ast = parse "let f x y = x + y"
-        AssertAreEqual [Let  (false,  [(PVar "f",   
-                                            Lam ([PVar "x"],  Lam ([PVar "y"], App (App (Var "( + )",Var "x"),Var "y"))))],
-                                        Lit Unit)] ast
-
-    [<Test>]
-    member this.SimpleDecls() =        
-        let ast = parse ("let f x = let g x = x  \n" +  
-                         "          g x")
-        AssertAreEqual [Let (false, [(PVar "f", Lam ([PVar "x"], Let (false,[(PVar "g", Lam ([PVar "x"],Var "x"))],App (Var "g",Var "x"))))], Lit Unit)] ast
-
-

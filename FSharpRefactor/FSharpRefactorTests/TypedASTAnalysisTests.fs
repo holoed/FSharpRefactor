@@ -1,4 +1,16 @@
-﻿module TypedASTAnalysisTests
+﻿// * **********************************************************************************************
+// * Copyright (c) Edmondo Pentangelo. 
+// *
+// * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
+// * copy of the license can be found in the License.html file at the root of this distribution. 
+// * By using this source code in any fashion, you are agreeing to be bound 
+// * by the terms of the Apache License, Version 2.0.
+// *
+// * You must not remove this notice, or any other, from this software.
+// * **********************************************************************************************
+
+
+module TypedASTAnalysisTests
 
 open Ast
 open CompilerToAstTyped
@@ -200,6 +212,10 @@ type TypedASTAnalysisTests() =
         let ast = parseWithPosDecl sample13
         AssertAreEqual [Var ("y", loc(35,36,1,1));Var ("y", loc(10,11,1,1))] (findAllReferences (loc(35,36,1,1)) ast) 
 
+    [<Test>]
+    member this.``Find usages of f given its definition when LetRec and when is only Let`` () =
+        let astRec = parseWithPosDecl "let rec f x = f x"
+        AssertAreEqual [Var ("f", loc(14,15,1,1));Var ("f", loc(8,9,1,1))] (findAllReferences (loc(8,9,1,1)) astRec)
 
     [<Test>]
     member this.``Find usages of x in lambda expression`` () =
