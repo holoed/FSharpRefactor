@@ -453,7 +453,15 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          pWildF =         (fun () -> state { return PWild } ) 
                          pArrayOrListF =  (fun es ->  state { let! es' = mmapId es
                                                               return PList es' })
-                         pLongVarF =      (fun xs -> state { let! xsAcc = mmapId xs 
+                         pLongVarF =      (fun xs -> state { let! xsAcc = mmapId xs                                                                 
+                                                             let ls = xsAcc |> List.map (fun (PVar(_,l')) -> l')
+                                                                            |> List.rev
+                                                                            |> List.toSeq
+                                                                            |> Seq.take 1
+                                                                            |> Seq.toList
+                                                             let s = xsAcc  |> List.map (fun (PVar(s,_)) -> s)
+                                                                         |> fun xs -> System.String.Join(".", xs)   
+                                                             let! _ = mmap (fun l -> state { do! addUsage (s,l) }) ls    
                                                              return PLongVar xsAcc }) 
                          pIsInstF  =      (fun t -> state { let! tAcc= t
                                                             return PIsInst tAcc })
@@ -491,6 +499,8 @@ let getAllReferences (SymbolTable(table)) pos =
                  if (x = pos) then
                     yield List.map (fun x -> Var(s, x)) xs ] |> Seq.concat 
                                                              |> Seq.distinct 
+                                                             |> fun xs -> let xs' = Seq.filter (fun (Var (s : string, x)) -> s.Contains(".")) xs
+                                                                          if (Seq.isEmpty xs') then xs else xs'
                                                              |> Seq.toList
     
        
