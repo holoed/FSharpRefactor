@@ -43,7 +43,7 @@ type ASTAnalysisTests() =
                   "let y = x   " 
 
     let sample8 = "type Exp = Var of string\n" + 
-                  "let exp = Var(\"x\")   " 
+                  "let exp = Exp.Var(\"x\")   " 
 
                  //0123456789012345678
     let sample9 = "let f (x, y) = x"
@@ -162,12 +162,12 @@ type ASTAnalysisTests() =
     [<Test>]
     member this.``Find usage of Var given its definition in sample 8`` () =
         let ast = parseWithPosDecl sample8
-        AssertAreEqual [Var ("Var", loc(10,13,2,2));Var ("Var", loc(11,14,1,1))] (findAllReferences (loc(11,14,1,1)) ast) 
+        AssertAreEqual [Var ("Exp.Var", loc(14,17,2,2));Var ("Exp.Var", loc(11,14,1,1))] (findAllReferences (loc(11,14,1,1)) ast) 
 
     [<Test>]
     member this.``Find definition of Var given its usage in sample 8`` () =
         let ast = parseWithPosDecl sample8
-        AssertAreEqual [Var ("Var", loc(10,13,2,2));Var ("Var", loc(11,14,1,1))] (findAllReferences (loc(10,13,2,2)) ast) 
+        AssertAreEqual [Var ("Exp.Var", loc(14,17,2,2));Var ("Exp.Var", loc(11,14,1,1))] (findAllReferences (loc(14,17,2,2)) ast) 
 
     [<Test>]
     member this.``Find usage of x given its definition in sample 9`` () =
@@ -663,5 +663,15 @@ type ASTAnalysisTests() =
     member this.``Find usages in the presence of optional arguments in class members``() =
         let ast = parseWithPosDecl ("type Foo() = member this.Foo ?x = defaultArg x 42")
         AssertAreEqual [Var ("x", loc(45,46,1,1));Var ("x", loc(30,31,1,1))] (findAllReferences (loc (30,31,1,1)) ast)
-        
+
+    [<Test>]
+    member this.``Find usages should distinguish between two different discriminated unions with the same constructor name``() =
+        let ast = parseWithPosDecl ("type Foo = Var of string  \n" +
+                                    "type Bar = Var of string  \n" +
+                                    "let x = Foo.Var \"Hello\" \n" +
+                                    "let y = Bar.Var \"World\" ")
+        AssertAreEqual [Var ("Foo.Var", loc(12,15,3,3));Var ("Foo.Var", loc(11,14,1,1))] (findAllReferences (loc (12,15,3,3)) ast)
+        AssertAreEqual [Var ("Bar.Var", loc(12,15,4,4));Var ("Bar.Var", loc(11,14,2,2))] (findAllReferences (loc (12,15,4,4)) ast)        
+        AssertAreEqual [Var ("Foo.Var", loc(12,15,3,3));Var ("Foo.Var", loc(11,14,1,1))] (findAllReferences (loc (11,14,1,1)) ast)
+        AssertAreEqual [Var ("Bar.Var", loc(12,15,4,4));Var ("Bar.Var", loc(11,14,2,2))] (findAllReferences (loc (11,14,2,2)) ast)
         
