@@ -165,6 +165,14 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          varF =        (fun x -> state { do! addUsage x
                                                          return Var x })
                          longVarF =    (fun xs -> state { let! xs' = mmapId xs
+                                                          let ls = xs' |> List.map (fun (Var(_,l')) -> l')
+                                                                       |> List.rev
+                                                                       |> List.toSeq
+                                                                       |> Seq.take 1
+                                                                       |> Seq.toList
+                                                          let s = xs' |> List.map (fun (Var(s,_)) -> s)
+                                                                      |> fun xs -> System.String.Join(".", xs)   
+                                                          let! _ = mmap (fun l -> state { do! addUsage (s,l) }) ls                                                                                                                                    
                                                           return LongVar xs' })
                          longVarSetF = (fun e1 e2 -> state { let! e1Acc = e1
                                                              let! e2Acc = e2
@@ -238,7 +246,7 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                           return Exp es' })
                          typesF =      (fun xs -> state { let! xs' = mmapId xs
                                                           return Types xs' })
-                         unionF =      (fun name cases -> state { let! _ = mmap (fun x -> enterScope x) cases
+                         unionF =      (fun name cases -> state { let! _ = mmap (fun (s,l) -> enterScope ((sprintf "%s.%s" name s), l)) cases
                                                                   return DisUnion(name, cases) })
                          enumF =       (fun name cases -> state { let! _ = mmap (fun (x, c) -> enterScope x) cases
                                                                   return Enum(name, cases) })
