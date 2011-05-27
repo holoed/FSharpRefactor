@@ -41,9 +41,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSharpRefactorAddin", "FSharpRefactorAddin\FSharpRefactorAddin.csproj", "{BAA71C37-BF93-42F9-8FC9-6C122C736525}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSharpRefactorAddinTests", "FSharpRefactorAddinTests\FSharpRefactorAddinTests.csproj", "{00E03770-2F51-410E-BF09-C53F3BB5006C}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 8
+		SccNumberOfProjects = 9
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs02
 		SccLocalPath0 = .
@@ -75,6 +77,10 @@ Global
 		SccProjectTopLevelParentUniqueName7 = FSharpRefactor.sln
 		SccProjectName7 = FSharpRefactorAddin
 		SccLocalPath7 = FSharpRefactorAddin
+		SccProjectUniqueName8 = FSharpRefactorAddinTests\\FSharpRefactorAddinTests.csproj
+		SccProjectTopLevelParentUniqueName8 = FSharpRefactor.sln
+		SccProjectName8 = FSharpRefactorAddinTests
+		SccLocalPath8 = FSharpRefactorAddinTests
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -155,6 +161,16 @@ Global
 		{BAA71C37-BF93-42F9-8FC9-6C122C736525}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{BAA71C37-BF93-42F9-8FC9-6C122C736525}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{BAA71C37-BF93-42F9-8FC9-6C122C736525}.Release|x86.ActiveCfg = Release|Any CPU
+		{00E03770-2F51-410E-BF09-C53F3BB5006C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00E03770-2F51-410E-BF09-C53F3BB5006C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00E03770-2F51-410E-BF09-C53F3BB5006C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{00E03770-2F51-410E-BF09-C53F3BB5006C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{00E03770-2F51-410E-BF09-C53F3BB5006C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{00E03770-2F51-410E-BF09-C53F3BB5006C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00E03770-2F51-410E-BF09-C53F3BB5006C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00E03770-2F51-410E-BF09-C53F3BB5006C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{00E03770-2F51-410E-BF09-C53F3BB5006C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{00E03770-2F51-410E-BF09-C53F3BB5006C}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -166,6 +182,7 @@ Global
 		{BAA71C37-BF93-42F9-8FC9-6C122C736525} = {16F57F9B-5D05-4D4C-842B-C3F4FCCD5403}
 		{7ABC590B-AA0D-4162-868E-DAB318847717} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
 		{A6CA343D-D9EA-4798-970A-AB4CBAC8EEF6} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
+		{00E03770-2F51-410E-BF09-C53F3BB5006C} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
 		{3A2627B6-4909-4820-9A25-DF6BC99A12A7} = {FDE3D566-DF9B-44DB-862C-8C5568EB4993}
 		{F763C0B0-C2B9-48A7-84CB-65C1FF235730} = {FDE3D566-DF9B-44DB-862C-8C5568EB4993}
 	EndGlobalSection

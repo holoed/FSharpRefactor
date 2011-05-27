@@ -687,4 +687,9 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("Foo.No", loc(26,28,5,5));Var ("Foo.No", loc(17,19,1,1))] (findAllReferences (loc (17,19,1,1)) ast)
         AssertAreEqual [Var ("Bar.No", loc(16,18,5,5));Var ("Bar.No", loc(17,19,2,2))] (findAllReferences (loc (17,19,2,2)) ast)
 
+    [<Test>]
+    member this.``Find usages of long name identifiers``() = 
+        let ast = parseWithPosDecl ("let ``my function`` ``this value`` = ``this value``")
+        AssertAreEqual [Var ("this value", loc(37,51,1,1));Var ("this value", loc(20,34,1,1))] (findAllReferences (loc (20,34,1,1)) ast)
+
         

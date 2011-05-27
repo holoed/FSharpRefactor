@@ -168,11 +168,11 @@ namespace FSharpRefactorAddin.HighlightUsages
                 return;
 
             // Find the new spans
-            var wordSpans = FindTheNewSpans(currentWord.Value);
+            var ret = FindTheNewSpans(currentWord.Value);
 
 
             // If we are still up-to-date (another change hasn't happened yet), do a real update))
-            IfWeAreStillUpToDateDoARealUpdate(currentRequest, currentWord.Value, wordSpans);
+            IfWeAreStillUpToDateDoARealUpdate(currentRequest, ret.Item1, ret.Item2);
         }
 
         private Maybe<SnapshotSpan> FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(SnapshotPoint currentRequest)
@@ -214,25 +214,40 @@ namespace FSharpRefactorAddin.HighlightUsages
             return new Maybe<SnapshotSpan> {Value = word.Span, Success = true};
         }
 
-        private static List<SnapshotSpan> FindTheNewSpans(SnapshotSpan currentWord)
+        private static Tuple<SnapshotSpan, List<SnapshotSpan>> FindTheNewSpans(SnapshotSpan currentWord)
         {
             var txt = currentWord.Snapshot.GetText();
             var word = GetWordIncludingQuotes(currentWord);
-            var matches = Regex.Matches(txt, word);
+            var matches = Regex.Matches(txt, word.Item2);
             var spans = matches.Cast<Match>().Select(m => new SnapshotSpan(currentWord.Snapshot, m.Index, m.Length));           
-            return spans.ToList();
+            return Tuple.Create(word.Item1, spans.ToList());
         }
 
-        private static string GetWordIncludingQuotes(SnapshotSpan currentWord)
+        private static Tuple<SnapshotSpan, string> GetWordIncludingQuotes(SnapshotSpan currentWord)
         {
             var endWordPos = currentWord.End.Position;
             var word = currentWord.GetText().Trim();
-            while (endWordPos < currentWord.Snapshot.Length && currentWord.Snapshot.GetText(endWordPos, 1) == "\'")
+            while (endWordPos < currentWord.Snapshot.Length && currentWord.Snapshot.GetText(endWordPos, 1) == "`")
             {
-                word += "\'";
+                word += "`";
                 endWordPos++;
             }
-            return word;
+            
+            if (word.EndsWith("``"))
+            {
+                string newWord;
+                var startWordPos = currentWord.Start.Position;
+                do
+                {                                    
+                    newWord = currentWord.Snapshot.GetText(startWordPos, endWordPos - startWordPos);
+                    startWordPos--;
+                } 
+                while (!newWord.StartsWith("``") || startWordPos <=0 || currentWord.Snapshot.GetText(startWordPos, 1) == "\n");
+                word = newWord;
+                currentWord = new SnapshotSpan(currentWord.Snapshot, startWordPos + 1, word.Length);
+            }
+
+            return Tuple.Create(currentWord, word);
         }
 
         private void IfWeAreStillUpToDateDoARealUpdate(SnapshotPoint currentRequest, SnapshotSpan currentWord, List<SnapshotSpan> wordSpans)
@@ -258,7 +273,7 @@ namespace FSharpRefactorAddin.HighlightUsages
 
         private static Tuple<int, int, int, int> GetPosition(SnapshotSpan currentWord)
         {
-            var extraLenght = GetWordIncludingQuotes(currentWord).Length - currentWord.Length;
+            var extraLenght = GetWordIncludingQuotes(currentWord).Item2.Length - currentWord.Length;
             var lineStart = currentWord.Snapshot.GetLineNumberFromPosition(currentWord.Start.Position) + 1;
             var lineEnd = currentWord.Snapshot.GetLineNumberFromPosition(currentWord.End.Position) + 1;
             var startLine = currentWord.Snapshot.GetLineFromPosition(currentWord.Start.Position);
