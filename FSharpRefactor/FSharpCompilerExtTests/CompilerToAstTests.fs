@@ -858,4 +858,10 @@ type CompilerToAstTests() =
     member this.``Optional arguments in class members``() =
         let ast = parseModule ("type Foo() = member this.Foo ?x = defaultArg x 42")
         AssertAreEqual [Types [Class ("Foo", [ImplicitCtor []; 
-                                              Member (PApp (PLongVar [PVar "this"; PVar "Foo"],PVar "x"), App (App (Var "defaultArg",Var "x"),Lit (Integer 42)))])]] ast            
+                                              Member (PApp (PLongVar [PVar "this"; PVar "Foo"],PVar "x"), App (App (Var "defaultArg",Var "x"),Lit (Integer 42)))])]] ast   
+                                              
+    [<Test>]
+    member this.``Long name identifier``() =
+        let ast = parseModule ("let ``my function`` ``this value`` = ``this value``")
+        AssertAreEqual [Exp [Let (false,[(PApp (PVar "my function",PVar "this value"), Var "this value")], Lit Unit)]] ast
+                                                     
