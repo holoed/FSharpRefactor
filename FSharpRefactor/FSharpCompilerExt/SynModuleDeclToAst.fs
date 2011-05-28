@@ -259,7 +259,10 @@ let internal foldDecls decls =
     and LoopSimplePats x =
         cont { match x with 
                | SynSimplePats.SimplePats (xs, _) -> 
-                    return! mmap LoopSimplePat xs }
+                    return! mmap LoopSimplePat xs 
+               | SynSimplePats.Typed (p, t, _) ->
+                    return! LoopSimplePats p
+              }
 
     and LoopSimplePat x =
         cont { match x with
