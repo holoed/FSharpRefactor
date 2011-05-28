@@ -865,3 +865,18 @@ type CompilerToAstTests() =
         let ast = parseModule ("let ``my function`` ``this value`` = ``this value``")
         AssertAreEqual [Exp [Let (false,[(PApp (PVar "my function",PVar "this value"), Var "this value")], Lit Unit)]] ast
                                                      
+    [<Test>]
+    member this.``Bug found when using typed patterns``() =
+        let ast = parseModule (@"   
+                                    let zs = rx { for i = 0 to 10 do yield i }                                   
+
+                                    let time  = rx { yield! redTime 
+                                                     yield! blueTime } |> fun (xs:'a IObservable(
+
+                                    let d = time.Subscribe(new Action<ConsoleColor>(fun (c:ConsoleColor) -> System.Console.SetCursorPosition (0,0)
+                                                                                                            System.Console.ForegroundColor <- c
+                                                                                                            Console.WriteLine (DateTime.Now)))
+
+                                    System.Console.ReadLine()")
+        Assert.IsNotEmpty (sprintf "%A" ast)
+         

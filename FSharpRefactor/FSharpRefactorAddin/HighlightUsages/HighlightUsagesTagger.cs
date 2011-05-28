@@ -54,22 +54,25 @@ namespace FSharpRefactorAddin.HighlightUsages
                 }.Merge().Subscribe();
         }
 
+        protected virtual IObservable<T> Throttle<T>(IObservable<T> xs)
+        {
+            return xs.Throttle(TimeSpan.FromMilliseconds(ThrottlingTime));
+        }
+
         private IObservable<Unit> WireCaretPositionChangedEvent()
         {
-            return Observable
-                .FromEventPattern<CaretPositionChangedEventArgs>(value => View.Caret.PositionChanged += value,
-                                                                 value => View.Caret.PositionChanged -= value)
-                .Throttle(TimeSpan.FromMilliseconds(ThrottlingTime))
+            return Throttle(Observable
+                                .FromEventPattern<CaretPositionChangedEventArgs>(value => View.Caret.PositionChanged += value,
+                                                                                 value => View.Caret.PositionChanged -= value))
                 .Do(x => CaretPositionChanged(x.EventArgs))
                 .Select(_ => Unit.Default);
         }
 
         private IObservable<Unit> WireLayoutChangedEvent()
         {
-            return Observable
-                .FromEventPattern<TextViewLayoutChangedEventArgs>(value => View.LayoutChanged += value,
-                                                                  value => View.LayoutChanged -= value)
-                .Throttle(TimeSpan.FromMilliseconds(ThrottlingTime))
+            return Throttle(Observable
+                                .FromEventPattern<TextViewLayoutChangedEventArgs>(value => View.LayoutChanged += value,
+                                                                                  value => View.LayoutChanged -= value))
                 .Do(x => ViewLayoutChanged(x.EventArgs))
                 .Select(_ => Unit.Default);
         }
@@ -133,9 +136,9 @@ namespace FSharpRefactorAddin.HighlightUsages
             UpdateAtCaretPosition(e.NewPosition);
         }
 
-        private void UpdateAtCaretPosition(CaretPosition caretPoisition)
+        private void UpdateAtCaretPosition(CaretPosition caretPosition)
         {
-            var point = caretPoisition.Point.GetPoint(SourceBuffer, caretPoisition.Affinity);
+            var point = caretPosition.Point.GetPoint(SourceBuffer, caretPosition.Affinity);
 
             if (!point.HasValue)
                 return;

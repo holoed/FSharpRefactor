@@ -35,6 +35,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.CoreUtility, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Text.Data, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Text.Logic, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Text.UI, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="nunit.framework, Version=2.5.10.11092, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -46,8 +50,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HighlightUsages\HighlightUsagesTaggerTests.cs" />
+    <Compile Include="Stubs\MappingPointStub.cs" />
+    <Compile Include="Stubs\TextBufferStub.cs" />
+    <Compile Include="Stubs\TextCaretStub.cs" />
+    <Compile Include="Stubs\TextSnapshotStub.cs" />
+    <Compile Include="Stubs\TextStructureNavigatorStub.cs" />
+    <Compile Include="Stubs\TextViewStub.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FSharpRefactorAddin\FSharpRefactorAddin.csproj">
+      <Project>{BAA71C37-BF93-42F9-8FC9-6C122C736525}</Project>
+      <Name>FSharpRefactorAddin</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
