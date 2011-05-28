@@ -8,14 +8,21 @@ namespace FSharpRefactorAddinTests.Stubs
 {
     public class TextSnapshotStub : ITextSnapshot
     {
+        private readonly string _text;
+
+        public TextSnapshotStub(string text)
+        {
+            _text = text;
+        }
+
         public string GetText(Span span)
         {
-            throw new NotImplementedException();
+            return _text.Substring(span.Start, span.Length);
         }
 
         public string GetText(int startIndex, int length)
         {
-            throw new NotImplementedException();
+            return _text.Substring(startIndex, length);
         }
 
         public string GetText()
@@ -90,7 +97,7 @@ namespace FSharpRefactorAddinTests.Stubs
 
         public ITextBuffer TextBuffer
         {
-            get { throw new NotImplementedException(); }
+            get { return new TextBufferStub(_text); }
         }
 
         public IContentType ContentType
@@ -100,12 +107,12 @@ namespace FSharpRefactorAddinTests.Stubs
 
         public ITextVersion Version
         {
-            get { throw new NotImplementedException(); }
+            get { return new TextVersionStub(); }
         }
 
         public int Length
         {
-            get { return 42; }
+            get { return _text.Length; }
         }
 
         public int LineCount

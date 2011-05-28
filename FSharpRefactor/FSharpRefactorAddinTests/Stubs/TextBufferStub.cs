@@ -6,9 +6,16 @@ namespace FSharpRefactorAddinTests.Stubs
 {
     public class TextBufferStub : ITextBuffer
     {
+        private readonly string _text;
+
+        public TextBufferStub(string text)
+        {
+            _text = text;
+        }
+
         public PropertyCollection Properties
         {
-            get { throw new NotImplementedException(); }
+            get { return new PropertyCollection(); }
         }
 
         public ITextEdit CreateEdit(EditOptions options, int? reiteratedVersionNumber, object editTag)
@@ -88,7 +95,7 @@ namespace FSharpRefactorAddinTests.Stubs
 
         public ITextSnapshot CurrentSnapshot
         {
-            get { return new TextSnapshotStub(); }
+            get { return new TextSnapshotStub(_text); }
         }
 
         public bool EditInProgress

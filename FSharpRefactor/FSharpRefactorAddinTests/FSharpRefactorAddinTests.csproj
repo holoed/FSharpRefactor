@@ -49,12 +49,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\TextUtilsTests.cs" />
     <Compile Include="HighlightUsages\HighlightUsagesTaggerTests.cs" />
     <Compile Include="Stubs\MappingPointStub.cs" />
     <Compile Include="Stubs\TextBufferStub.cs" />
     <Compile Include="Stubs\TextCaretStub.cs" />
     <Compile Include="Stubs\TextSnapshotStub.cs" />
     <Compile Include="Stubs\TextStructureNavigatorStub.cs" />
+    <Compile Include="Stubs\TextVersionStub.cs" />
     <Compile Include="Stubs\TextViewStub.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

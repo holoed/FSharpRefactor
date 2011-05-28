@@ -19,7 +19,7 @@ namespace FSharpRefactorAddinTests.HighlightUsages
         public void SetUp()
         {
             _textView = new TextViewStub();
-            _tagger = new TestableHighlightUsagesTagger(_textView, new TextBufferStub(),
+            _tagger = new TestableHighlightUsagesTagger(_textView, new TextBufferStub("let f x = x"),
                                                 new TextStructureNavigatorStub());
         }
 
