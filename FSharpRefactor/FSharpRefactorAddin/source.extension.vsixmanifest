@@ -3,7 +3,7 @@
   <Identifier Id="FSharpRefactorVSAddIn">
     <Name>FSharpRefactor</Name>
     <Author>Edmondo Pentangelo</Author>
-    <Version>0.1.4</Version>
+    <Version>0.1.5</Version>
     <Description xml:space="preserve">Highlight all usages of an identifier.
 Rename identifiers.
 
