@@ -230,6 +230,13 @@ namespace FSharpRefactorAddin.HighlightUsages
         {
             var endWordPos = currentWord.End.Position;
             var word = currentWord.GetText().Trim();
+
+            while (endWordPos < currentWord.Snapshot.Length && currentWord.Snapshot.GetText(endWordPos, 1) == "\'")
+            {
+                word += "\'";
+                endWordPos++;
+            }
+
             while (endWordPos < currentWord.Snapshot.Length && currentWord.Snapshot.GetText(endWordPos, 1) == "`")
             {
                 word += "`";

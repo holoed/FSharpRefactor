@@ -118,11 +118,15 @@ namespace FSharpRefactorAddin.Rename
         private void HandleRename()
         {
             if (CurrentWord.Success)
-            {                
+            {
+                var foundUsages = FindUsages(CurrentWord);
+                if (!foundUsages.Item1.Success)
+                    return;
+                TextToRename = foundUsages.Item1.Value.GetText();
                 var wnd = new RenameDialog {DataContext = this};
                 var ret = wnd.ShowDialog();
                 if (ret.HasValue && ret.Value)
-                    RenameAllOccurences(CurrentWord, TextToRename);
+                    RenameAllOccurences(TextToRename, foundUsages.Item2);
             }
         }
 
@@ -195,9 +199,8 @@ namespace FSharpRefactorAddin.Rename
             return word.IsSignificant && currentRequest.Snapshot.GetText(word.Span).Any(c => char.IsLetter(c));
         }
 
-        private void RenameAllOccurences(Maybe<SnapshotSpan> wordBefore, string newText)
+        private void RenameAllOccurences(string newText, IEnumerable<SnapshotSpan> foundUsages)
         {
-            var foundUsages = FindUsages(wordBefore);
             var afterSnapshot = _textView.TextSnapshot;
             
             var description = String.Format("Rename -> '{0}'", newText);
@@ -213,23 +216,24 @@ namespace FSharpRefactorAddin.Rename
 
         }
 
-        private IEnumerable<SnapshotSpan> FindUsages(Maybe<SnapshotSpan> word)
+        private Tuple<Maybe<SnapshotSpan>, List<SnapshotSpan>> FindUsages(Maybe<SnapshotSpan> word)
         {
             if (!word.Success)
-                Enumerable.Empty<SnapshotSpan>();
+                Tuple.Create(word, Enumerable.Empty<SnapshotSpan>());
 
-            var position = GetPosition(word.Value);
+            var ret = FindTheNewSpans(word.Value);            
+
+            var position = GetPosition(ret.Item1);
             position = Tuple.Create(position.Item1, position.Item2, position.Item3, position.Item4);
             var usagesOfModifiedWord =
                 FSharpRefactor.findAllReferencesInSymbolTable(_symbolTable, position);
-
-            var spans = FindTheNewSpans(word.Value);
-            return spans.Where(x => ReferencesContains(usagesOfModifiedWord, x)).ToList();
+            
+            return Tuple.Create(new Maybe<SnapshotSpan>{Value = ret.Item1, Success = true}, ret.Item2.Where(x => ReferencesContains(usagesOfModifiedWord, x)).ToList());
         }
 
         protected bool IsRenameableIdentifier
         {
-            get { return FindUsages(CurrentWord).Any(); }
+            get { return FindUsages(CurrentWord).Item2.Any(); }
         }
 
         private static bool ReferencesContains(IEnumerable<Tuple<int, int, int, int>> references, SnapshotSpan currentWord)
@@ -237,24 +241,64 @@ namespace FSharpRefactorAddin.Rename
             return references.Any(x => Equals(x, GetPosition(currentWord)));
         }
 
-        private static IEnumerable<SnapshotSpan> FindTheNewSpans(SnapshotSpan currentWord)
+        private static Tuple<SnapshotSpan, List<SnapshotSpan>> FindTheNewSpans(SnapshotSpan currentWord)
         {
             var txt = currentWord.Snapshot.GetText();
-            var word = Regex.Match(currentWord.GetText(), "\\b\\w+\\b");
-            var matches = Regex.Matches(txt, "\\b" + word + "\\b");
+            var word = GetWordIncludingQuotes(currentWord);
+            var matches = Regex.Matches(txt, word.Item2);
             var spans = matches.Cast<Match>().Select(m => new SnapshotSpan(currentWord.Snapshot, m.Index, m.Length));
-            return spans.ToList();
+            return Tuple.Create(word.Item1, spans.ToList());
+        }
+
+        private static Tuple<SnapshotSpan, string> GetWordIncludingQuotes(SnapshotSpan currentWord)
+        {
+            var endWordPos = currentWord.End.Position;
+            var word = currentWord.GetText().Trim();
+
+            while (endWordPos < currentWord.Snapshot.Length && currentWord.Snapshot.GetText(endWordPos, 1) == "\'")
+            {
+                word += "\'";
+                endWordPos++;
+            }
+
+            if (word.EndsWith("\'"))
+            {
+                currentWord = new SnapshotSpan(currentWord.Snapshot, currentWord.Start.Position, word.Length);
+            }
+
+            while (endWordPos < currentWord.Snapshot.Length && currentWord.Snapshot.GetText(endWordPos, 1) == "`")
+            {
+                word += "`";
+                endWordPos++;
+            }
+
+            if (word.EndsWith("``"))
+            {
+                string newWord;
+                var startWordPos = currentWord.Start.Position;
+                do
+                {
+                    newWord = currentWord.Snapshot.GetText(startWordPos, endWordPos - startWordPos);
+                    startWordPos--;
+                }
+                while (!newWord.StartsWith("``") || startWordPos <= 0 || currentWord.Snapshot.GetText(startWordPos, 1) == "\n");
+                word = newWord;
+                currentWord = new SnapshotSpan(currentWord.Snapshot, startWordPos + 1, word.Length);
+            }
+
+            return Tuple.Create(currentWord, word);
         }
 
         private static Tuple<int, int, int, int> GetPosition(SnapshotSpan currentWord)
         {
+            var extraLenght = GetWordIncludingQuotes(currentWord).Item2.Length - currentWord.Length;
             var lineStart = currentWord.Snapshot.GetLineNumberFromPosition(currentWord.Start.Position) + 1;
             var lineEnd = currentWord.Snapshot.GetLineNumberFromPosition(currentWord.End.Position) + 1;
             var startLine = currentWord.Snapshot.GetLineFromPosition(currentWord.Start.Position);
             var endLine = currentWord.Snapshot.GetLineFromPosition(currentWord.End.Position);
             var colStart = currentWord.Start.Position - startLine.Start.Position;
             var colEnd = currentWord.End.Position - endLine.Start.Position;
-            return Tuple.Create(colStart, colEnd, lineStart, lineEnd);
+            return Tuple.Create(colStart, colEnd + extraLenght, lineStart, lineEnd);
         }
 
         private void HandleTextChanged(TextContentChangedEventArgs e)
