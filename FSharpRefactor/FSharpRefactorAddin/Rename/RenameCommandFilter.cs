@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Text.RegularExpressions;
+using FSharpRefactorAddin.Common;
 using FSharpRefactorAddin.VsPackage;
 using FSharpRefactorVSAddIn.Common;
 using Microsoft.VisualStudio;
@@ -25,8 +25,6 @@ using Microsoft.VisualStudio.Text.Operations;
 
 namespace FSharpRefactorAddin.Rename
 {
-    //TODO: This is a spike. Needs to be cleaned up and test it.
-    //TODO: Remove duplication with HighlightTagger
     public class RenameCommandFilter : IOleCommandTarget, IDisposable
     {
         private readonly IWpfTextView _textView;
@@ -149,7 +147,7 @@ namespace FSharpRefactorAddin.Rename
             if (!point.HasValue)
                 return;
 
-            CurrentWord = FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(point.Value);
+            CurrentWord = _textStructureNavigator.FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(point.Value);
             if (CurrentWord.Success)
                 TextToRename = CurrentWord.Value.GetText();
         }
@@ -157,48 +155,7 @@ namespace FSharpRefactorAddin.Rename
         private Maybe<SnapshotSpan> CurrentWord { get; set; }
         
         public string TextToRename { get; set; }
-
-        private Maybe<SnapshotSpan> FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(SnapshotPoint currentRequest)
-        {
-            var word = _textStructureNavigator.GetExtentOfWord(currentRequest);
-
-            var foundWord = true;
-
-            // If we've selected something not worth highlighting, we might have
-            // missed a "word" by a little bit
-            if (!WordExtentIsValid(currentRequest, word))
-            {
-                // Before we retry, make sure it is worthwhile
-                if (word.Span.Start != currentRequest ||
-                    currentRequest == currentRequest.GetContainingLine().Start ||
-                    char.IsWhiteSpace((currentRequest - 1).GetChar()))
-                {
-                    foundWord = false;
-                }
-                else
-                {
-                    // Try again, one character previous.  If the caret is at the end of a word, then
-                    // this will pick up the word we are at the end of.
-                    word = _textStructureNavigator.GetExtentOfWord(currentRequest - 1);
-
-                    // If we still aren't valid the second time around, we're done
-                    if (!WordExtentIsValid(currentRequest, word))
-                        foundWord = false;
-                }
-            }
-
-            return !foundWord ? new Maybe<SnapshotSpan> { Success = false } : 
-                new Maybe<SnapshotSpan> { Value = word.Span, Success = true };
-        }
-
-        /// <summary>
-        /// Determine if a given "word" should be highlighted
-        /// </summary>
-        private static bool WordExtentIsValid(SnapshotPoint currentRequest, TextExtent word)
-        {
-            return word.IsSignificant && currentRequest.Snapshot.GetText(word.Span).Any(c => char.IsLetter(c));
-        }
-
+                   
         private void RenameAllOccurences(string newText, IEnumerable<SnapshotSpan> foundUsages)
         {
             var afterSnapshot = _textView.TextSnapshot;
@@ -213,7 +170,6 @@ namespace FSharpRefactorAddin.Rename
                 }
                 transaction.Complete();
             }
-
         }
 
         private Tuple<Maybe<SnapshotSpan>, List<SnapshotSpan>> FindUsages(Maybe<SnapshotSpan> word)
@@ -221,85 +177,20 @@ namespace FSharpRefactorAddin.Rename
             if (!word.Success)
                 Tuple.Create(word, Enumerable.Empty<SnapshotSpan>());
 
-            var ret = FindTheNewSpans(word.Value);            
+            var ret = word.Value.FindTheNewSpans();
 
-            var position = GetPosition(ret.Item1);
+            var position = ret.Item1.GetPosition();
             position = Tuple.Create(position.Item1, position.Item2, position.Item3, position.Item4);
             var usagesOfModifiedWord =
                 FSharpRefactor.findAllReferencesInSymbolTable(_symbolTable, position);
             
-            return Tuple.Create(new Maybe<SnapshotSpan>{Value = ret.Item1, Success = true}, ret.Item2.Where(x => ReferencesContains(usagesOfModifiedWord, x)).ToList());
+            return Tuple.Create(new Maybe<SnapshotSpan>{Value = ret.Item1, Success = true}, ret.Item2.Where(x => x.ReferencesContains(usagesOfModifiedWord)).ToList());
         }
 
         protected bool IsRenameableIdentifier
         {
             get { return FindUsages(CurrentWord).Item2.Any(); }
-        }
-
-        private static bool ReferencesContains(IEnumerable<Tuple<int, int, int, int>> references, SnapshotSpan currentWord)
-        {
-            return references.Any(x => Equals(x, GetPosition(currentWord)));
-        }
-
-        private static Tuple<SnapshotSpan, List<SnapshotSpan>> FindTheNewSpans(SnapshotSpan currentWord)
-        {
-            var txt = currentWord.Snapshot.GetText();
-            var word = GetWordIncludingQuotes(currentWord);
-            var matches = Regex.Matches(txt, word.Item2);
-            var spans = matches.Cast<Match>().Select(m => new SnapshotSpan(currentWord.Snapshot, m.Index, m.Length));
-            return Tuple.Create(word.Item1, spans.ToList());
-        }
-
-        private static Tuple<SnapshotSpan, string> GetWordIncludingQuotes(SnapshotSpan currentWord)
-        {
-            var endWordPos = currentWord.End.Position;
-            var word = currentWord.GetText().Trim();
-
-            while (endWordPos < currentWord.Snapshot.Length && currentWord.Snapshot.GetText(endWordPos, 1) == "\'")
-            {
-                word += "\'";
-                endWordPos++;
-            }
-
-            if (word.EndsWith("\'"))
-            {
-                currentWord = new SnapshotSpan(currentWord.Snapshot, currentWord.Start.Position, word.Length);
-            }
-
-            while (endWordPos < currentWord.Snapshot.Length && currentWord.Snapshot.GetText(endWordPos, 1) == "`")
-            {
-                word += "`";
-                endWordPos++;
-            }
-
-            if (word.EndsWith("``"))
-            {
-                string newWord;
-                var startWordPos = currentWord.Start.Position;
-                do
-                {
-                    newWord = currentWord.Snapshot.GetText(startWordPos, endWordPos - startWordPos);
-                    startWordPos--;
-                }
-                while (!newWord.StartsWith("``") || startWordPos <= 0 || currentWord.Snapshot.GetText(startWordPos, 1) == "\n");
-                word = newWord;
-                currentWord = new SnapshotSpan(currentWord.Snapshot, startWordPos + 1, word.Length);
-            }
-
-            return Tuple.Create(currentWord, word);
-        }
-
-        private static Tuple<int, int, int, int> GetPosition(SnapshotSpan currentWord)
-        {
-            var extraLenght = GetWordIncludingQuotes(currentWord).Item2.Length - currentWord.Length;
-            var lineStart = currentWord.Snapshot.GetLineNumberFromPosition(currentWord.Start.Position) + 1;
-            var lineEnd = currentWord.Snapshot.GetLineNumberFromPosition(currentWord.End.Position) + 1;
-            var startLine = currentWord.Snapshot.GetLineFromPosition(currentWord.Start.Position);
-            var endLine = currentWord.Snapshot.GetLineFromPosition(currentWord.End.Position);
-            var colStart = currentWord.Start.Position - startLine.Start.Position;
-            var colEnd = currentWord.End.Position - endLine.Start.Position;
-            return Tuple.Create(colStart, colEnd + extraLenght, lineStart, lineEnd);
-        }
+        }                      
 
         private void HandleTextChanged(TextContentChangedEventArgs e)
         {

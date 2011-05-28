@@ -15,9 +15,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
-using FSharpRefactorVSAddIn.Common;
+using FSharpRefactorAddin.Common;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
@@ -161,104 +160,26 @@ namespace FSharpRefactorAddin.HighlightUsages
             var currentRequest = RequestedPoint;            
 
             // Find all words in the buffer like the one the caret is on
-            var currentWord = FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(currentRequest);
+            var currentWord = TextStructureNavigator.FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(currentRequest);
 
             if (!currentWord.Success)
+            {
+                // If we couldn't find a word, just clear out the existing markers
+                SynchronousUpdate(currentRequest, new NormalizedSnapshotSpanCollection(), null);
                 return;
+            }
 
             // If this is the same word we currently have, we're done (e.g. caret moved within a word).
             if (CurrentWord.HasValue && currentWord.Value == CurrentWord)
                 return;
 
             // Find the new spans
-            var ret = FindTheNewSpans(currentWord.Value);
+            var ret = currentWord.Value.FindTheNewSpans();
 
 
             // If we are still up-to-date (another change hasn't happened yet), do a real update))
             IfWeAreStillUpToDateDoARealUpdate(currentRequest, ret.Item1, ret.Item2);
-        }
-
-        private Maybe<SnapshotSpan> FindAllWordsInTheBufferLikeTheOneTheCaretIsOn(SnapshotPoint currentRequest)
-        {
-            var word = TextStructureNavigator.GetExtentOfWord(currentRequest);
-
-            var foundWord = true;
-
-            // If we've selected something not worth highlighting, we might have
-            // missed a "word" by a little bit
-            if (!WordExtentIsValid(currentRequest, word))
-            {
-                // Before we retry, make sure it is worthwhile
-                if (word.Span.Start != currentRequest ||
-                    currentRequest == currentRequest.GetContainingLine().Start ||
-                    char.IsWhiteSpace((currentRequest - 1).GetChar()))
-                {
-                    foundWord = false;
-                }
-                else
-                {
-                    // Try again, one character previous.  If the caret is at the end of a word, then
-                    // this will pick up the word we are at the end of.
-                    word = TextStructureNavigator.GetExtentOfWord(currentRequest - 1);
-
-                    // If we still aren't valid the second time around, we're done
-                    if (!WordExtentIsValid(currentRequest, word))
-                        foundWord = false;
-                }
-            }
-
-            if (!foundWord)
-            {
-                // If we couldn't find a word, just clear out the existing markers
-                SynchronousUpdate(currentRequest, new NormalizedSnapshotSpanCollection(), null);
-                return new Maybe<SnapshotSpan>{Success =  false};
-            }
-
-            return new Maybe<SnapshotSpan> {Value = word.Span, Success = true};
-        }
-
-        private static Tuple<SnapshotSpan, List<SnapshotSpan>> FindTheNewSpans(SnapshotSpan currentWord)
-        {
-            var txt = currentWord.Snapshot.GetText();
-            var word = GetWordIncludingQuotes(currentWord);
-            var matches = Regex.Matches(txt, word.Item2);
-            var spans = matches.Cast<Match>().Select(m => new SnapshotSpan(currentWord.Snapshot, m.Index, m.Length));           
-            return Tuple.Create(word.Item1, spans.ToList());
-        }
-
-        private static Tuple<SnapshotSpan, string> GetWordIncludingQuotes(SnapshotSpan currentWord)
-        {
-            var endWordPos = currentWord.End.Position;
-            var word = currentWord.GetText().Trim();
-
-            while (endWordPos < currentWord.Snapshot.Length && currentWord.Snapshot.GetText(endWordPos, 1) == "\'")
-            {
-                word += "\'";
-                endWordPos++;
-            }
-
-            while (endWordPos < currentWord.Snapshot.Length && currentWord.Snapshot.GetText(endWordPos, 1) == "`")
-            {
-                word += "`";
-                endWordPos++;
-            }
-            
-            if (word.EndsWith("``"))
-            {
-                string newWord;
-                var startWordPos = currentWord.Start.Position;
-                do
-                {                                    
-                    newWord = currentWord.Snapshot.GetText(startWordPos, endWordPos - startWordPos);
-                    startWordPos--;
-                } 
-                while (!newWord.StartsWith("``") || startWordPos <=0 || currentWord.Snapshot.GetText(startWordPos, 1) == "\n");
-                word = newWord;
-                currentWord = new SnapshotSpan(currentWord.Snapshot, startWordPos + 1, word.Length);
-            }
-
-            return Tuple.Create(currentWord, word);
-        }
+        }              
 
         private void IfWeAreStillUpToDateDoARealUpdate(SnapshotPoint currentRequest, SnapshotSpan currentWord, List<SnapshotSpan> wordSpans)
         {
@@ -267,39 +188,14 @@ namespace FSharpRefactorAddin.HighlightUsages
                 lock (_updateLock)
                 {
                     var symbolTable = ASTAnalysis.buildSymbolTable(FSharpRefactor.parseWithPos(currentRequest.Snapshot.GetText()));
-                    var pos = GetPosition(currentWord);
+                    var pos = currentWord.GetPosition();
                     var references = FSharpRefactor.findAllReferencesInSymbolTable(symbolTable, pos);
-                    var foundUsages = wordSpans.Where(x => ReferencesContains(references, x)).ToList();
+                    var foundUsages = wordSpans.Where(x => x.ReferencesContains(references)).ToList();
 
                     SynchronousUpdate(currentRequest, new NormalizedSnapshotSpanCollection(foundUsages), currentWord);
                 }
             }
-        }       
-
-        private static bool ReferencesContains(IEnumerable<Tuple<int, int, int, int>> references, SnapshotSpan currentWord)
-        {
-            return references.Any(x => Equals(x, GetPosition(currentWord)));
-        }
-
-        private static Tuple<int, int, int, int> GetPosition(SnapshotSpan currentWord)
-        {
-            var extraLenght = GetWordIncludingQuotes(currentWord).Item2.Length - currentWord.Length;
-            var lineStart = currentWord.Snapshot.GetLineNumberFromPosition(currentWord.Start.Position) + 1;
-            var lineEnd = currentWord.Snapshot.GetLineNumberFromPosition(currentWord.End.Position) + 1;
-            var startLine = currentWord.Snapshot.GetLineFromPosition(currentWord.Start.Position);
-            var endLine = currentWord.Snapshot.GetLineFromPosition(currentWord.End.Position);
-            var colStart = currentWord.Start.Position - startLine.Start.Position;
-            var colEnd = currentWord.End.Position - endLine.Start.Position;
-            return Tuple.Create(colStart, colEnd + extraLenght, lineStart, lineEnd);
-        }
-
-        /// <summary>
-        /// Determine if a given "word" should be highlighted
-        /// </summary>
-        private static bool WordExtentIsValid(SnapshotPoint currentRequest, TextExtent word)
-        {
-            return word.IsSignificant && currentRequest.Snapshot.GetText(word.Span).Any(c => char.IsLetter(c));
-        }
+        }                     
 
         /// <summary>
         /// Perform a synchronous update, in case multiple background threads are running
