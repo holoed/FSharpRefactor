@@ -103,9 +103,16 @@ namespace FSharpRefactorAddin.Common
         {
             var txt = currentWord.Snapshot.GetText();
             var word = currentWord.GetWordIncludingQuotes();
-            var matches = Regex.Matches(txt, word.Item2);
-            var spans = matches.Cast<Match>().Select(m => new SnapshotSpan(currentWord.Snapshot, m.Index, m.Length));
-            return Tuple.Create(word.Item1, spans.ToList());
+            try
+            {
+                var matches = Regex.Matches(txt, word.Item2);
+                var spans = matches.Cast<Match>().Select(m => new SnapshotSpan(currentWord.Snapshot, m.Index, m.Length));
+                return Tuple.Create(word.Item1, spans.ToList());
+            }
+            catch
+            {
+                return Tuple.Create(word.Item1, new List<SnapshotSpan>());
+            }
         }
 
         public static bool ReferencesContains(this SnapshotSpan currentWord, IEnumerable<Tuple<int, int, int, int>> references)

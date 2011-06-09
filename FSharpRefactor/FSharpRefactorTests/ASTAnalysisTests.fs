@@ -692,4 +692,12 @@ type ASTAnalysisTests() =
         let ast = parseWithPosDecl ("let ``my function`` ``this value`` = ``this value``")
         AssertAreEqual [Var ("this value", loc(37,51,1,1));Var ("this value", loc(20,34,1,1))] (findAllReferences (loc (20,34,1,1)) ast)
 
-        
+    [<Test>]
+    member this.``Find usages in the presence of a Params array attribute`` () =
+        let ast = parseWithPosDecl (@"  [<AttributeUsage(AttributeTargets.Method, AllowMultiple = true)>]
+                                        type TestAttribute([<ParamArray>] parameters: obj[])  =
+                                            inherit Attribute()
+                                            member this.Parameters = parameters")         
+        AssertAreEqual [Var ("parameters", loc(69,79,4,4));Var ("parameters", loc(74,84,2,2))] (findAllReferences (loc (69,79,4,4)) ast)
+        AssertAreEqual [Var ("parameters", loc(69,79,4,4));Var ("parameters", loc(74,84,2,2))] (findAllReferences (loc (74,84,2,2)) ast)
+

@@ -266,6 +266,8 @@ let internal foldDecls decls =
 
     and LoopSimplePat x =
         cont { match x with
+               | SynSimplePat.Attrib(p, a, _) ->
+                    return! LoopSimplePat p
                | SynSimplePat.Id(ident, _, _, _, _) -> 
                     return PVar (ident.idText, mkSrcLoc (ident.idRange))
                | SynSimplePat.Typed(p,_,_) ->

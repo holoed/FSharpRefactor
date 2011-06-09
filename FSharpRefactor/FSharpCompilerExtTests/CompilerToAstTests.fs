@@ -880,3 +880,14 @@ type CompilerToAstTests() =
                                     System.Console.ReadLine()")
         Assert.IsNotEmpty (sprintf "%A" ast)
          
+    [<Test>]
+    member this.``Params array attribute`` () =
+        let ast = parseModule (@"  [<AttributeUsage(AttributeTargets.Method, AllowMultiple = true)>]
+                                    type TestAttribute([<ParamArray>] parameters: obj[])  =
+                                        inherit Attribute()
+                                        member this.Parameters = parameters")
+        AssertAreEqual [Types [Class
+                                  ("TestAttribute",
+                                   [ImplicitCtor [PVar "parameters"];
+                                    ImplicitInherit (LongIdent [Ident "Attribute"],Lit Unit, Option.None);
+                                    Member (PLongVar [PVar "this"; PVar "Parameters"],Var "parameters")])]] ast
