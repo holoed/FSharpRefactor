@@ -77,7 +77,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l, 'm, 'n> =
         inheritF: 'i -> 'i option -> 'g
         implicitInheritF :'i -> 'b -> 'i option -> 'g
         implicitConF : 'j list -> 'g
-        memberF : 'j -> 'b -> 'g
+        memberF : bool -> 'j -> 'b -> 'g
         abstractSlotF : string -> 'g
         objExprF : 'g list -> 'b
         doF : 'b -> 'b

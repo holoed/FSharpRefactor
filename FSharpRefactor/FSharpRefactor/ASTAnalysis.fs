@@ -370,16 +370,26 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                                                                     return Some x }
                                                                                 | Option.None -> state { return Option.None }
                                                                    return ImplicitInherit (tAcc, eAcc, idAcc) })
-                         memberF =      (fun p e -> state {  let! pAcc = p
-                                                             let flatpat = flatPat pAcc                                                                   
-                                                             let boundName = List.head (let xs = List.tail flatpat
-                                                                                        if (List.isEmpty xs) then flatpat else xs)
-                                                             let args = (List.head flatpat) :: (let xs = List.tail flatpat
-                                                                                                if (List.isEmpty xs) then xs else List.tail xs)
-                                                             let! _ = mmap (fun x -> execute enterScope x) args
-                                                             let! eAcc = e
-                                                             let! _ = mmap (fun x -> execute exitScope x) args
-                                                             return Member(pAcc, eAcc) })
+                         memberF =      (fun isInstance p e -> 
+                                                      state {  let! pAcc = p
+                                                               let flatpat = flatPat pAcc                                                                   
+                                                               let boundName = if (isInstance) then 
+                                                                                    List.head (let xs = List.tail flatpat
+                                                                                               if (List.isEmpty xs) then flatpat else xs)
+                                                                               else
+                                                                                    List.head flatpat
+                                                                                    
+
+                                                               let args = if (isInstance) then
+                                                                            (List.head flatpat) :: (let xs = List.tail flatpat
+                                                                                                    if (List.isEmpty xs) then xs else List.tail xs)
+                                                                          else
+                                                                             List.tail flatpat               
+
+                                                               let! _ = mmap (fun x -> execute enterScope x) args
+                                                               let! eAcc = e
+                                                               let! _ = mmap (fun x -> execute exitScope x) args
+                                                               return Member(isInstance, pAcc, eAcc) })
                          abstractSlotF = (fun n -> state { return AbstractSlot n })
                          objExprF =      (fun ms -> state { let! msAcc = mmapId ms
                                                             return ObjExpr msAcc })

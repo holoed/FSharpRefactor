@@ -701,3 +701,25 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("parameters", loc(69,79,4,4));Var ("parameters", loc(74,84,2,2))] (findAllReferences (loc (69,79,4,4)) ast)
         AssertAreEqual [Var ("parameters", loc(69,79,4,4));Var ("parameters", loc(74,84,2,2))] (findAllReferences (loc (74,84,2,2)) ast)
 
+    [<Test>]
+    member this.``Find usages in the presence of static methods with parameters`` () = 
+        let ast = parseWithPosDecl (" type Sample (code : string) =           \n" +
+                                    "     member this.Encoding = code         \n" +
+                                    "     static member Decode code = code      ")
+        AssertAreEqual [Var ("code", loc(33,37,3,3));Var ("code", loc(26,30,3,3))] (findAllReferences (loc (26,30,3,3)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of static methods with no parameters`` () = 
+        let ast = parseWithPosDecl (" type Sample (code : string, value: string) =           \n" +
+                                    "     member this.Encoding = code         \n" +
+                                    "     static member Decode = value      ")
+        AssertAreEqual [Var ("value", loc(28,33,3,3));Var ("value", loc(29,34,1,1))] (findAllReferences (loc (28,33,3,3)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of static methods with multiple parameters`` () = 
+        let ast = parseWithPosDecl (" type Sample (code : string) =           \n" +
+                                    "     member this.Encoding = code         \n" +
+                                    "     static member Decode (code, other) = (code, other)   ")
+        AssertAreEqual [Var ("code", loc(43,47,3,3));Var ("code", loc(27,31,3,3))] (findAllReferences (loc (27,31,3,3)) ast)
+        AssertAreEqual [Var ("other", loc(49,54,3,3));Var ("other", loc(33,38,3,3))] (findAllReferences (loc (33,38,3,3)) ast)
+

@@ -325,8 +325,8 @@ type CompilerToAstTests() =
                               "    member this.X = x      \n" +
                               "    member this.Y = y") |> List.concat
         AssertAreEqual [Class("Point", [ImplicitCtor [PVar "x"; PVar "y"]; 
-                                            Member (PLongVar [PVar "this"; PVar "X"], Var "x"); 
-                                            Member (PLongVar [PVar "this"; PVar "Y"], Var "y")])] ast
+                                            Member (true, PLongVar [PVar "this"; PVar "X"], Var "x"); 
+                                            Member (true, PLongVar [PVar "this"; PVar "Y"], Var "y")])] ast
 
     [<Test>]
     member this.NewObject() =
@@ -344,7 +344,7 @@ type CompilerToAstTests() =
     [<Test>]
     member this.ObjectExpression() =
         let ast = parse "let disposable = { new IDisposable with member this.Dispose () = () }"        
-        AssertAreEqual [Let (false, [PVar "disposable", Exp.ObjExpr [Member (PApp (PLongVar [PVar "this"; PVar "Dispose"], PLit(Unit)), Lit Unit)]], Lit Unit)] ast
+        AssertAreEqual [Let (false, [PVar "disposable", Exp.ObjExpr [Member (true, PApp (PLongVar [PVar "this"; PVar "Dispose"], PLit(Unit)), Lit Unit)]], Lit Unit)] ast
 
     [<Test>]
     member this.DoExpression() =
@@ -360,12 +360,12 @@ type CompilerToAstTests() =
     member this.RecordMembers() =
         let ast = parseTypes "type Point = { X : int; Y: int} with member this.Sum = this.X + this.Y" |> List.concat
         AssertAreEqual [Record("Point", [Some "X"; Some "Y"], 
-            [Member (PLongVar [PVar "this"; PVar "Sum"], App(App (Var "op_Addition", LongVar [Var "this"; Var "X"]), LongVar [Var "this"; Var "Y"]))])]  ast
+            [Member (true, PLongVar [PVar "this"; PVar "Sum"], App(App (Var "op_Addition", LongVar [Var "this"; Var "X"]), LongVar [Var "this"; Var "Y"]))])]  ast
 
     [<Test>]
     member this.InterfaceImplementation() =
         let ast = parseTypes "type Foo = interface IDisposable with member this.Dispose () = ()" |> List.concat
-        AssertAreEqual [Class("Foo", [Interface(LongIdent [Ident "IDisposable"], Some [Member (PApp(PLongVar [PVar "this"; PVar "Dispose"], PLit(Unit)), Lit Unit)])])] ast
+        AssertAreEqual [Class("Foo", [Interface(LongIdent [Ident "IDisposable"], Some [Member (true, PApp(PLongVar [PVar "this"; PVar "Dispose"], PLit(Unit)), Lit Unit)])])] ast
    
     [<Test>]
     member this.``Assignment of a mutable variable``() =
@@ -474,12 +474,12 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.``Exception declaration with static members`` () =
-        AssertAreEqual [Exception (ExceptionDef ("Empty",[Member (PVar "Foo",Lit (Integer 42))]))] 
+        AssertAreEqual [Exception (ExceptionDef ("Empty",[Member (false, PVar "Foo",Lit (Integer 42))]))] 
                        (parseModule "exception Empty with static member Foo = 42")
 
     [<Test>]
     member this.``Exception declaration with instance members`` () =
-        AssertAreEqual [Exception (ExceptionDef ("Empty",[Member (PLongVar [PVar "this"; PVar "Foo"],Lit (Integer 42))]))] 
+        AssertAreEqual [Exception (ExceptionDef ("Empty",[Member (true, PLongVar [PVar "this"; PVar "Foo"],Lit (Integer 42))]))] 
                        (parseModule "exception Empty with member this.Foo = 42")
 
     [<Test>]
@@ -836,7 +836,7 @@ type CompilerToAstTests() =
         let ast = parseModule ("type A () = do () with member x.A b c d = b + c * d")
         AssertAreEqual [Types [Class ("A", [ImplicitCtor [];
                                             LetBindings [Let (false,[(PLit Unit, Lit Unit)],Lit Unit)];
-                                            Member (PApp (PApp (PApp (PLongVar [PVar "x"; PVar "A"],PVar "b"),PVar "c"), PVar "d"),
+                                            Member (true, PApp (PApp (PApp (PLongVar [PVar "x"; PVar "A"],PVar "b"),PVar "c"), PVar "d"),
                                                     App (App (Var "op_Addition",Var "b"), App (App (Var "op_Multiply",Var "c"),Var "d")))])]] ast
 
     [<Test>]
@@ -858,7 +858,7 @@ type CompilerToAstTests() =
     member this.``Optional arguments in class members``() =
         let ast = parseModule ("type Foo() = member this.Foo ?x = defaultArg x 42")
         AssertAreEqual [Types [Class ("Foo", [ImplicitCtor []; 
-                                              Member (PApp (PLongVar [PVar "this"; PVar "Foo"],PVar "x"), App (App (Var "defaultArg",Var "x"),Lit (Integer 42)))])]] ast   
+                                              Member (true, PApp (PLongVar [PVar "this"; PVar "Foo"],PVar "x"), App (App (Var "defaultArg",Var "x"),Lit (Integer 42)))])]] ast   
                                               
     [<Test>]
     member this.``Long name identifier``() =
@@ -890,4 +890,15 @@ type CompilerToAstTests() =
                                   ("TestAttribute",
                                    [ImplicitCtor [PVar "parameters"];
                                     ImplicitInherit (LongIdent [Ident "Attribute"],Lit Unit, Option.None);
-                                    Member (PLongVar [PVar "this"; PVar "Parameters"],Var "parameters")])]] ast
+                                    Member (true, PLongVar [PVar "this"; PVar "Parameters"],Var "parameters")])]] ast
+
+    [<Test>]
+    member this.``Static methods and instance methods together`` () =            
+        let ast = parseModule (" type Sample (code : string) =           \n" +       
+                                "     member this.Encoding = code         \n" +
+                                "     static member Decode (code:string) = code \n" +
+                                "     \n")
+        AssertAreEqual [Types [Class ("Sample", [ImplicitCtor [PVar "code"];
+                                                 Member (true, PLongVar [PVar "this"; PVar "Encoding"],Var "code");
+                                                 Member (false, PApp (PVar "Decode",PVar "code"),Var "code")])]] ast
+        
