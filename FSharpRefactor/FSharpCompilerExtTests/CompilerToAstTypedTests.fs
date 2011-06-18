@@ -86,7 +86,7 @@ let stripPosTyped (decl:Module<string * SrcLoc * int64 * bool>) : Module<string>
                               inheritF             =     (fun t1 t2 -> Inherit(t1, t2))
                               implicitInheritF     =     (fun t e id -> ImplicitInherit (t, e, id))
                               implicitConF         =     (fun ps -> Ast.ImplicitCtor ps)
-                              memberF              =     (fun n e -> Member (n, e))
+                              memberF              =     (fun b n e -> Member (b, n, e))
                               abstractSlotF        =     (fun n -> AbstractSlot n)
                               objExprF             =     (fun ms -> ObjExpr ms)
                               doF                  =     (fun e -> Do e)

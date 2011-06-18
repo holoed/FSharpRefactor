@@ -60,10 +60,11 @@ let internal foldDecls decls =
                     return (nAcc, eAcc) }
     and LoopMemberBinding x = 
         cont { match x with
-               | SynBinding.Binding(_,_,_,_,_,_,_,name,_,expr,_,_) -> 
+               | SynBinding.Binding(_,_,_,_,_,_,SynValData(flags, _,_),name,_,expr,_,_) -> 
+                    let isInstance = if (flags.IsSome) then flags.Value.IsInstance else false                                     
                     let! nAcc = LoopPat name
                     let! eAcc = LoopExpr expr
-                    return Ast.Member(nAcc, eAcc) }
+                    return Ast.Member(isInstance, nAcc, eAcc) }
     and LoopExpr x =
          cont { match x with
                 // Not implemented AST sections

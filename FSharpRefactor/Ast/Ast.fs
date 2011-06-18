@@ -142,7 +142,7 @@ and Type<'a>
 
 and ClassMember<'a>
     = ImplicitCtor of Pat<'a> list
-    | Member of Pat<'a> * Exp<'a>
+    | Member of bool * Pat<'a> * Exp<'a>
     | LetBindings of Exp<'a> list
     | AbstractSlot of string
     | Interface of Type<'a> * ClassMember<'a> list option

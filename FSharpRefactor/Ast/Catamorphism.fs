@@ -226,9 +226,9 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_,_,_>) decl =
                                              return algebra.valfieldF t1Acc t2Acc
                        | ImplicitCtor ps -> let! psAcc = mmap LoopPat ps
                                             return algebra.implicitConF psAcc
-                       | Member (p, e) -> let! pAcc = LoopPat p
-                                          let! eAcc = LoopExp e
-                                          return algebra.memberF pAcc eAcc
+                       | Member (isInstance, p, e) -> let! pAcc = LoopPat p
+                                                      let! eAcc = LoopExp e
+                                                      return algebra.memberF isInstance pAcc eAcc
                        | Interface(t, msOption) -> let! tAcc = LoopTypeInst t
                                                    let! msAcc = match msOption with
                                                                 | Some ms -> cont { let! msAcc = mmap LoopClassMember ms

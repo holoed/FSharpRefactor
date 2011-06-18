@@ -81,7 +81,7 @@ let buildTypedSymbolTable (decl:Module<string * SrcLoc * int64 * bool>) : (strin
                               inheritF             =     (fun t1 t2 -> [])
                               implicitInheritF     =     (fun t e id -> [])
                               implicitConF         =     (fun ps -> [])
-                              memberF              =     (fun n e -> [])
+                              memberF              =     (fun b n e -> [])
                               abstractSlotF        =     (fun n -> [])
                               objExprF             =     (fun ms -> [])
                               doF                  =     (fun e -> [])
