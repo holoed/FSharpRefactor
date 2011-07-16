@@ -901,4 +901,8 @@ type CompilerToAstTests() =
         AssertAreEqual [Types [Class ("Sample", [ImplicitCtor [PVar "code"];
                                                  Member (true, PLongVar [PVar "this"; PVar "Encoding"],Var "code");
                                                  Member (false, PApp (PVar "Decode",PVar "code"),Var "code")])]] ast
-        
+    [<Test>]
+    member this.``Hash constraint`` () =
+        let ast = parse "let something: #IEnumerable option = None"
+        AssertAreEqual [Let (false, [(PVar "something", Typed (Var "None", TApp (LongIdent [Ident "option"],[LongIdent [Ident "IEnumerable"]])))], Lit Unit)] ast
+
