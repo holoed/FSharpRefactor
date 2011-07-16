@@ -723,3 +723,9 @@ type ASTAnalysisTests() =
         AssertAreEqual [Var ("code", loc(43,47,3,3));Var ("code", loc(27,31,3,3))] (findAllReferences (loc (27,31,3,3)) ast)
         AssertAreEqual [Var ("other", loc(49,54,3,3));Var ("other", loc(33,38,3,3))] (findAllReferences (loc (33,38,3,3)) ast)
 
+    [<Test>]
+    member this.``Find usages in the presence of a Hash constraint`` () =
+        let ast = parseWithPosDecl ("let something: #IEnumerable option = None \n" +
+                                    "let foo = something ")
+        AssertAreEqual [Var ("something", loc(10,19,2,2));Var ("something", loc(4,13,1,1))] (findAllReferences (loc (4,13,1,1)) ast)
+
