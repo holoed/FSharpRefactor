@@ -290,6 +290,12 @@ let internal foldDecls decls =
                                             return Ast.Named liAcc }
     and LoopConst x =
         cont { match x with
+               | SynConst.UIntPtr _ -> return Ast.Lit(Ast.Literal.Unit) // Ignored for now.
+               | SynConst.UInt16s _ -> return Ast.Lit(Ast.Literal.Unit) // Ignored for now.
+               | SynConst.IntPtr _ -> return Ast.Lit(Ast.Literal.Unit) // Ignored for now.
+               | SynConst.Decimal _ -> return Ast.Lit(Ast.Literal.Unit) // Ignored for now.
+               | SynConst.Bytes(_, _) -> return Ast.Lit(Ast.Literal.Unit) // Ignored for now.
+
                | SynConst.Measure(c, m) -> let! cAcc = LoopConst c
                                            let! mAcc = LoopMeasure m
                                            return Ast.Measure(cAcc, mAcc)
