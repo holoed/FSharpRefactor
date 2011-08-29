@@ -20,6 +20,15 @@ open PurelyFunctionalDataStructures
 type OpenScopes = OpenScopes of Map<string, Stack<SrcLoc list>>
 type SymbolTable = SymbolTable of Map<string, SrcLoc list list>
 
+let SubMatch (map:Map<string,_>) s =  map |> Seq.filter (fun x -> x.Key.Contains "." && (x.Key.Split [|'.'|]).[1] = s)
+                                          |> Seq.map (fun p -> (p.Key, p.Value))
+
+let mostRecent (map:seq<string * Stack<SrcLoc list>>) = map |> Seq.map (fun (k, v) -> (k, (stackToList v) |> Seq.concat))
+                                                            |> Seq.map (fun (k, vs) -> Seq.map (fun v -> (k, v)) vs)
+                                                            |> Seq.concat
+                                                            |> Seq.maxBy (fun (_, v) -> v.srcLine.startLine)
+                                                            |> fun (k, _) -> k   
+
 let addUsage (s,l) = state { let! (OpenScopes(map), table) = getState 
                              if (map.ContainsKey s) then
                                  let scopes = map.[s]
@@ -29,7 +38,7 @@ let addUsage (s,l) = state { let! (OpenScopes(map), table) = getState
                                      let newMap = map.Remove(s).Add(s, instances)
                                      do! setState(OpenScopes(newMap), table)
                                      return () }
-
+                                     
 let enterScope (s,l) = state { let! (OpenScopes(map), table) = getState 
                                let newMap = if (not (map.ContainsKey s)) then 
                                                         map.Add (s, push empty ([l])) 
@@ -40,16 +49,19 @@ let enterScope (s,l) = state { let! (OpenScopes(map), table) = getState
                                return () }
 
 let exitScope (s,l) = state { let! (OpenScopes(map), SymbolTable(table)) = getState 
-                              let scopes = map.[s]
-                              let (x,xs) = pop scopes
-                              let newMap = map.Remove(s).Add(s, xs)
-                              let newTable = if (not (table.ContainsKey s)) then 
-                                                        table.Add (s, [x]) 
-                                                  else        
-                                                        let ys = table.[s]
-                                                        table.Remove(s).Add(s, x::ys)
-                              do! setState(OpenScopes(newMap), SymbolTable(newTable))
-                              return () }
+                              if (map.ContainsKey s) then                                
+                                  let scopes = map.[s]
+                                  let (x,xs) = pop scopes
+                                  let newMap = map.Remove(s).Add(s, xs)
+                                  let newTable = if (not (table.ContainsKey s)) then 
+                                                            table.Add (s, [x]) 
+                                                      else        
+                                                            let ys = table.[s]
+                                                            table.Remove(s).Add(s, x::ys)
+                                  do! setState(OpenScopes(newMap), SymbolTable(newTable))
+                                  return ()
+                              else
+                                  return () }
 
 let exitGlobalScope = state { let! (OpenScopes(map), SymbolTable(table)) = getState 
                               let scopesList = map |> Map.toList |> List.filter (fun (_,scopes) -> not (isEmpty scopes))
@@ -99,8 +111,15 @@ let flatPat p =
 let execute action p =
     let rec LoopPat pat =    
                 ContinuationMonad.cont {  match pat with
-                                          | PVar (s,l) -> return state { do! action (s,l)
-                                                                         return () }
+                                          | PVar (s:string,l) -> return state { do! action (s,l)
+                                                                                if (not (s.Contains ".")) then
+                                                                                   let! (OpenScopes(map), _) = getState
+                                                                                   let subMatches = SubMatch map s
+                                                                                   if (subMatches |> Seq.isEmpty |> not) then  
+                                                                                        do! addUsage (mostRecent subMatches, l) 
+                                                                                   return()
+                                                                                else                                                                           
+                                                                                    return () }
                                           | PApp (l, r) -> let! lAcc = LoopPat l
                                                            let! rAcc = LoopPat r
                                                            return state { let! l' = lAcc

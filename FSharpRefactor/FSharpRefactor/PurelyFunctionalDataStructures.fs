@@ -26,3 +26,5 @@ let pop (Stack xs) = match xs with
 
 let isEmpty (Stack xs) = List.isEmpty xs
 
+let stackToList (Stack xs) = xs
+

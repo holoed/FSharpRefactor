@@ -729,3 +729,28 @@ type ASTAnalysisTests() =
                                     "let foo = something ")
         AssertAreEqual [Var ("something", loc(10,19,2,2));Var ("something", loc(4,13,1,1))] (findAllReferences (loc (4,13,1,1)) ast)
 
+    [<Test>]
+    member this.``Find usages of Value constructor when fully qualified``() =
+        let ast = parseWithPosDecl ("type Foo = Yes | No     \n" + 
+                                    "type Bar = Yes | No     \n" + 
+                                    "let x = function        \n" + 
+                                    "        | Foo.Yes -> 0  \n" + 
+                                    "        | Foo.No -> 1   \n" +
+                                    "let y = function        \n" + 
+                                    "        | Bar.Yes -> 0  \n" + 
+                                    "        | Bar.No -> 1   ")
+        AssertAreEqual [Var ("Foo.Yes", loc(14,17,4,4));Var ("Foo.Yes", loc(11,14,1,1))] (findAllReferences (loc (11,14,1,1)) ast)
+        AssertAreEqual [Var ("Foo.No", loc(14,16,5,5));Var ("Foo.No", loc(17,19,1,1))] (findAllReferences (loc (17,19,1,1)) ast)
+        AssertAreEqual [Var ("Bar.Yes", loc(14,17,7,7));Var ("Bar.Yes", loc(11,14,2,2))] (findAllReferences (loc (11,14,2,2)) ast)
+        AssertAreEqual [Var ("Bar.No", loc(14,16,8,8));Var ("Bar.No", loc(17,19,2,2))] (findAllReferences (loc (17,19,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages of Value constructor when not fully qualified``() =
+        let ast = parseWithPosDecl ("type Foo = Yes | No     \n" + 
+                                    "type Bar = Yes | No     \n" + 
+                                    "let x = function        \n" + 
+                                    "        | Yes -> 0      \n" + 
+                                    "        | No -> 1         ")
+        let xs = (findAllReferences (loc (11,14,2,2)) ast)
+        AssertAreEqual [Var ("Bar.Yes", loc(10,13,4,4));Var ("Bar.Yes", loc(11,14,2,2))] xs
+        AssertAreEqual [Var ("Bar.No", loc(10,12,5,5));Var ("Bar.No", loc(17,19,2,2))] (findAllReferences (loc (17,19,2,2)) ast)
