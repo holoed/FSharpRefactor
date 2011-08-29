@@ -30,15 +30,9 @@ let state = StateMonad()
 let getState = State (fun s -> s, s)
 let setState s = State (fun _ -> (), s)  
 
-let execute m s = match m with
-                  | State f -> let r = f s
-                               match r with
-                               |(x,_) -> x
+let execute (State f) s = let (x,_) = f s in x
 
-let executeGetState m s = match m with
-                          | State f -> let r = f s
-                                       match r with
-                                       |(_,s) -> s
+let executeGetState (State f) s = let (_, s) = f s in s
 
 let mmap f xs = 
            let rec MMap' (f, xs', out) = 
