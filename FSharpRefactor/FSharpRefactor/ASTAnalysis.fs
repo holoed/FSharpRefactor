@@ -286,6 +286,17 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                                                                     let! e1' = e1       
                                                                     let! e2' = e2
                                                                     return ForEach (PWild, e1', e2') 
+                                                                | PRecord xs, vars ->
+                                                                    let! p'  = p
+                                                                    let! _ = mmap (fun x -> execute enterScope x) vars // ----------------------------------------------------
+                                                                    let! e1' = e1                                      // function variables scope (like the x in let f x = x)                                  
+                                                                    let! _ = mmap (fun x -> execute exitScope x) vars  // ----------------------------------------------------
+                                                                    let! _ = mmap (fun (_,p) -> execute enterScope p) xs
+                                                                    let! e2' = e2               // function name scope (like the f in let f x = x)  
+                                                                    if (e2' <> (Lit Unit)) then
+                                                                          let! _ = mmap (fun (_,p) -> execute exitScope p) xs
+                                                                          do ()
+                                                                    return ForEach (p', e1', e2')                                                                     
                                                                 | PVar (s,l), [] ->                                                 
                                                                     let! p'  = p                                                 
                                                                     let! e1' = e1       
