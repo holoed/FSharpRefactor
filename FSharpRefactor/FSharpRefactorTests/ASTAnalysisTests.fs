@@ -754,3 +754,9 @@ type ASTAnalysisTests() =
         let xs = (findAllReferences (loc (11,14,2,2)) ast)
         AssertAreEqual [Var ("Bar.Yes", loc(10,13,4,4));Var ("Bar.Yes", loc(11,14,2,2))] xs
         AssertAreEqual [Var ("Bar.No", loc(10,12,5,5));Var ("Bar.No", loc(17,19,2,2))] (findAllReferences (loc (17,19,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of record pattern matching in for loop``() =
+        let ast = parseWithPosDecl (" for {Button=b} as sq in squares do\n" +
+                                    "    b.Click.Add(fun _ ->  onClick sq ) ")
+        AssertAreEqual [Var ("b", loc(4, 5, 2, 2));Var ("b", loc(13, 14, 1, 1))] (findAllReferences (loc(13, 14, 1, 1)) ast)
