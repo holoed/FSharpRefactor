@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Windows;
 using FSharpRefactorAddin.Common;
 using FSharpRefactorAddin.VsPackage;
 using FSharpRefactorVSAddIn.Common;
@@ -122,6 +123,9 @@ namespace FSharpRefactorAddin.Rename
                     return;
                 TextToRename = foundUsages.Item1.Value.GetText();
                 var wnd = new RenameDialog {DataContext = this};
+                var hostWnd = Window.GetWindow(_textView.VisualElement);
+                wnd.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                wnd.Owner = hostWnd;
                 var ret = wnd.ShowDialog();
                 if (ret.HasValue && ret.Value)
                     RenameAllOccurences(TextToRename, foundUsages.Item2);
