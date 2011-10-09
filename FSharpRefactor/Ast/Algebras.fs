@@ -33,8 +33,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l, 'm, 'n> =
         inferredUpcastF: 'b -> 'b
         whileF : 'b -> 'b -> 'b
         nullF : Unit -> 'b
-        varF : 'a -> 'b
-        longVarF : 'b list -> 'b
+        varF : 'a -> 'b        
         longVarSetF : 'b -> 'b -> 'b
         lamF : 'j list -> 'b -> 'b
         appF : 'b -> 'b -> 'b

@@ -71,8 +71,7 @@ and Measure<'a>
     | MVar of string
     
 and Exp<'a> 
-    = Var      of 'a                           // variable    
-    | LongVar of Exp<'a> list
+    = Var      of 'a                           // variable        
     | LongVarSet of Exp<'a> * Exp<'a>
     | Lam      of Pat<'a> list * Exp<'a>       // lambda abstraction
     | App      of Exp<'a> * Exp<'a>            // application    

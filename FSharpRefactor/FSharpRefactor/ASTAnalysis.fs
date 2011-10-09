@@ -181,18 +181,32 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          assertF = (fun e -> state { let! eAcc = e
                                                      return Assert eAcc })        
                          nullF = (fun () -> state { return Null })                         
-                         varF =        (fun x -> state { do! addUsage x
-                                                         return Var x })
-                         longVarF =    (fun xs -> state { let! xs' = mmapId xs
-                                                          let ls = xs' |> List.map (fun (Var(_,l')) -> l')
-                                                                       |> List.rev
-                                                                       |> List.toSeq
-                                                                       |> Seq.take 1
-                                                                       |> Seq.toList
-                                                          let s = xs' |> List.map (fun (Var(s,_)) -> s)
-                                                                      |> fun xs -> System.String.Join(".", xs)   
-                                                          let! _ = mmap (fun l -> state { do! addUsage (s,l) }) ls                                                                                                                                    
-                                                          return LongVar xs' })
+                         varF =        (fun x -> state {  let (s : string,l) = x                                                          
+                                                          let { srcFilename = fileName
+                                                                              srcLine = { startLine = startLine; endLine = endLine }
+                                                                              srcColumn = { startColumn = startColumn; endColumn = endColumn } } = l                                                                                                                    
+
+                                                          if (not (s.Contains ".")) then
+                                                             let! (OpenScopes(map), _) = getState
+                                                             let subMatches = SubMatch map s
+                                                             if (subMatches |> Seq.isEmpty |> not) then  
+                                                                    do! addUsage (mostRecent subMatches, l) 
+                                                             else
+                                                                    do! addUsage x                                                            
+                                                          else
+                                                             let v = s.Split '.' |> fun xs -> xs.[0]
+                                                             let! (OpenScopes(map), _) = getState
+                                                             if (map.ContainsKey v) then                             
+                                                                    do! addUsage (v, { srcFilename = fileName
+                                                                                       srcLine = { startLine = startLine; endLine = startLine } 
+                                                                                       srcColumn = { startColumn = startColumn; endColumn = startColumn  + v.Length } })                                                            
+                                                             else
+                                                                    let l' = { srcFilename = fileName
+                                                                               srcLine = { startLine = endLine; endLine = endLine } 
+                                                                               srcColumn = { startColumn = endColumn - (s.Length - v.Length - 1); endColumn = endColumn  } }
+                                                                    do! addUsage (s, l')
+                                                                                                                                                                              
+                                                          return Var x })
                          longVarSetF = (fun e1 e2 -> state { let! e1Acc = e1
                                                              let! e2Acc = e2
                                                              return LongVarSet (e1Acc, e2Acc) })

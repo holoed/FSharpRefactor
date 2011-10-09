@@ -49,8 +49,6 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_,_,_>) decl =
                                 return algebra.assertF eAcc
                   | Null -> return algebra.nullF ()
                   | Var x -> return algebra.varF x 
-                  | LongVar xs -> let! xsAcc = mmap LoopExp xs
-                                  return algebra.longVarF xsAcc 
                   | LongVarSet (e1, e2) -> let! e1Acc = LoopExp e1
                                            let! e2Acc = LoopExp e2
                                            return algebra.longVarSetF e1Acc e2Acc 
