@@ -31,7 +31,7 @@ namespace FSharpRefactorAddin.Rename
         private readonly IWpfTextView _textView;
         private readonly ITextStructureNavigator _textStructureNavigator;
         private readonly ITextUndoHistory _textUndoHistory;
-        private ASTAnalysis.SymbolTable _symbolTable;
+        private ASTScopeOperations.SymbolTable _symbolTable;
         private readonly IDisposable _disposable;
         private const int ThrottlingTime = 500;
 
