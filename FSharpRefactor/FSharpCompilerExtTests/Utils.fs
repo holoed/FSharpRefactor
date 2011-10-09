@@ -39,7 +39,6 @@ let stripPos (decl:Module<'a*'b>) :Module<'a> =
                               assertF              =     (fun e -> Assert e)
                               nullF                =     (fun () -> Null)
                               varF                 =     (fun (s, l) -> Var s) 
-                              longVarF             =     (fun xs -> LongVar xs)
                               longVarSetF          =     (fun e1 e2 -> LongVarSet (e1, e2))
                               lamF                 =     (fun ps b -> Lam(ps, b)) 
                               appF                 =     (fun x y -> App (x, y))

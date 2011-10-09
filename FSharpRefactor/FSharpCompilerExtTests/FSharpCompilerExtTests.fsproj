@@ -40,7 +40,6 @@
   <ItemGroup>
     <Compile Include="Utils.fs" />
     <Compile Include="CompilerToAstTests.fs" />
-    <Compile Include="CompilerToAstTypedTests.fs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

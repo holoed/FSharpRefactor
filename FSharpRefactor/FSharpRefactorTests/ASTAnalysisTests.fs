@@ -760,3 +760,12 @@ type ASTAnalysisTests() =
         let ast = parseWithPosDecl (" for {Button=b} as sq in squares do\n" +
                                     "    b.Click.Add(fun _ ->  onClick sq ) ")
         AssertAreEqual [Var ("b", loc(4, 5, 2, 2));Var ("b", loc(13, 14, 1, 1))] (findAllReferences (loc(13, 14, 1, 1)) ast)
+
+    [<Test>]
+    member this.``Find usages of discriminated unions value constructors in function application``() =
+        let ast = parseWithPosDecl ("type Foo = Yes | No  \n" +
+                                    "let f = function      \n" +
+                                    "        | Yes -> 0    \n" +
+                                    "        | No -> 1     \n" +
+                                    "(f No) |> printf \"%A\" \n")
+        AssertAreEqual [Var ("Foo.No", loc(3,5,5,5));Var ("Foo.No", loc(10,12,4,4));Var ("Foo.No", loc(17,19,1,1))] (findAllReferences (loc (17,19,1,1)) ast)

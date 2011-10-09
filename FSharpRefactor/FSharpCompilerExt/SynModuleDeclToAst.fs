@@ -16,6 +16,12 @@ open ContinuationMonad
 open Microsoft.FSharp.Compiler.Ast
 open Utils
 
+let longIdentToVar (ids:LongIdent) = 
+    let s = List.map (fun (id:Ident) -> id.idText) ids |> fun xs -> System.String.Join(".", xs)
+    let l1 = List.head ids |> (fun id -> mkSrcLoc id.idRange)
+    let l2 = System.Linq.Enumerable.Last ids |> (fun id -> mkSrcLoc id.idRange)
+    Ast.Var(s, joinSrcLoc l1 l2)
+
 let internal foldDecls decls =
     let rec LoopDecl x =
         cont { match x with
@@ -144,8 +150,8 @@ let internal foldDecls decls =
                 | SynExpr.Const(x, _) -> return! LoopConst x
                 | SynExpr.Ident(id) -> 
                     return Ast.Var (id.idText, mkSrcLoc id.idRange) 
-                | SynExpr.LongIdent(_, ids, _) -> 
-                    return Ast.LongVar (List.map (fun (id:Ident) -> Ast.Var (id.idText, mkSrcLoc id.idRange)) ids)
+                | SynExpr.LongIdent(_, ids, _) ->                     
+                    return longIdentToVar ids
                 | SynExpr.App(_, x, y, _) -> 
                     let! xAcc = LoopExpr x
                     let! yAcc = LoopExpr y
@@ -188,13 +194,13 @@ let internal foldDecls decls =
                     let! esAcc = mmap LoopExpr es
                     return Ast.DotIndexedGet (e1Acc, esAcc)
                 | SynExpr.DotGet (e, li, _) -> 
-                    let! eAcc = LoopExpr e
-                    let liAcc = Ast.LongVar (List.map (fun (id:Ident) -> Ast.Var (id.idText, mkSrcLoc id.idRange)) li)
+                    let! eAcc = LoopExpr e   
+                    let liAcc = longIdentToVar li                 
                     return Ast.DotGet (eAcc, liAcc)
                 | SynExpr.DotSet (e1, li, e2, _) -> 
                     let! e1Acc = LoopExpr e1
                     let! e2Acc = LoopExpr e2
-                    let liAcc = Ast.LongVar (List.map (fun (id:Ident) -> Ast.Var (id.idText, mkSrcLoc id.idRange)) li)
+                    let liAcc = longIdentToVar li
                     return Ast.DotSet (e1Acc, liAcc, e2Acc)
                 | SynExpr.IfThenElse (e1,e2,e3,_,_,_) -> 
                     let! e1Acc = LoopExpr e1
@@ -229,7 +235,7 @@ let internal foldDecls decls =
                         let! tAcc = LoopType t
                         return Ast.Upcast (eAcc, tAcc)
                 | SynExpr.LongIdentSet (li, e, _) ->
-                        let liAcc = Ast.LongVar (List.map (fun (id:Ident) -> Ast.Var (id.idText, mkSrcLoc id.idRange)) li)
+                        let liAcc = longIdentToVar li
                         let! eAcc = LoopExpr e
                         return Ast.LongVarSet (liAcc, eAcc)
                 | SynExpr.TryWith (e,_,cl,_,_,_,_) ->

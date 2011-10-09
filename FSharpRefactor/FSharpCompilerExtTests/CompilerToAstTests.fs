@@ -267,7 +267,7 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.ModuleQualifiedIdentifier() =
-        AssertAreEqual [Let(false,[PVar "xs", App (LongVar [Var "List"; Var "head"],App (App (Var "op_Range",Lit (Integer 1)),Lit (Integer 5)))], Lit Unit)] (parse "let xs = List.head [1..5]")
+        AssertAreEqual [Let(false,[PVar "xs", App (Var "List.head",App (App (Var "op_Range",Lit (Integer 1)),Lit (Integer 5)))], Lit Unit)] (parse "let xs = List.head [1..5]")
 
     [<Test>]
     member this.NestedModule() =
@@ -360,7 +360,7 @@ type CompilerToAstTests() =
     member this.RecordMembers() =
         let ast = parseTypes "type Point = { X : int; Y: int} with member this.Sum = this.X + this.Y" |> List.concat
         AssertAreEqual [Record("Point", [Some "X"; Some "Y"], 
-            [Member (true, PLongVar [PVar "this"; PVar "Sum"], App(App (Var "op_Addition", LongVar [Var "this"; Var "X"]), LongVar [Var "this"; Var "Y"]))])]  ast
+            [Member (true, PLongVar [PVar "this"; PVar "Sum"], App(App (Var "op_Addition", Var "this.X"), Var "this.Y"))])]  ast
 
     [<Test>]
     member this.InterfaceImplementation() =
@@ -370,7 +370,7 @@ type CompilerToAstTests() =
     [<Test>]
     member this.``Assignment of a mutable variable``() =
          let ast = parse ("x <- x + 1");
-         AssertAreEqual [LongVarSet (LongVar [Var "x"], App(App (Var "op_Addition", Var "x"), Lit(Integer 1)))] ast
+         AssertAreEqual [LongVarSet (Var "x", App(App (Var "op_Addition", Var "x"), Lit(Integer 1)))] ast
                                         
     [<Test>]
     member this.Upcast() =
@@ -461,7 +461,7 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.``dot get for object instances`` () =
-        AssertAreEqual [Let (false, [(PApp (PVar "getName",PVar "xs"), DotGet (App (LongVar [Var "List"; Var "head"],Var "xs"),LongVar [Var "Name"]))], Lit Unit)] 
+        AssertAreEqual [Let (false, [(PApp (PVar "getName",PVar "xs"), DotGet (App (Var "List.head",Var "xs"), Var "Name"))], Lit Unit)] 
                        (parse "let getName xs = (List.head xs).Name")
 
     [<Test>]
@@ -641,7 +641,7 @@ type CompilerToAstTests() =
     member this.``Assembly level attribute`` () =
         let ast = parseModule ("[<Dependency(\"FSharp.Compiler\",LoadHint.Always)>] \n" +
                                "do ()")
-        AssertAreEqual [Attributes [Attribute (Tuple [Lit (String "FSharp.Compiler"); LongVar [Var "LoadHint"; Var "Always"]])]; Exp [Do (Lit Unit)]] ast                               
+        AssertAreEqual [Attributes [Attribute (Tuple [Lit (String "FSharp.Compiler"); Var "LoadHint.Always"])]; Exp [Do (Lit Unit)]] ast                               
 
     [<Test>]
     member this.``Implicit Inherit``() =
@@ -764,7 +764,7 @@ type CompilerToAstTests() =
     [<Test>]
     member this.``Dot set``() =
         let ast = parse ("(List.head xs).Value <- 42")
-        AssertAreEqual [DotSet (App (LongVar [Var "List"; Var "head"],Var "xs"),LongVar [Var "Value"], Lit (Integer 42))] ast
+        AssertAreEqual [DotSet (App (Var "List.head",Var "xs"), Var "Value", Lit (Integer 42))] ast
 
     [<Test>]
     member this.``Interface implementation with no members``() =

@@ -46,8 +46,6 @@
     <Compile Include="Utils.fs" />
     <Compile Include="SynModuleDeclToAst.fs" />
     <Compile Include="CompilerToAst.fs" />
-    <Compile Include="TypedAssemblyToAst.fs" />
-    <Compile Include="CompilerToAstTyped.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ast\Ast.fsproj">

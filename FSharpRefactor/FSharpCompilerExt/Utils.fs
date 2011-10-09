@@ -17,3 +17,10 @@ open Microsoft.FSharp.Compiler.Ast
 let internal mkSrcLoc (r: Microsoft.FSharp.Compiler.Range.range)  = 
     { srcFilename = r.FileName; srcLine = { startLine = r.StartLine; endLine = r.EndLine }; 
                                 srcColumn = { startColumn = r.StartColumn; endColumn = r.EndColumn } }
+
+let internal joinSrcLoc { srcFilename = fileName1; srcLine = { startLine = startLine1; endLine = _ }; 
+                                srcColumn = { startColumn = startColumn1; endColumn = _ } }
+                        { srcFilename = _; srcLine = { startLine = _; endLine = endLine2 }; 
+                                srcColumn = { startColumn = _; endColumn = endColumn2 } } =
+                        { srcFilename = fileName1; srcLine = { startLine = startLine1; endLine = endLine2 }; 
+                                srcColumn = { startColumn = startColumn1; endColumn = endColumn2 } }
