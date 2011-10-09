@@ -47,3 +47,10 @@ let mmap f xs =
 let stateId x = state { return! x }
 
 let mmapId xs = mmap stateId xs
+
+  // (a -> b) -> m a -> m b
+let inline liftM f m = state.Bind (m, (fun a -> state.Return (f a)))
+
+   // (a -> b -> c) -> m a -> m b -> m c
+let inline liftM2 f ma mb = state.Bind (ma, (fun a1 -> state.Bind(mb, (fun a2 -> state.Return (f a1 a2)))))
+

@@ -59,6 +59,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PurelyFunctionalDataStructures.fs" />
+    <Compile Include="ASTScopeOperations.fs" />
+    <Compile Include="ASTPatUtils.fs" />
     <Compile Include="ASTAnalysis.fs" />
     <Compile Include="FSharpRefactor.fs" />
   </ItemGroup>
