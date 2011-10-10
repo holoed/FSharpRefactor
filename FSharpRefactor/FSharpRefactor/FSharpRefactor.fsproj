@@ -58,6 +58,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Currying.fs" />
     <Compile Include="PurelyFunctionalDataStructures.fs" />
     <Compile Include="ASTScopeOperations.fs" />
     <Compile Include="ASTPatUtils.fs" />

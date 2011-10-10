@@ -11,6 +11,8 @@
 
 module StateMonad
 
+open System.Diagnostics
+
 //F# State Monad
 
 type State<'state, 'a> = State of ('state ->'a * 'state)
@@ -18,11 +20,17 @@ type State<'state, 'a> = State of ('state ->'a * 'state)
 let run (State f) s = f s
 
 type StateMonad() = 
+       [<DebuggerHidden>]
        member b.Bind(State m, f) = State (fun s -> let (v,s') = m s in let (State n) = f v in n s')                                                    
+       [<DebuggerHidden>]
        member b.Return x = State (fun s -> x, s)
+       [<DebuggerHidden>]
        member b.ReturnFrom x = x
+       [<DebuggerHidden>]
        member b.Zero () = State (fun s -> (), s)
+       [<DebuggerHidden>]
        member b.Combine(r1, r2) = b.Bind(r1, fun () -> r2)
+       [<DebuggerHidden>]
        member b.Delay f = State (fun s -> run (f()) s)
 
 let state = StateMonad()
@@ -48,9 +56,12 @@ let stateId x = state { return! x }
 
 let mmapId xs = mmap stateId xs
 
-  // (a -> b) -> m a -> m b
+// (a -> b) -> m a -> m b
 let inline liftM f m = state.Bind (m, (fun a -> state.Return (f a)))
 
-   // (a -> b -> c) -> m a -> m b -> m c
-let inline liftM2 f ma mb = state.Bind (ma, (fun a1 -> state.Bind(mb, (fun a2 -> state.Return (f a1 a2)))))
+// (a -> b -> c) -> m a -> m b -> m c
+let inline liftM2 f ma mb = state.Bind (ma, (fun a -> state.Bind(mb, (fun b -> state.Return (f a b)))))
+
+// (a -> b -> c -> d) -> m a -> m b -> m c -> md
+let inline liftM3 f ma mb mc = state.Bind (ma, (fun a -> state.Bind(mb, (fun b -> state.Bind(mc, fun c -> state.Return (f a b c))))))
 
