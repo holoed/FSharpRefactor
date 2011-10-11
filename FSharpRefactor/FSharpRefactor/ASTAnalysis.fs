@@ -9,7 +9,6 @@
 // * You must not remove this notice, or any other, from this software.
 // * **********************************************************************************************
 
-
 module ASTAnalysis
 
 open Ast
@@ -20,41 +19,11 @@ open PurelyFunctionalDataStructures
 open ASTScopeOperations
 open ASTPatUtils
 
-let memberSigF = liftM Ast.MemberSig
+let noOp = liftM
 
-let traitCallF ss = liftM2 ((curry3 Ast.TraitCall) ss) 
-                           
-let typeTestF = liftM2 (curry2 Ast.TypeTest)
+let noOp2 v = liftM2 (curry2 v)
 
-let measureVarF s = state.Return (Ast.MVar s)
-
-let measureOneF _ = state.Return Ast.One 
-
-let measureAnonF _ = state.Return Ast.Anon 
-
-let measureDivideF = liftM2 (curry2 Ast.Divide)
-                           
-let powerF m n = liftM2 (curry2 Ast.Power) m (state.Return n)
-              
-let measureF = liftM2 (curry2 Ast.Measure)
-             
-let measureSeqF ms = liftM Ast.Seq (mmapId ms) 
-                    
-let measureNamedF = liftM Ast.Named                        
-
-let quoteF = liftM2 (curry2 Ast.Quote)
-                    
-let inferredDowncastF = liftM Ast.InferredDowncast                            
-
-let inferredUpcastF = liftM Ast.InferredUpcast 
-                                
-let lazyF = liftM Ast.Lazy 
-                
-let whileF = liftM2 (curry2 Ast.While)
-
-let assertF = liftM Ast.Assert
-
-let nullF () = state.Return Null 
+let noOp3 v = liftM3 (curry3 v)
 
 let varF x = state {    let (s : string,l) = x                                                          
                         let { srcFilename = fileName
@@ -83,18 +52,13 @@ let varF x = state {    let (s : string,l) = x
                                                                                                                                                                               
                         return Var x }
 
-let longVarSetF = liftM2 (curry2 Ast.LongVarSet)
-
-
 let lamF ps e = state { let! vars = mmap (fun p -> state { return! p }) ps
                         let! _ = mmap (fun x -> execute enterScope x) vars
                         let! e' = e
                         let! _ = mmap (fun x -> execute exitScope x) vars 
                         return Lam (vars, e') }
 
-let appF = liftM2 (curry2 Ast.App)
-                
-
+               
 let letF isRec bs e2 = state {  let! bsAcc = mmap (fun (p, e1) -> 
                                                 state {
                                                         let! pAcc = p
@@ -149,16 +113,7 @@ let letBangF p e1 e2 = state {  let! pAcc = p
                                         do ()
                                     return LetBang (p', e1', e2') }
 
-let litF x = state.Return (Lit x) 
 
-let tupleF es = liftM Ast.Tuple (mmapId es)
-                
-let listF es = liftM Ast.List (mmapId es)
-                
-let expF es = liftM Ast.Exp (mmapId es)
-
-let typesF xs = liftM Ast.Types (mmapId xs)
-                
 let unionF name cases = state { let! _ = mmap (fun (s,l) -> enterScope ((sprintf "%s.%s" name s), l)) cases
                                 return DisUnion(name, cases) }
 
@@ -223,22 +178,12 @@ let forF var startExp endExp bodyExp =
                                let! _ = execute exitScope varAcc 
                                return For(varAcc, startExpAcc, endExpAcc, bodyExpAcc) }
 
-let yieldOrRetF = liftM Ast.YieldOrReturn                
-
-let yieldOrRetFromF = liftM Ast.YieldOrReturnFrom
-
 let moduleF n ms = state { let! ms' = mmap (fun m -> state { return! m }) ms
                            return NestedModule (n, ms') }
 
-let openF s = state.Return (Open s)
-
-let exceptionF = liftM Ast.Exception
-                    
 let hashdirectiveF s ss = state { return HashDirective (s, ss) }
 
 let moduleAbbrevF s ss = state { return ModuleAbbrev (s, ss) }
-
-let attributesF xs = liftM Ast.Attributes (mmapId xs)                        
 
 let exceptionDefF n ms = state { let! msAcc = mmap (fun m -> state { return! m }) ms
                                  return ExceptionDef (n, msAcc) }
@@ -252,26 +197,8 @@ let ifThenElseF e1 e2 e3 = state { let! e1' = e1
                                    | Option.None ->
                                        return IfThenElse(e1', e2', Option.None) }
 
-let dotGetF = liftM2 (curry2 Ast.DotGet)
-
-let dotSetF = liftM3 (curry3 Ast.DotSet)                        
-
-let dotIndexedSetF e1 es e3 = liftM3 (curry3 Ast.DotIndexedSet) e1 (mmapId es) e3
-                              
-let dotIndexedGetF e1 es = liftM2 (curry2 Ast.DotIndexedGet) e1 (mmapId es)
-
 let recordDefF name fields ms = state { let! msAcc = mmap (fun m -> state { return! m }) ms
                                         return Record(name, fields, msAcc) }
-
-let recordInstF fields = liftM Exp.Record (mmapId fields)                         
-
-let recordFieldInstF n = liftM (fun eAcc -> (n, eAcc))                             
-
-let newF = liftM2 (curry2 Ast.New)
-                
-let typeappF e ts = liftM2 (curry2 Ast.TypeApp) e (mmapId ts)
-                    
-let noneF name = state.Return (None name)
 
 let classF n ms = state {  let! ic = mmap (fun x -> state { let! xAcc = x
                                                             match xAcc with | ImplicitCtor ps -> return ps | _ -> return [] }) ms
@@ -279,8 +206,6 @@ let classF n ms = state {  let! ic = mmap (fun x -> state { let! xAcc = x
                            let! msAcc = mmap (fun m -> state { return! m }) (if ic.IsEmpty then ms else ms.Tail)
                            let! _ = mmap (fun ps -> mmap (fun x -> execute exitScope x) ps) ic
                            return Class (n, msAcc) }
-
-let implicitConF ps = liftM Ast.ImplicitCtor (mmapId ps)                        
 
 let valfieldF t1 t2 = state { let! t1Acc = match t1 with
                                            | Some t -> state { let! x = t
@@ -325,22 +250,6 @@ let memberF isInstance p e =
                             let! _ = mmap (fun x -> execute exitScope x) args
                             return Member(isInstance, pAcc, eAcc) }
 
-let abstractSlotF n = state.Return (AbstractSlot n)
-
-let objExprF ms = liftM Ast.ObjExpr (mmapId ms)                    
-
-let doF = liftM Ast.Do 
-            
-let addressofF = liftM Ast.AddressOf
-
-let doBangF = liftM Ast.DoBang
-
-let downcastF = liftM2 (curry2 Ast.Downcast)
-                    
-let upcastF = liftM2 (curry2 Ast.Upcast)
-                  
-let typedF = liftM2 (curry2 Ast.Typed)
-
 
 let interfaceF t msOption = state { let! (tAcc:Type<_>) = t
                                     let! msAcc = match msOption with
@@ -349,55 +258,11 @@ let interfaceF t msOption = state { let! (tAcc:Type<_>) = t
                                                  | Option.None -> state { return Option.None }
                                     return Interface (tAcc, msAcc) }
 
-let letBindingsF es = liftM Ast.LetBindings (mmapId es)
-
-let abbrevF n = liftM2 (curry2 Ast.Abbrev) (state.Return n)
-
-let tfunF = liftM2 (curry2 Ast.TFun)
-
-let tIdentF s = state.Return (Ident s)
-
-let tLongIdentF ts = liftM Ast.LongIdent (mmapId ts)                     
-
-let tvarF = liftM Ast.TVar
-                
-let tappF t ts = liftM2 (curry2 Ast.TApp) t (mmapId ts)
-                 
-let ttupleF ts = liftM Ast.TTuple (mmapId ts)
-                    
-let tarrayF n = liftM2 (curry2 Ast.TArray) (state.Return n)
-
-let tmeasurePowerF t n = liftM2 (curry2 Ast.TMeasurePower) t (state.Return n)
-
-let tanonF () = state.Return TAnon 
-
-let tmeasureOneF () = state.Return TMeasureOne 
-
-let tryWithF e cs = liftM2 (curry2 Ast.TryWith) e (mmapId cs)
-
-let tryFinallyF = liftM2 (curry2 Ast.TryFinally)                            
-
-let errorF () = state.Return ArbitraryAfterError 
-
-let pVarF x = state.Return (PVar x)
-
-let pAppF = liftM2 (curry2 Ast.PApp)
-                
-let porF = liftM2 (curry2 Ast.POr)
-                 
-let pandsF ps = liftM Ast.PAnds (mmapId ps)                
-
-let pLitF x = state.Return (PLit x)
-
-let pTupleF es = liftM Ast.PTuple (mmapId es)                    
 
 let pRecordF es = state { let! esAcc = mmap (fun (i, e) -> state { let! eAcc = e
                                                                    return i, eAcc }) es
                           return PRecord esAcc }
 
-let pWildF () = state.Return PWild 
-
-let pArrayOrListF es = liftM Ast.PList (mmapId es)
 
 let pLongVarF xs = state {  let! xsAcc = mmapId xs                                                                 
                             let ls = xsAcc |> List.map (fun (PVar(_,l')) -> l')
@@ -410,117 +275,108 @@ let pLongVarF xs = state {  let! xsAcc = mmapId xs
                             let! _ = mmap (fun l -> state { do! addUsage (s,l) }) ls    
                             return PLongVar xsAcc }
 
-let pIsInstF = liftM Ast.PIsInst              
-
-let pnullF () = state.Return PNull 
-
-let pattributeF p attrs = liftM2 (curry2 Ast.PAttribute) p (mmapId attrs)
-
-let attributeF = liftM Ast.Attribute
-                    
-let pnamedF = liftM2 (curry2 Ast.PNamed) 
                     
 let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> = 
-        foldExpAlgebra { memberSigF = memberSigF
-                         traitCallF = traitCallF
-                         typetestF = typeTestF
-                         measureVarF = measureVarF
-                         measureOneF = measureOneF
-                         measureAnonF =   measureAnonF
-                         measureDivideF = measureDivideF
-                         powerF = powerF
-                         measureF = measureF
-                         measureSeqF = measureSeqF
-                         measureNamedF = measureNamedF
-                         quoteF = quoteF
-                         inferredDowncastF = inferredDowncastF
-                         inferredUpcastF   = inferredUpcastF
-                         lazyF = lazyF
-                         whileF = whileF
-                         assertF = assertF
-                         nullF = nullF
+        foldExpAlgebra { memberSigF = noOp Ast.MemberSig
+                         traitCallF = fun ss -> noOp3 Ast.TraitCall (state.Return ss)
+                         typetestF = noOp2 Ast.TypeTest
+                         measureVarF = fun s -> state.Return (Ast.MVar s)
+                         measureOneF = fun _ -> state.Return Ast.One 
+                         measureAnonF =  fun _ -> state.Return Ast.Anon 
+                         measureDivideF = noOp2 Ast.Divide
+                         powerF = fun m n -> noOp2 Ast.Power m (state.Return n)
+                         measureF = noOp2 Ast.Measure
+                         measureSeqF = fun ms -> noOp Ast.Seq (mmapId ms) 
+                         measureNamedF = noOp Ast.Named                        
+                         quoteF = noOp2 Ast.Quote
+                         inferredDowncastF = noOp Ast.InferredDowncast                            
+                         inferredUpcastF   = noOp Ast.InferredUpcast 
+                         lazyF = noOp Ast.Lazy 
+                         whileF = noOp2 Ast.While
+                         assertF = noOp Ast.Assert
+                         nullF = fun () -> state.Return Null 
                          varF = varF
-                         longVarSetF = longVarSetF
+                         longVarSetF = noOp2 Ast.LongVarSet
                          lamF = lamF
-                         appF = appF
+                         appF = noOp2 Ast.App
                          letF = letF
                          letBangF = letBangF
-                         litF = litF
-                         tupleF = tupleF
-                         listF = listF
-                         expF = expF
-                         typesF = typesF
+                         litF = fun x -> state.Return (Lit x) 
+                         tupleF = fun es -> noOp Ast.Tuple (mmapId es)
+                         listF = fun es -> noOp Ast.List (mmapId es)
+                         expF = fun es -> noOp Ast.Exp (mmapId es)
+                         typesF = fun xs -> noOp Ast.Types (mmapId xs)
                          unionF = unionF     
                          enumF = enumF      
                          matchF = matchF
                          clauseF = clauseF
                          forEachF = forEachF
                          forF = forF
-                         yieldOrRetF = yieldOrRetF
-                         yieldOrRetFromF = yieldOrRetFromF
+                         yieldOrRetF = noOp Ast.YieldOrReturn                
+                         yieldOrRetFromF = noOp Ast.YieldOrReturnFrom
                          moduleF = moduleF
-                         openF = openF
-                         exceptionF = exceptionF
+                         openF = fun s -> state.Return (Open s)
+                         exceptionF = noOp Ast.Exception
                          hashdirectiveF = hashdirectiveF
                          moduleAbbrevF = moduleAbbrevF
-                         attributesF = attributesF
+                         attributesF = fun xs -> noOp Ast.Attributes (mmapId xs)                        
                          exceptionDefF = exceptionDefF
                          ifThenElseF = ifThenElseF
-                         dotGetF = dotGetF
-                         dotSetF = dotSetF
-                         dotIndexedSetF = dotIndexedSetF
-                         dotIndexedGetF =  dotIndexedGetF
+                         dotGetF = noOp2 Ast.DotGet
+                         dotSetF = noOp3 Ast.DotSet
+                         dotIndexedSetF = fun e1 es e3 -> (noOp3 Ast.DotIndexedSet) e1 (mmapId es) e3
+                         dotIndexedGetF =  fun e1 es -> noOp2 Ast.DotIndexedGet e1 (mmapId es)
                          recordDefF = recordDefF
-                         recordInstF = recordInstF
-                         recordFieldInstF = recordFieldInstF
-                         newF = newF
-                         typeappF = typeappF
-                         noneF = noneF
+                         recordInstF = fun fields -> noOp Exp.Record (mmapId fields)                         
+                         recordFieldInstF = fun n -> noOp (fun eAcc -> (n, eAcc))                             
+                         newF = noOp2 Ast.New
+                         typeappF = fun e ts -> noOp2 Ast.TypeApp e (mmapId ts)
+                         noneF = fun name -> state.Return (None name)
                          classF = classF
-                         implicitConF = implicitConF
+                         implicitConF = fun ps -> noOp Ast.ImplicitCtor (mmapId ps)                        
                          valfieldF = valfieldF
                          inheritF  = inheritF
                          implicitInheritF = implicitInheritF
                          memberF = memberF
-                         abstractSlotF = abstractSlotF
-                         objExprF = objExprF
-                         doF = doF
-                         addressofF = addressofF
-                         doBangF = doBangF
-                         downcastF = downcastF
-                         upcastF = upcastF
-                         typedF = typedF
+                         abstractSlotF = fun n -> state.Return (AbstractSlot n)
+                         objExprF = fun ms -> noOp Ast.ObjExpr (mmapId ms)                    
+                         doF = noOp Ast.Do 
+                         addressofF = noOp Ast.AddressOf
+                         doBangF = noOp Ast.DoBang
+                         downcastF = noOp2 Ast.Downcast
+                         upcastF = noOp2 Ast.Upcast
+                         typedF = noOp2 Ast.Typed
                          interfaceF = interfaceF
-                         letBindingsF =  letBindingsF
-                         abbrevF =  abbrevF
-                         tfunF = tfunF
-                         tIdentF = tIdentF
-                         tLongIdentF = tLongIdentF
-                         tvarF =  tvarF
-                         tappF = tappF
-                         ttupleF = ttupleF
-                         tarrayF = tarrayF
-                         tmeasurePowerF = tmeasurePowerF
-                         tanonF = tanonF
-                         tmeasureOneF = tmeasureOneF
-                         tryWithF = tryWithF
-                         tryFinallyF = tryFinallyF
-                         errorF = errorF                         
-                         pVarF = pVarF
-                         pAppF = pAppF
-                         porF = porF
-                         pandsF = pandsF                                        
-                         pLitF = pLitF
-                         pTupleF = pTupleF
+                         letBindingsF =  fun es -> noOp Ast.LetBindings (mmapId es)
+                         abbrevF =  fun n -> noOp2 Ast.Abbrev (state.Return n)
+                         tfunF = noOp2 Ast.TFun
+                         tIdentF = fun s -> state.Return (Ident s)
+                         tLongIdentF = fun ts -> noOp Ast.LongIdent (mmapId ts)                     
+                         tvarF =  noOp Ast.TVar
+                         tappF = fun t ts -> noOp2 Ast.TApp t (mmapId ts)
+                         ttupleF = fun ts -> noOp Ast.TTuple (mmapId ts)
+                         tarrayF = fun n -> noOp2 Ast.TArray (state.Return n)
+                         tmeasurePowerF = fun t n -> noOp2 Ast.TMeasurePower t (state.Return n)
+                         tanonF = fun () -> state.Return TAnon 
+                         tmeasureOneF = fun () -> state.Return TMeasureOne 
+                         tryWithF = fun e cs -> noOp2 Ast.TryWith e (mmapId cs)
+                         tryFinallyF = noOp2 Ast.TryFinally
+                         errorF = fun () -> state.Return ArbitraryAfterError                          
+                         pVarF = fun x -> state.Return (PVar x)
+                         pAppF = noOp2 Ast.PApp
+                         porF = noOp2 Ast.POr
+                         pandsF = fun ps -> noOp Ast.PAnds (mmapId ps)                                                        
+                         pLitF = fun x -> state.Return (PLit x)
+                         pTupleF = fun es -> noOp Ast.PTuple (mmapId es)                    
                          pRecordF = pRecordF
-                         pWildF = pWildF
-                         pArrayOrListF = pArrayOrListF
+                         pWildF = fun () -> state.Return PWild 
+                         pArrayOrListF = fun es -> noOp Ast.PList (mmapId es)
                          pLongVarF = pLongVarF
-                         pIsInstF  = pIsInstF
-                         pnullF = pnullF
-                         pattributeF = pattributeF
-                         attributeF = attributeF
-                         pnamedF = pnamedF }   exp
+                         pIsInstF  = noOp Ast.PIsInst              
+                         pnullF = fun () -> state.Return PNull 
+                         pattributeF = fun p attrs -> noOp2 Ast.PAttribute p (mmapId attrs)
+                         attributeF = noOp Ast.Attribute
+                         pnamedF = noOp2 Ast.PNamed }   exp
                      
                                                        
 
