@@ -34,7 +34,7 @@ let measureAnonF _ = state.Return Ast.Anon
 
 let measureDivideF = liftM2 (curry2 Ast.Divide)
                            
-let powerF m n = liftM (fun mAcc -> Ast.Power(mAcc, n)) m
+let powerF m n = liftM2 (curry2 Ast.Power) m (state.Return n)
               
 let measureF = liftM2 (curry2 Ast.Measure)
              
@@ -351,7 +351,7 @@ let interfaceF t msOption = state { let! (tAcc:Type<_>) = t
 
 let letBindingsF es = liftM Ast.LetBindings (mmapId es)
 
-let abbrevF n = liftM (fun tAcc -> Ast.Abbrev (n, tAcc))
+let abbrevF n = liftM2 (curry2 Ast.Abbrev) (state.Return n)
 
 let tfunF = liftM2 (curry2 Ast.TFun)
 
