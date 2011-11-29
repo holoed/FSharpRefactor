@@ -906,3 +906,37 @@ type CompilerToAstTests() =
         let ast = parse "let something: #IEnumerable option = None"
         AssertAreEqual [Let (false, [(PVar "something", Typed (Var "None", TApp (LongIdent [Ident "option"],[LongIdent [Ident "IEnumerable"]])))], Lit Unit)] ast
 
+    [<Test>]
+    member this.``Unit of Measure products support [workitem:16976] reported by czb``() = 
+        let ast = parseModule ("[<Measure>] type m  \n" + 
+                         "[<Measure>] type kg \n" +
+                         "[<Measure>] type s  \n" +
+                         "[<Measure>] type N = kg m / s^2 \n" +
+                         "[<Measure>] type Pa = N / m^2 \n" +
+                         "let a = 1.<m/Pa*s>")
+        let txt = System.String.Join("\n", ast |> List.map (sprintf "%A")
+                                               |> List.toArray)
+        AssertAreEqual [Types [None "m"]
+                        Types [None "kg"]
+                        Types [None "s"]
+                        Types
+                          [Abbrev
+                             ("N",
+                              TTuple
+                                [TApp (LongIdent [Ident "m"],[LongIdent [Ident "kg"]]);
+                                 TMeasurePower (LongIdent [Ident "s"],2)])]
+                        Types
+                          [Abbrev
+                             ("Pa",
+                              TTuple [LongIdent [Ident "N"]; TMeasurePower (LongIdent [Ident "m"],2)])]
+                        Exp
+                          [Let
+                             (false,
+                              [(PVar "a",
+                                Measure
+                                  (Lit (Float 1.0),
+                                   Product
+                                     (Divide
+                                        (Seq [Named (LongIdent [Ident "m"])],
+                                         Seq [Named (LongIdent [Ident "Pa"])]),
+                                      Seq [Named (LongIdent [Ident "s"])])))],Lit Unit)]] ast

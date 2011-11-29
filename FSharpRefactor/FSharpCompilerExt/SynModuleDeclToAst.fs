@@ -285,6 +285,9 @@ let internal foldDecls decls =
                                       return Ast.MVar (id.idText)
                | SynMeasure.Anon _ -> return Ast.Anon
                | SynMeasure.One -> return Ast.One
+               | SynMeasure.Product (m1, m2, _) -> let! m1Acc = LoopMeasure m1
+                                                   let! m2Acc = LoopMeasure m2
+                                                   return Ast.Product (m1Acc, m2Acc)
                | SynMeasure.Divide (m1, m2, _) -> let! m1Acc = LoopMeasure m1
                                                   let! m2Acc = LoopMeasure m2
                                                   return Ast.Divide (m1Acc, m2Acc)

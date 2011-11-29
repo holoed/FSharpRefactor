@@ -283,6 +283,7 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          measureVarF = fun s -> state.Return (Ast.MVar s)
                          measureOneF = fun _ -> state.Return Ast.One 
                          measureAnonF =  fun _ -> state.Return Ast.Anon 
+                         measureProductF = noOp2 Ast.Product
                          measureDivideF = noOp2 Ast.Divide
                          powerF = fun m n -> noOp2 Ast.Power m (state.Return n)
                          measureF = noOp2 Ast.Measure

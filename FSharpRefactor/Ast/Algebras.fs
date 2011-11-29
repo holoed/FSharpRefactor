@@ -21,6 +21,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l, 'm, 'n> =
         measureVarF : string -> 'm
         measureOneF : unit -> 'm
         measureAnonF : unit -> 'm
+        measureProductF: 'm -> 'm -> 'm
         measureDivideF: 'm -> 'm -> 'm
         powerF : 'm -> int -> 'm
         measureNamedF : 'i -> 'm
