@@ -152,6 +152,9 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_,_,_>) decl =
                    | Anon -> return algebra.measureAnonF ()
                    | MVar s -> return algebra.measureVarF s
                    | One  -> return algebra.measureOneF ()
+                   | Product (m1, m2) ->let! m1Acc = LoopMeasure m1 
+                                        let! m2Acc = LoopMeasure m2
+                                        return algebra.measureProductF m1Acc m2Acc
                    | Divide (m1, m2) -> let! m1Acc = LoopMeasure m1
                                         let! m2Acc = LoopMeasure m2
                                         return algebra.measureDivideF m1Acc m2Acc

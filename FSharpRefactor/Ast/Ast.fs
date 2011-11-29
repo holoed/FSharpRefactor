@@ -65,6 +65,7 @@ and Measure<'a>
     = Seq of Measure<'a> list
     | Named of Type<'a> 
     | Power of Measure<'a> * int
+    | Product of Measure<'a> * Measure<'a>
     | Divide of Measure<'a> * Measure<'a>
     | One
     | Anon
