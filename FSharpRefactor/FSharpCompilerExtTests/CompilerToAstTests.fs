@@ -81,8 +81,8 @@ type CompilerToAstTests() =
     [<Test>]
     member this.InfixAppVsPrefixApp() =
         Assert.IsTrue (parse "(+) x y" = parse "x + y")
-        Assert.IsTrue (parse "(+) ((+) x y) z" = parse "x + y + z")
-        Assert.IsTrue (parse "(+) ((+) ((+) x y) z) k" = parse "x + y + z + k")
+        Assert.IsTrue (parse "(+) ((+) x y) z" = parse "(x + y) + z")
+        Assert.IsTrue (parse "(+) ((+) ((+) x y) z) k" = parse "((x + y) + z) + k")
 
     [<Test>]
     member this.ApplicationsAssociatesToTheLeft() =
@@ -92,8 +92,8 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.ParensToModifyAssociation() =
-        Assert.IsTrue([(App(Var "f", App(Var "g", Var "h")))] = parse "f (g h)")
-        Assert.IsTrue([(App(Var "f", App(Var "g", App(Var "h", Var "j"))))] = parse "f (g (h j))")
+        Assert.IsTrue([(App(Var "f", Paren(App(Var "g", Var "h"))))] = parse "f (g h)")
+        Assert.IsTrue([(App(Var "f", Paren(App(Var "g", Paren(App(Var "h", Var "j"))))))] = parse "f (g (h j))")
 
     [<Test>]
     member this.Currying() = 
@@ -142,7 +142,7 @@ type CompilerToAstTests() =
                                                     App(App (Var "op_Addition", Var "x"), Var "y")))], 
                                 Lit(Unit))]
 
-        let x = parse "let z = (let x = 12 in let y = 32 in x + y)"
+        let x = parse "let z = let x = 12 in let y = 32 in x + y"
 
         let y = parse ("let z =       \n " + 
                        "   let x = 12 \n " +
@@ -165,14 +165,14 @@ type CompilerToAstTests() =
                    (false,[PApp (PApp (PVar "computeDerivative",PVar "f"),PVar "x"),
                     Let
                       (false, [PVar "p1",
-                       App (Var "f",App (App (Var "op_Subtraction",Var "x"),Lit (Float 0.05)))],
+                       App (Var "f", Paren(App (App (Var "op_Subtraction",Var "x"),Lit (Float 0.05))))],
                        Let
                          (false, [PVar "p2",
-                          App (Var "f",App (App (Var "op_Addition",Var "x"),Lit (Float 0.05)))],
+                          App (Var "f", Paren(App (App (Var "op_Addition",Var "x"),Lit (Float 0.05))))],
                           App
                             (App
                                (Var "op_Division",
-                                App (App (Var "op_Subtraction",Var "p2"),Var "p1")),
+                                Paren(App (App (Var "op_Subtraction",Var "p2"),Var "p1"))),
                              Lit (Float 0.1))))],Lit Unit)]
 
         Assert.IsTrue ( (x = y) )
@@ -201,21 +201,21 @@ type CompilerToAstTests() =
                    (false, [PApp (PApp (PVar ("computeDerivative", loc (4,21,1,1)),PVar ("f", loc (22,23,1,1))),PVar ("x", loc (24,25,1,1))),
                         Let
                             (false, [PVar ("p1", loc (8,10,2,2)),
-                                App (Var ("f", loc (13,14,2,2)),App (App (Var ("op_Subtraction", loc (18,19,2,2)),Var ("x", loc (16,17,2,2))),Lit (Float 0.05)))],
+                                App (Var ("f", loc (13,14,2,2)), Paren (App (App (Var ("op_Subtraction", loc (18,19,2,2)),Var ("x", loc (16,17,2,2))),Lit (Float 0.05))))],
                                     Let
                                         (false, [PVar ("p2", loc (8,10,3,3)),
-                                            App (Var ("f", loc (13,14,3,3)),App (App (Var ("op_Addition", loc (18,19,3,3)),Var ("x", loc (16,17,3,3))),Lit (Float 0.05)))],
+                                            App (Var ("f", loc (13,14,3,3)), Paren (App (App (Var ("op_Addition", loc (18,19,3,3)),Var ("x", loc (16,17,3,3))),Lit (Float 0.05))))],
                                             App(App
                                                (Var ("op_Division", loc (14,15,4,4)),
-                                                App (App (Var ("op_Subtraction", loc (8,9,4,4)),Var ("p2", loc (5,7,4,4))),Var ("p1", loc (10,12,4,4)))),
+                                                Paren(App (App (Var ("op_Subtraction", loc (8,9,4,4)),Var ("p2", loc (5,7,4,4))),Var ("p1", loc (10,12,4,4))))),
                                              Lit (Float 0.1))))],Lit Unit)]
 
         AssertAreEqual y x
 
     [<Test>]
     member this.Tuples() = 
-       AssertAreEqual [Let(false,[PVar "x", Tuple [Lit(Integer 42);Lit(Integer 24)]], Lit(Unit))]  (parse "let x = (42, 24)")
-       AssertAreEqual [Let(false,[PVar "x", Tuple [Lit(Integer 42);Tuple [Lit(String "Hello"); Var "y"]]], Lit(Unit))]  (parse "let x = (42, (\"Hello\", y))")
+       AssertAreEqual [Let(false,[PVar "x", Paren(Tuple [Lit(Integer 42);Lit(Integer 24)])], Lit(Unit))]  (parse "let x = (42, 24)")
+       AssertAreEqual [Let(false,[PVar "x", Paren(Tuple [Lit(Integer 42); Paren(Tuple [Lit(String "Hello"); Var "y"])])], Lit(Unit))]  (parse "let x = (42, (\"Hello\", y))")
 
     [<Test>]
     member this.Lists() = 
@@ -235,7 +235,7 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.TuplePattern() =
-        AssertAreEqual [Let(false,[PApp(PVar "f", PTuple [PVar "x"; PVar "y"]), Var "x"], Lit(Unit))]  (parse "let f (x,y) = x")
+        AssertAreEqual [Let(false,[PApp(PVar "f", PParen(PTuple [PVar "x"; PVar "y"])), Var "x"], Lit(Unit))]  (parse "let f (x,y) = x")
 
     [<Test>]
     member this.WildPattern() =
@@ -247,7 +247,7 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.SimplePatternMatchingWithTuplePattern() =
-        AssertAreEqual [Let(false,[PApp(PVar "f", PVar "p"), Match(Var "p", [Clause(PTuple [PVar "x"; PVar "y"], Var "x")])], Lit(Unit))]  (parse "let f p = match p with (x,y) -> x")
+        AssertAreEqual [Let(false,[PApp(PVar "f", PVar "p"), Match(Var "p", [Clause(PParen (PTuple [PVar "x"; PVar "y"]), Var "x")])], Lit(Unit))]  (parse "let f p = match p with (x,y) -> x")
 
     [<Test>]
     member this.SimpleSeqComprehension() =        
@@ -276,7 +276,7 @@ type CompilerToAstTests() =
     [<Test>]
     member this.IfThenElse() =
         AssertAreEqual 
-            [Let(true,[PApp(PVar "fac", PVar "n"), IfThenElse(App(App (Var "op_Equality", Var "n"), Lit(Integer 0)), Lit(Integer 1), Some (App(App( Var "op_Multiply", Var "n"), App (Var "fac", App (App (Var "op_Subtraction",Var "n"),Lit (Integer 1))))))], Lit(Unit))]  
+            [Let(true,[PApp(PVar "fac", PVar "n"), IfThenElse(App(App (Var "op_Equality", Var "n"), Lit(Integer 0)), Lit(Integer 1), Some (App(App( Var "op_Multiply", Var "n"), App (Var "fac", Paren (App (App (Var "op_Subtraction",Var "n"),Lit (Integer 1)))))))], Lit(Unit))]  
             (parse "let rec fac n = if n = 0 then 1 else n * fac (n - 1)")
 
     [<Test>]
@@ -331,7 +331,7 @@ type CompilerToAstTests() =
     [<Test>]
     member this.NewObject() =
         let ast = parse "let p = new Point(12, 31)"
-        AssertAreEqual [Let (false, [PVar "p", Exp.New (LongIdent [Ident "Point"], Tuple [Lit(Integer 12); Lit(Integer 31)])], Lit Unit)] ast
+        AssertAreEqual [Let (false, [PVar "p", Exp.New (LongIdent [Ident "Point"], Paren(Tuple [Lit(Integer 12); Lit(Integer 31)]))], Lit Unit)] ast
 
     [<Test>]
     member this.InterfaceDefinition() =
@@ -344,7 +344,7 @@ type CompilerToAstTests() =
     [<Test>]
     member this.ObjectExpression() =
         let ast = parse "let disposable = { new IDisposable with member this.Dispose () = () }"        
-        AssertAreEqual [Let (false, [PVar "disposable", Exp.ObjExpr [Member (true, PApp (PLongVar [PVar "this"; PVar "Dispose"], PLit(Unit)), Lit Unit)]], Lit Unit)] ast
+        AssertAreEqual [Let (false, [PVar "disposable", Exp.ObjExpr [Member (true, PApp (PLongVar [PVar "this"; PVar "Dispose"], PParen(PLit(Unit))), Lit Unit)]], Lit Unit)] ast
 
     [<Test>]
     member this.DoExpression() =
@@ -365,7 +365,7 @@ type CompilerToAstTests() =
     [<Test>]
     member this.InterfaceImplementation() =
         let ast = parseTypes "type Foo = interface IDisposable with member this.Dispose () = ()" |> List.concat
-        AssertAreEqual [Class("Foo", [Interface(LongIdent [Ident "IDisposable"], Some [Member (true, PApp(PLongVar [PVar "this"; PVar "Dispose"], PLit(Unit)), Lit Unit)])])] ast
+        AssertAreEqual [Class("Foo", [Interface(LongIdent [Ident "IDisposable"], Some [Member (true, PApp(PLongVar [PVar "this"; PVar "Dispose"], PParen(PLit(Unit))), Lit Unit)])])] ast
    
     [<Test>]
     member this.``Assignment of a mutable variable``() =
@@ -411,7 +411,7 @@ type CompilerToAstTests() =
     [<Test>]
     member this.``Conditional with no else branch`` () =
         let ast = parse "let DoSome() = if (x > 0) then do Hello()"
-        AssertAreEqual [Let (false, [PApp (PVar "DoSome",PLit Unit),  IfThenElse(App(App (Var "op_GreaterThan", Var "x"), Lit(Integer 0)), Do (App (Var "Hello",Lit Unit)), Option.None)],Lit Unit)] ast
+        AssertAreEqual [Let (false, [PApp (PVar "DoSome",PParen(PLit Unit)),  IfThenElse(Paren(App(App (Var "op_GreaterThan", Var "x"), Lit(Integer 0))), Do (App (Var "Hello",Lit Unit)), Option.None)],Lit Unit)] ast
         
     [<Test>]
     member this.``try with expression`` () =
@@ -423,7 +423,7 @@ type CompilerToAstTests() =
         AssertAreEqual [Let
                            (false,[PApp (PApp (PVar "divide1",PVar "x"),PVar "y"),
                                 TryWith
-                                  (App (Var "Some",App (App (Var "op_Division",Var "x"),Var "y")),
+                                  (App (Var "Some", Paren(App (App (Var "op_Division",Var "x"),Var "y"))),
                                    [Clause
                                       (PIsInst (LongIdent [Ident "System"; Ident "DivideByZeroException"]),
                                        Var "None")])],Lit Unit)] ast
@@ -461,7 +461,7 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.``dot get for object instances`` () =
-        AssertAreEqual [Let (false, [(PApp (PVar "getName",PVar "xs"), DotGet (App (Var "List.head",Var "xs"), Var "Name"))], Lit Unit)] 
+        AssertAreEqual [Let (false, [(PApp (PVar "getName",PVar "xs"), DotGet (Paren(App (Var "List.head",Var "xs")), Var "Name"))], Lit Unit)] 
                        (parse "let getName xs = (List.head xs).Name")
 
     [<Test>]
@@ -584,14 +584,14 @@ type CompilerToAstTests() =
         AssertAreEqual [Let (false,
                              [(PApp (PVar "f",PVar "x"),
                                Match
-                                 (Typed (Var "x",LongIdent [Ident "System"; Ident "Object"]),
+                                 (Paren (Typed (Var "x",LongIdent [Ident "System"; Ident "Object"])),
                                   [Clause
                                      (PIsInst (LongIdent [Ident "System"; Ident "Boolean"]),
                                       Lit (Integer 42))]))],Lit Unit)] ast
 
     [<Test>]
     member this.``assert keyword``() =
-        AssertAreEqual [Let (false, [(PWild,  Assert (App (App (Var "op_LessThanOrEqual",Var "pos_nbits"),Lit (Integer 32))))], Lit Unit)]
+        AssertAreEqual [Let (false, [(PWild,  Assert (Paren(App (App (Var "op_LessThanOrEqual",Var "pos_nbits"),Lit (Integer 32)))))], Lit Unit)]
                        (parse "let _ = assert (pos_nbits <= 32)")
 
     [<Test>]
@@ -641,7 +641,7 @@ type CompilerToAstTests() =
     member this.``Assembly level attribute`` () =
         let ast = parseModule ("[<Dependency(\"FSharp.Compiler\",LoadHint.Always)>] \n" +
                                "do ()")
-        AssertAreEqual [Attributes [Attribute (Tuple [Lit (String "FSharp.Compiler"); Var "LoadHint.Always"])]; Exp [Do (Lit Unit)]] ast                               
+        AssertAreEqual [Attributes [Attribute (Paren(Tuple [Lit (String "FSharp.Compiler"); Var "LoadHint.Always"]))]; Exp [Do (Lit Unit)]] ast                               
 
     [<Test>]
     member this.``Implicit Inherit``() =
@@ -764,7 +764,7 @@ type CompilerToAstTests() =
     [<Test>]
     member this.``Dot set``() =
         let ast = parse ("(List.head xs).Value <- 42")
-        AssertAreEqual [DotSet (App (Var "List.head",Var "xs"), Var "Value", Lit (Integer 42))] ast
+        AssertAreEqual [DotSet (Paren(App (Var "List.head",Var "xs")), Var "Value", Lit (Integer 42))] ast
 
     [<Test>]
     member this.``Interface implementation with no members``() =
@@ -794,15 +794,15 @@ type CompilerToAstTests() =
                                              Match
                                                (Var "point",
                                                 [Clause
-                                                   (PTuple [PLit (Integer 0); PLit (Integer 0)],Lit (Integer 0));
+                                                   (PParen(PTuple [PLit (Integer 0); PLit (Integer 0)]),Lit (Integer 0));
                                                  Clause
                                                    (PAnds
-                                                      [PTuple [PVar "var1"; PVar "var2"];
-                                                       PTuple [PLit (Integer 0); PWild]],Lit (Integer 1));
+                                                      [PParen(PTuple [PVar "var1"; PVar "var2"]);
+                                                       PParen(PTuple [PLit (Integer 0); PWild])],Lit (Integer 1));
                                                  Clause
                                                    (PAnds
-                                                      [PTuple [PVar "var1"; PVar "var2"];
-                                                       PTuple [PWild; PLit (Integer 0)]],Lit (Integer 2));
+                                                      [PParen(PTuple [PVar "var1"; PVar "var2"]);
+                                                       PParen(PTuple [PWild; PLit (Integer 0)])],Lit (Integer 2));
                                                  Clause (PWild,Lit (Integer 3))]))],Lit Unit)]] ast
 
     [<Test>]
@@ -823,7 +823,6 @@ type CompilerToAstTests() =
     [<Test>]
     member this.``Support for DiscardAfterError``() = 
         let ast = parseModule ("let product = List.")   
-        let txt = sprintf "%A" ast
         AssertAreEqual [Exp [Let (false,[(PVar "product", ArbitraryAfterError)],Lit Unit)]] ast
 
     [<Test>]
@@ -848,10 +847,10 @@ type CompilerToAstTests() =
                               " | X.A ( { a = aValue } as t )-> aValue\n" +
                               " | X.B -> 0\n")
         AssertAreEqual [Types [Record ("AParameters",[Some "a"],[])]; Types [DisUnion ("X",["A"; "B"])];
-                         Exp [Let (false, [(PApp (PVar "f",PVar "r"),
+                         Exp [Let (false, [(PApp (PVar "f", PParen(PVar "r")),
                                                  Match (Var "r",
                                                     [Clause (PApp (PLongVar [PVar "X"; PVar "A"], 
-                                                                PNamed (PRecord [("a", PVar "aValue")],PVar "t")), Var "aValue");
+                                                                PParen(PNamed (PRecord [("a", PVar "aValue")],PVar "t"))), Var "aValue");
                                                      Clause (PLongVar [PVar "X"; PVar "B"],Lit (Integer 0))]))],Lit Unit)]] ast
 
     [<Test>]
@@ -900,7 +899,7 @@ type CompilerToAstTests() =
                                 "     \n")
         AssertAreEqual [Types [Class ("Sample", [ImplicitCtor [PVar "code"];
                                                  Member (true, PLongVar [PVar "this"; PVar "Encoding"],Var "code");
-                                                 Member (false, PApp (PVar "Decode",PVar "code"),Var "code")])]] ast
+                                                 Member (false, PApp (PVar "Decode", PParen(PVar "code")),Var "code")])]] ast
     [<Test>]
     member this.``Hash constraint`` () =
         let ast = parse "let something: #IEnumerable option = None"
@@ -914,8 +913,7 @@ type CompilerToAstTests() =
                          "[<Measure>] type N = kg m / s^2 \n" +
                          "[<Measure>] type Pa = N / m^2 \n" +
                          "let a = 1.<m/Pa*s>")
-        let txt = System.String.Join("\n", ast |> List.map (sprintf "%A")
-                                               |> List.toArray)
+
         AssertAreEqual [Types [None "m"]
                         Types [None "kg"]
                         Types [None "s"]
@@ -940,3 +938,18 @@ type CompilerToAstTests() =
                                         (Seq [Named (LongIdent [Ident "m"])],
                                          Seq [Named (LongIdent [Ident "Pa"])]),
                                       Seq [Named (LongIdent [Ident "s"])])))],Lit Unit)]] ast
+
+           
+    [<Test>]
+    member this.``Identifiers bound in a pattern match in the left side of a let expression``() =
+         let ast = parseModule      ("type Foo = Foo of int * int  \n" +
+                                     "let (Foo(x,y)) = Foo(5,7)    \n" +
+                                     "let z = x")
+
+         AssertAreEqual [Types [DisUnion ("Foo",["Foo"])];
+                         Exp
+                           [Let
+                              (false,
+                               [(PParen(PApp (PVar "Foo", PParen(PTuple [PVar "x"; PVar "y"]))),
+                                 App (Var "Foo", Paren(Tuple [Lit (Integer 5); Lit (Integer 7)])))],Lit Unit)];
+                         Exp [Let (false,[(PVar "z", Var "x")],Lit Unit)]] ast

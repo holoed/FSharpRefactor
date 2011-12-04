@@ -30,6 +30,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l, 'm, 'n> =
         quoteF : 'b -> 'b -> 'b
         assertF : 'b -> 'b
         lazyF : 'b -> 'b
+        parenF : 'b -> 'b
         inferredDowncastF : 'b -> 'b
         inferredUpcastF: 'b -> 'b
         whileF : 'b -> 'b -> 'b
@@ -103,6 +104,7 @@ type AstAlgebra<'a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k, 'l, 'm, 'n> =
         errorF : unit -> 'b 
         pVarF : 'a -> 'j
         pAppF : 'j -> 'j -> 'j
+        pParenF : 'j -> 'j
         porF : 'j -> 'j -> 'j
         pandsF : 'j list -> 'j
         pLitF : Literal -> 'j

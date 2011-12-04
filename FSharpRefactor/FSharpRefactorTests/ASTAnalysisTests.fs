@@ -769,3 +769,12 @@ type ASTAnalysisTests() =
                                     "        | No -> 1     \n" +
                                     "(f No) |> printf \"%A\" \n")
         AssertAreEqual [Var ("Foo.No", loc(3,5,5,5));Var ("Foo.No", loc(10,12,4,4));Var ("Foo.No", loc(17,19,1,1))] (findAllReferences (loc (17,19,1,1)) ast)
+       
+    [<Test>]
+    member this.``Find usages of identifiers bound in left side pattern match of Algebraic Data Type``() =
+         let ast = parseWithPosDecl ("type Foo = Foo of int * int  \n" +
+                                     "let (Foo(x,y)) = Foo(5,7)    \n" +
+                                     "let z = x")
+         AssertAreEqual [Var ("x", loc(8,9,3,3));Var ("x", loc(9,10,2,2))] (findAllReferences (loc (9,10,2,2)) ast)
+
+      

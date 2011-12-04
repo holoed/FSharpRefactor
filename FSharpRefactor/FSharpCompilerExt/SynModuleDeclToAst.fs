@@ -60,7 +60,7 @@ let internal foldDecls decls =
                     return Ast.ExceptionDef (name, msAcc) }
     and LoopBinding x = 
         cont { match x with
-               | SynBinding.Binding(_,_,_,_,_,_,_,name,_,expr,_,_) -> 
+               | SynBinding.Binding(_,_,_,_,_,_,_,name,_,expr,_,_) ->
                     let! nAcc = LoopPat name
                     let! eAcc = LoopExpr expr
                     return (nAcc, eAcc) }
@@ -156,7 +156,9 @@ let internal foldDecls decls =
                     let! xAcc = LoopExpr x
                     let! yAcc = LoopExpr y
                     return Ast.App (xAcc, yAcc)
-                | SynExpr.Paren(x, _) -> return! LoopExpr x
+                | SynExpr.Paren(x, _) -> 
+                    let! xAcc = LoopExpr x
+                    return Ast.Paren xAcc
                 | SynExpr.Lambda(_,_,x,y,_) -> 
                     let! xAcc = LoopSimplePats x
                     let! yAcc = LoopExpr y
@@ -474,7 +476,8 @@ let internal foldDecls decls =
                                 cont { return x }
                             else
                                 buildPApp x (List.rev ys)
-               | SynPat.Paren(x, _) -> return! LoopPat x
+               | SynPat.Paren(x, _) -> let! xAcc = LoopPat x
+                                       return Ast.PParen xAcc
                | SynPat.Tuple(xs, _) ->
                     let! xsAcc = mmap LoopPat xs  
                     return PTuple xsAcc 
