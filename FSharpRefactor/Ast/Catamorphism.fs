@@ -42,6 +42,8 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_,_,_>) decl =
                               return algebra.inferredUpcastF eAcc
                   | Lazy e -> let! eAcc = LoopExp e
                               return algebra.lazyF eAcc
+                  | Paren e -> let! eAcc = LoopExp e
+                               return algebra.parenF eAcc
                   | While (e1, e2) -> let! e1Acc = LoopExp e1
                                       let! e2Acc = LoopExp e2
                                       return algebra.whileF e1Acc e2Acc
@@ -264,6 +266,8 @@ let foldExpAlgebra (algebra: AstAlgebra<_,_,_,_,_,_,_,_,_,_,_,_,_,_>) decl =
                           | POr(p1, p2) -> let! p1Acc = LoopPat p1
                                            let! p2Acc = LoopPat p2
                                            return algebra.porF p1Acc p2Acc
+                          | PParen p -> let! pAcc = LoopPat p
+                                        return algebra.pParenF pAcc
                           | PAnds ps -> let! psAcc = mmap LoopPat ps
                                         return algebra.pandsF psAcc
                           | PVar x -> return algebra.pVarF x

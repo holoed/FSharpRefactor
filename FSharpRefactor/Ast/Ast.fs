@@ -57,6 +57,7 @@ type Pat<'a> =
     | PAttribute of Pat<'a> * Attribute<'a> list
     | PAnds of Pat<'a> list
     | PNamed of Pat<'a> * Pat<'a>
+    | PParen of Pat<'a>
 
 and Attribute<'a>
     = Attribute of Exp<'a>
@@ -89,6 +90,7 @@ and Exp<'a>
     | Assert   of Exp<'a>
     | While    of Exp<'a> * Exp<'a>
     | AddressOf of Exp<'a>
+    | Paren    of Exp<'a>
     | YieldOrReturn of Exp<'a>
     | YieldOrReturnFrom of Exp<'a>
     | IfThenElse of Exp<'a> * Exp<'a> * Exp<'a> option

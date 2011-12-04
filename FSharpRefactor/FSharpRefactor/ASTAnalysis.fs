@@ -275,6 +275,9 @@ let pLongVarF xs = state {  let! xsAcc = mmapId xs
                             let! _ = mmap (fun l -> state { do! addUsage (s,l) }) ls    
                             return PLongVar xsAcc }
 
+let parenF e = state { let! eAcc = e
+                       return eAcc }
+
                     
 let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> = 
         foldExpAlgebra { memberSigF = noOp Ast.MemberSig
@@ -293,6 +296,7 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          inferredDowncastF = noOp Ast.InferredDowncast                            
                          inferredUpcastF   = noOp Ast.InferredUpcast 
                          lazyF = noOp Ast.Lazy 
+                         parenF = parenF
                          whileF = noOp2 Ast.While
                          assertF = noOp Ast.Assert
                          nullF = fun () -> state.Return Null 
@@ -364,6 +368,7 @@ let buildSymbolTable'' exp : State<(OpenScopes * SymbolTable), Ast.Module<'a>> =
                          tryFinallyF = noOp2 Ast.TryFinally
                          errorF = fun () -> state.Return ArbitraryAfterError                          
                          pVarF = fun x -> state.Return (PVar x)
+                         pParenF = noOp Ast.PParen
                          pAppF = noOp2 Ast.PApp
                          porF = noOp2 Ast.POr
                          pandsF = fun ps -> noOp Ast.PAnds (mmapId ps)                                                        

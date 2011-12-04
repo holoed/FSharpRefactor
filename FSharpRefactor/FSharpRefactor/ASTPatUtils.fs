@@ -7,6 +7,7 @@ open ASTScopeOperations
 let flatPat p =
     let rec LoopPat pat =    
                 ContinuationMonad.cont {  match pat with   
+                                          | PParen p -> return! LoopPat p
                                           | PAttribute(p, attrs) -> let! pAcc = LoopPat p
                                                                     return pAcc
                                           | POr (p1, p2) -> let! p1Acc = LoopPat p1
