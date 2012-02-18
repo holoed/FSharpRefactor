@@ -777,4 +777,10 @@ type ASTAnalysisTests() =
                                      "let z = x")
          AssertAreEqual [Var ("x", loc(8,9,3,3));Var ("x", loc(9,10,2,2))] (findAllReferences (loc (9,10,2,2)) ast)
 
+    [<Test>]
+    member this.``Issue:17434 Reported by LostTheBlack``() =
+        let ast = parseWithPosDecl ("let True _ = true  \n" +
+                                    "let b = True 42")
+        AssertAreEqual [Var ("True", loc(8,12,2,2));Var ("True", loc(4,8,1,1))] (findAllReferences (loc (4,8,1,1)) ast)
+
       
