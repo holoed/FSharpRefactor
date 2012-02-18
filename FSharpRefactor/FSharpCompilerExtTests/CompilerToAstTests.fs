@@ -243,7 +243,7 @@ type CompilerToAstTests() =
 
     [<Test>]
     member this.SimplePatternMatching() =
-        AssertAreEqual [Let(false,[PApp(PVar "f", PVar "x"), Match(Var "x", [Clause(PLit(Bool(true)), Lit(Integer 42))])], Lit(Unit))]  (parse "let f x = match x with True -> 42")
+        AssertAreEqual [Let(false,[PApp(PVar "f", PVar "x"), Match(Var "x", [Clause(PVar("True"), Lit(Integer 42))])], Lit(Unit))]  (parse "let f x = match x with True -> 42")
 
     [<Test>]
     member this.SimplePatternMatchingWithTuplePattern() =

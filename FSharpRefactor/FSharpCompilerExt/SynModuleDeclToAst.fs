@@ -469,7 +469,7 @@ let internal foldDecls decls =
                                |> Seq.toList                               
                                |> fun xs' -> match xs' with
                                              | x'::[] -> match x' with
-                                                         | PVar ("True",_) -> PLit(Bool(true))
+                                                        // | PVar ("True",_) -> PLit(Bool(true))
                                                          | _ -> x'
                                              | xs -> PLongVar xs
                     return! if List.isEmpty ys then
