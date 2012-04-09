@@ -135,6 +135,10 @@ let forEachF p e1 e2 = state{   let! pAcc = p
                                 let flatpat = flatPat pAcc
                                 let boundName, args = if (List.isEmpty flatpat) then pAcc, [] else List.head flatpat, List.tail flatpat            
                                 match (boundName, args) with
+                                | PLit(x), _ ->
+                                    let! e1' = e1       
+                                    let! e2' = e2
+                                    return ForEach (PLit(x), e1', e2') 
                                 | PWild, _ ->
                                     let! e1' = e1       
                                     let! e2' = e2

@@ -783,4 +783,7 @@ type ASTAnalysisTests() =
                                     "let b = True 42")
         AssertAreEqual [Var ("True", loc(8,12,2,2));Var ("True", loc(4,8,1,1))] (findAllReferences (loc (4,8,1,1)) ast)
 
-      
+    [<Test>]
+    member this.``Loop with literal loop variable`` () =
+        let ast = parseWithPosDecl ("for () in 0 .. 10 do ()")
+        AssertAreEqual [] (findAllReferences (loc (4,6,1,1)) ast)
