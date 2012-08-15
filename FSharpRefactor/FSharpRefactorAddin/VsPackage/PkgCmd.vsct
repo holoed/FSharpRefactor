@@ -26,7 +26,7 @@
 
   <!--Definition of some VSCT specific constants. In this sample we use it for the IDs
       inside the guidOfficeIcon group.-->
-  <Extern href="msobtnid.h"/>
+  <!--<Extern href="msobtnid.h"/>-->
 
   <!--
   The first section of this file is the Commands section. This is where we define
