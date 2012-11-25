@@ -37,9 +37,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSharpRefactorAddin", "FSha
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSharpRefactorAddinTests", "FSharpRefactorAddinTests\FSharpRefactorAddinTests.csproj", "{00E03770-2F51-410E-BF09-C53F3BB5006C}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharpCompiler3", "Microsoft.FSharpCompiler.Sources\FSharpCompiler3\FSharpCompiler3.fsproj", "{30045D2C-123C-4E24-93BF-4D8DF031A730}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 9
+		SccNumberOfProjects = 10
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs02
 		SccLocalPath0 = .
@@ -75,6 +77,10 @@ Global
 		SccProjectTopLevelParentUniqueName8 = FSharpRefactor.sln
 		SccProjectName8 = FSharpRefactorAddinTests
 		SccLocalPath8 = FSharpRefactorAddinTests
+		SccProjectUniqueName9 = Microsoft.FSharpCompiler.Sources\\FSharpCompiler3\\FSharpCompiler3.fsproj
+		SccProjectTopLevelParentUniqueName9 = FSharpRefactor.sln
+		SccProjectName9 = Microsoft.FSharpCompiler.Sources/FSharpCompiler3
+		SccLocalPath9 = Microsoft.FSharpCompiler.Sources\\FSharpCompiler3
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -165,6 +171,16 @@ Global
 		{00E03770-2F51-410E-BF09-C53F3BB5006C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{00E03770-2F51-410E-BF09-C53F3BB5006C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{00E03770-2F51-410E-BF09-C53F3BB5006C}.Release|x86.ActiveCfg = Release|Any CPU
+		{30045D2C-123C-4E24-93BF-4D8DF031A730}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30045D2C-123C-4E24-93BF-4D8DF031A730}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30045D2C-123C-4E24-93BF-4D8DF031A730}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{30045D2C-123C-4E24-93BF-4D8DF031A730}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{30045D2C-123C-4E24-93BF-4D8DF031A730}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{30045D2C-123C-4E24-93BF-4D8DF031A730}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30045D2C-123C-4E24-93BF-4D8DF031A730}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30045D2C-123C-4E24-93BF-4D8DF031A730}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{30045D2C-123C-4E24-93BF-4D8DF031A730}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{30045D2C-123C-4E24-93BF-4D8DF031A730}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -179,5 +195,6 @@ Global
 		{00E03770-2F51-410E-BF09-C53F3BB5006C} = {364B9413-FB7F-4C8F-971C-D22B1BF7C228}
 		{F763C0B0-C2B9-48A7-84CB-65C1FF235730} = {FDE3D566-DF9B-44DB-862C-8C5568EB4993}
 		{3A2627B6-4909-4820-9A25-DF6BC99A12A7} = {FDE3D566-DF9B-44DB-862C-8C5568EB4993}
+		{30045D2C-123C-4E24-93BF-4D8DF031A730} = {FDE3D566-DF9B-44DB-862C-8C5568EB4993}
 	EndGlobalSection
 EndGlobal
