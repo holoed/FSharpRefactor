@@ -25,6 +25,11 @@ let noOp2 v = liftM2 (curry2 v)
 
 let noOp3 v = liftM3 (curry3 v)
 
+let optionMap f m = state { match m with
+                            | Some x -> let! x' = f x
+                                        return Some x'
+                            | Option.None -> return Option.None }
+
 let varF x = state {    let (s : string,l) = x                                                          
                         let { srcFilename = fileName
                                             srcLine = { startLine = startLine; endLine = endLine }
@@ -194,12 +199,8 @@ let exceptionDefF n ms = state { let! msAcc = mmap (fun m -> state { return! m }
 
 let ifThenElseF e1 e2 e3 = state { let! e1' = e1
                                    let! e2' = e2
-                                   match e3 with
-                                   | Some x ->
-                                       let! x' = x
-                                       return IfThenElse(e1', e2', Some x')
-                                   | Option.None ->
-                                       return IfThenElse(e1', e2', Option.None) }
+                                   let! e3' = optionMap id e3
+                                   return IfThenElse(e1', e2', e3')}
 
 let recordDefF name fields ms = state { let! msAcc = mmap (fun m -> state { return! m }) ms
                                         return Record(name, fields, msAcc) }
@@ -211,27 +212,18 @@ let classF n ms = state {  let! ic = mmap (fun x -> state { let! xAcc = x
                            let! _ = mmap (fun ps -> mmap (fun x -> execute exitScope x) ps) ic
                            return Class (n, msAcc) }
 
-let valfieldF t1 t2 = state { let! t1Acc = match t1 with
-                                           | Some t -> state { let! x = t
-                                                               return Some x }
-                                           | Option.None -> state { return Option.None }
+let valfieldF t1 t2 = state { let! t1Acc = optionMap id t1
                               let! t2Acc = t2
                               return ValField (t1Acc, t2Acc) }
 
 let inheritF t1 t2 = state { let! t1Acc = t1
-                             let! t2Acc = match t2 with
-                                          | Some t -> state { let! x = t
-                                                              return Some x }
-                                          | Option.None -> state { return Option.None }
+                             let! t2Acc = optionMap id t2
                              return Inherit (t1Acc, t2Acc) }
 
-let implicitInheritF t e id = state { let! tAcc = t
-                                      let! eAcc = e
-                                      let! idAcc = match id with
-                                                   | Some t -> state { let! x = t
-                                                                       return Some x }
-                                                   | Option.None -> state { return Option.None }
-                                      return ImplicitInherit (tAcc, eAcc, idAcc) }
+let implicitInheritF t e ident = state { let! tAcc = t
+                                         let! eAcc = e
+                                         let! identAcc = optionMap id ident
+                                         return ImplicitInherit (tAcc, eAcc, identAcc) }
 
 let memberF isInstance p e = 
                     state { let! pAcc = p
@@ -255,11 +247,8 @@ let memberF isInstance p e =
                             return Member(isInstance, pAcc, eAcc) }
 
 
-let interfaceF t msOption = state { let! (tAcc:Type<_>) = t
-                                    let! msAcc = match msOption with
-                                                 | Some ms -> state { let! msAcc = mmapId ms
-                                                                      return Some msAcc }
-                                                 | Option.None -> state { return Option.None }
+let interfaceF t msOption = state { let! tAcc = t
+                                    let! msAcc = optionMap mmapId msOption
                                     return Interface (tAcc, msAcc) }
 
 
