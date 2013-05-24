@@ -60,7 +60,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Currying.fs" />
+    <Compile Include="Zippers.fs" />
     <Compile Include="PurelyFunctionalDataStructures.fs" />
+    <Compile Include="SymbolTable.fs" />
+    <Compile Include="SymbolTableBuilder.fs" />
     <Compile Include="ASTScopeOperations.fs" />
     <Compile Include="ASTPatUtils.fs" />
     <Compile Include="ASTAnalysis.fs" />
