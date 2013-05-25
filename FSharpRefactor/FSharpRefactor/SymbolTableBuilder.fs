@@ -25,13 +25,27 @@ let noOp2 v = liftM2 (curry2 v)
 
 let noOp3 v = liftM3 (curry3 v)
 
-let varF x = state { return Ast.Var x }
+let varF x = state {  let! t = getState
+                      let (s : string, l) = x
+                      let t' = SymbolTable.addRef s l t
+                      do! setState t'
+                      return Ast.Var x }
 
 let lamF ps e = state { let! vars = mmap (fun p -> state { return! p }) ps
                         let! e' = e                         
                         return Lam (vars, e') }
 
-let letF isRec bs e2 = state {  let! bsAcc = mmap (fun (p, e1) -> state { let! p' = p                                                       
+
+let rec evalPattern p isRec = state { match p with
+                                      | PApp(e1, e2) -> if (isRec) then do! evalPattern e1 isRec
+                                                        return! evalPattern e2 isRec           
+                                      | PVar x -> let! t = getState
+                                                  let (s : string, l) = x
+                                                  let t' = SymbolTable.insert s l t
+                                                  do! setState t'  }        
+
+let letF isRec bs e2 = state {  let! bsAcc = mmap (fun (p, e1) -> state { let! p' = p 
+                                                                          do! evalPattern p' isRec                                           
                                                                           let! e1' = e1
                                                                           return p', e1' }) bs 
                                 return Let(isRec, bsAcc, Lit(Unit))   }
@@ -119,7 +133,7 @@ let pRecordF es = state { let! esAcc = mmap (fun (i, e) -> state { let! eAcc = e
 let pLongVarF xs = state {  let! xs' = mmapId xs                                                                 
                             return PLongVar xs' }
 
-let buildSymbolTable exp : State<SymbolTable TreeLoc, Ast.Module<'a>> = 
+let buildSymbolTable' exp : State<SymbolTable TreeLoc, Ast.Module<'a>> = 
         foldExpAlgebra { memberSigF = noOp Ast.MemberSig
                          traitCallF = fun ss -> noOp3 Ast.TraitCall (state.Return ss)
                          typetestF = noOp2 Ast.TypeTest
@@ -223,3 +237,5 @@ let buildSymbolTable exp : State<SymbolTable TreeLoc, Ast.Module<'a>> =
                          pattributeF = fun p attrs -> noOp2 Ast.PAttribute p (mmapId attrs)
                          attributeF = noOp Ast.Attribute
                          pnamedF = noOp2 Ast.PNamed }   exp
+
+let buildSymbolTable exp = mmap buildSymbolTable' exp
