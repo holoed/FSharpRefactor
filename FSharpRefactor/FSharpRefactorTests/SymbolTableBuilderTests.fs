@@ -272,3 +272,35 @@ type SymbolTableBuilderTests() =
                                      "    member this.X = x      \n" +
                                      "    member this.Y = y")
         AssertAreEqual [loc(20,21,2,2); loc(12,13,1,1)] (findAllReferences "x" (loc (12,13,1,1)) ast)
+        AssertAreEqual [loc(20,21,3,3); loc(18,19,1,1)] (findAllReferences "y" (loc (18,19,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of x and y defined in constructor given their usages in the members of the class.`` () = 
+        let ast = parseWithPosDecl  ("type Point (x:int,y:int) = \n" +
+                                     "    member this.X = x      \n" +
+                                     "    member this.Y = y")
+        AssertAreEqual [loc(20,21,2,2); loc(12,13,1,1)] (findAllReferences "x" (loc (20,21,2,2)) ast)
+        AssertAreEqual [loc(20,21,3,3); loc(18,19,1,1)] (findAllReferences "y" (loc(20,21,3,3)) ast)
+
+    [<Test>]
+    member this.``Find usages of x and y in object instance construction given their definitions`` () =
+        let ast = parseWithPosDecl ("let (x,y) = (12,42)    \n" +
+                                    "let p = new Point(x, y)")
+        AssertAreEqual [loc(21,22,2,2); loc(7,8,1,1)] (findAllReferences "y" (loc (7,8,1,1)) ast)
+        AssertAreEqual [loc(18,19,2,2); loc(5,6,1,1)] (findAllReferences "x" (loc (5,6,1,1)) ast)
+
+    [<Test>]
+    member this.``Find definition of x and y given their usages in object instance construction`` () =
+        let ast = parseWithPosDecl ("let (x,y) = (12,42)    \n" +
+                                    "let p = new Point(x, y)")
+        AssertAreEqual [loc(21,22,2,2); loc(7,8,1,1)] (findAllReferences "y" (loc (21,22,2,2)) ast)
+        AssertAreEqual [loc(18,19,2,2); loc(5,6,1,1)] (findAllReferences "x" (loc (18,19,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages of x and y in object expr construction given their definitions`` () =
+        let ast = parseWithPosDecl ("let (x,y) = (12,42)    \n" +
+                                    "let p = { new IPoint with            \n" +
+                                    "               member this.X = x      \n" +
+                                    "               member this.Y = y }")
+        AssertAreEqual [loc(31,32,4,4); loc(7,8,1,1)] (findAllReferences "y" (loc (7,8,1,1)) ast)
+        AssertAreEqual [loc(31,32,3,3); loc(5,6,1,1)] (findAllReferences "x" (loc (5,6,1,1)) ast)
