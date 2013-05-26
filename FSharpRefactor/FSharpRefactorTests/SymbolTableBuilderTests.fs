@@ -258,3 +258,17 @@ type SymbolTableBuilderTests() =
                                     "let p = (x, y) ")
         AssertAreEqual [loc(12,13,2,2); loc(7,8,1,1)] (findAllReferences "y" (loc (7,8,1,1)) ast)
         AssertAreEqual [loc(9,10,2,2); loc(5,6,1,1)] (findAllReferences "x" (loc (5,6,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of x and y given their usages`` () = 
+        let ast = parseWithPosDecl ("let (x,y) = (12,42)    \n" +
+                                    "let p = (x, y) ")
+        AssertAreEqual [loc(12,13,2,2); loc(7,8,1,1)] (findAllReferences "y" (loc (12,13,2,2)) ast)
+        AssertAreEqual [loc(9,10,2,2); loc(5,6,1,1)] (findAllReferences "x" (loc (9,10,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages of x and y in class members given their definition in the implicit constructor.`` () = 
+        let ast = parseWithPosDecl  ("type Point (x:int,y:int) = \n" +
+                                     "    member this.X = x      \n" +
+                                     "    member this.Y = y")
+        AssertAreEqual [loc(20,21,2,2); loc(12,13,1,1)] (findAllReferences "x" (loc (12,13,1,1)) ast)
