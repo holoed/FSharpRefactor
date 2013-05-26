@@ -194,3 +194,36 @@ type SymbolTableBuilderTests() =
     member this.``Find definition of x given its usage in sample 12`` () =
         let ast = parseWithPosDecl "let xs = seq { for i in 1..5 do yield i }"
         AssertAreEqual [loc(38,39,1,1); loc(19,20,1,1)] (findAllReferences "i" (loc(38,39,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find usage of x given its definition in sample 13`` () =
+        let ast = parseWithPosDecl "let f n x y = if n = 0 then x else y"
+        AssertAreEqual [loc(28,29,1,1); loc(8,9,1,1)] (findAllReferences "x" (loc(8,9,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find definition of x given its usage in sample 13`` () =
+        let ast = parseWithPosDecl "let f n x y = if n = 0 then x else y"
+        AssertAreEqual [loc(28,29,1,1); loc(8,9,1,1)] (findAllReferences "x" (loc(28,29,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find usage of y given its definition in sample 13`` () =
+        let ast = parseWithPosDecl "let f n x y = if n = 0 then x else y"
+        AssertAreEqual [loc(35,36,1,1); loc(10,11,1,1)] (findAllReferences "y" (loc(10,11,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find definition of y given its usage in sample 13`` () =
+        let ast = parseWithPosDecl "let f n x y = if n = 0 then x else y"
+        AssertAreEqual [loc(35,36,1,1); loc(10,11,1,1)] (findAllReferences "y" (loc(35,36,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find usages of f given its definition when LetRec and when is only Let`` () =
+        let ast    = parseWithPosDecl "let f x = f x"
+        let astRec = parseWithPosDecl "let rec f x = f x"
+        AssertAreEqual [loc(4,5,1,1)] (findAllReferences "f" (loc(4,5,1,1)) ast)
+        AssertAreEqual [loc(14,15,1,1); loc(8,9,1,1)] (findAllReferences "f" (loc(8,9,1,1)) astRec)
+
+    [<Test>]
+    member this.``Find usages of x and y given their definition in List pattern`` () =
+        let ast = parseWithPosDecl "let f [x;y] = [x;y]"
+        AssertAreEqual [loc(15,16,1,1); loc(7,8,1,1)] (findAllReferences "x" (loc(7,8,1,1)) ast)
+        AssertAreEqual [loc(17,18,1,1); loc(9,10,1,1)] (findAllReferences "y" (loc(9,10,1,1)) ast)
