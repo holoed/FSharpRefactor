@@ -54,7 +54,9 @@ let rec moveBackTo path (t:SymbolTable TreeLoc) =
             let childOption = findChild (fun { rootLabel = (_, n') } -> n = n') t
             moveBackTo ns (Option.get childOption)        
 
-let addRef s l (t:SymbolTable TreeLoc) =   
-    let (Some(t', path)) = findTable s t  
-    t' |> modifyLabel (fun (dict, n) -> (Map.map (fun s' ls -> if (s = s') then l::ls else ls) dict), n) 
-       |> moveBackTo path
+let addRef s l (t:SymbolTable TreeLoc) = 
+    match (findTable s t) with
+    | Option.None -> t  
+    | Some(t', path) ->  
+        t' |> modifyLabel (fun (dict, n) -> (Map.map (fun s' ls -> if (s = s') then l::ls else ls) dict), n) 
+           |> moveBackTo path
