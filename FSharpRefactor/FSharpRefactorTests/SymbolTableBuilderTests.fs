@@ -130,3 +130,67 @@ type SymbolTableBuilderTests() =
     member this.``Find definition of x given its usage in sample 6`` () =
         let ast = parseWithPosDecl "let f x = Some x"
         AssertAreEqual [loc(15,16,1,1); loc(6,7,1,1)] (findAllReferences "x" (loc(15,16,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find usage of x given its definition in sample 7`` () =
+        let ast = parseWithPosDecl ("let x = 42\n" + 
+                                    "let y = x   " )
+        AssertAreEqual [loc(8,9,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc(4,5,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find definition of x given its usage in sample 7`` () =
+        let ast = parseWithPosDecl ("let x = 42\n" + 
+                                    "let y = x   " )
+        AssertAreEqual [loc(8,9,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc(8,9,2,2)) ast) 
+
+    [<Test>]
+    member this.``Find usage of Var given its definition in sample 8`` () =
+        let ast = parseWithPosDecl ("type Exp = Var of string\n" + 
+                                    "let exp = Exp.Var(\"x\")   ")
+        AssertAreEqual [loc(10,17,2,2); loc(11,14,1,1)] (findAllReferences "Exp.Var" (loc(11,14,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find definition of Var given its usage in sample 8`` () =
+        let ast = parseWithPosDecl ("type Exp = Var of string\n" + 
+                                    "let exp = Exp.Var(\"x\")   ")
+        AssertAreEqual [loc(10,17,2,2); loc(11,14,1,1)] (findAllReferences "Exp.Var" (loc(10,17,2,2)) ast) 
+
+    [<Test>]
+    member this.``Find usage of x given its definition in sample 9`` () =
+        let ast = parseWithPosDecl "let f (x, y) = x"
+        AssertAreEqual [loc(15,16,1,1); loc(7,8,1,1)] (findAllReferences "x" (loc(7,8,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find definition of x given its usage in sample 9`` () =
+        let ast = parseWithPosDecl "let f (x, y) = x"
+        AssertAreEqual [loc(15,16,1,1); loc(7,8,1,1)] (findAllReferences "x" (loc(15,16,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find usage of x given its definition in sample 10`` () =
+        let ast = parseWithPosDecl "let f (x, _) = x"
+        AssertAreEqual [loc(15,16,1,1); loc(7,8,1,1)] (findAllReferences "x" (loc(7,8,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find definition of x given its usage in sample 10`` () =
+        let ast = parseWithPosDecl "let f (x, _) = x"
+        AssertAreEqual [loc(15,16,1,1); loc(7,8,1,1)] (findAllReferences "x" (loc(15,16,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find usage of x given its definition in sample 11`` () =
+        let ast = parseWithPosDecl "let f p = match p with (x,y) -> x"
+        AssertAreEqual [loc(32,33,1,1); loc(24,25,1,1)] (findAllReferences "x" (loc(24,25,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find usage of x given its usage in sample 11`` () =
+        let ast = parseWithPosDecl "let f p = match p with (x,y) -> x"
+        AssertAreEqual [loc(32,33,1,1); loc(24,25,1,1)] (findAllReferences "x" (loc(32,33,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find usage of x given its definition in sample 12`` () =
+        let ast = parseWithPosDecl "let xs = seq { for i in 1..5 do yield i }"
+        AssertAreEqual [loc(38,39,1,1); loc(19,20,1,1)] (findAllReferences "i" (loc(19,20,1,1)) ast) 
+
+    [<Test>]
+    member this.``Find definition of x given its usage in sample 12`` () =
+        let ast = parseWithPosDecl "let xs = seq { for i in 1..5 do yield i }"
+        AssertAreEqual [loc(38,39,1,1); loc(19,20,1,1)] (findAllReferences "i" (loc(38,39,1,1)) ast) 

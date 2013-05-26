@@ -63,6 +63,7 @@
     <Compile Include="Zippers.fs" />
     <Compile Include="PurelyFunctionalDataStructures.fs" />
     <Compile Include="SymbolTable.fs" />
+    <Compile Include="SymbolTableState.fs" />
     <Compile Include="ASTScopeOperations.fs" />
     <Compile Include="ASTPatUtils.fs" />
     <Compile Include="SymbolTableBuilder.fs" />
