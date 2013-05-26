@@ -72,4 +72,28 @@ type SymbolTableBuilderTests() =
         let ast = parseWithPosDecl ("let f x = let g x = x  \n" +  
                                     "          g x")
         AssertAreEqual [loc(10,11,2,2); loc(14,15,1,1)] (findAllReferences "g" (loc(14,15,1,1)) ast)
+
+    [<Test>]
+    member this.``Find definition of function g given its usage in sample 1``() =
+        let ast = parseWithPosDecl ("let f x = let g x = x  \n" +  
+                                    "          g x")
+        AssertAreEqual [loc(10,11,2,2); loc(14,15,1,1)] (findAllReferences "g" (loc(10,11,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usage of x given its definition in sample 2`` () =
+        let ast = parseWithPosDecl "let f x y = x y"  
+        AssertAreEqual [loc(12,13,1,1); loc(6,7,1,1)] (findAllReferences "x" (loc(6,7,1,1)) ast) 
+        
+    [<Test>]
+    member this.``Find usage of y given its definition in sample 2`` () =
+        let ast = parseWithPosDecl "let f x y = x y"
+        AssertAreEqual [loc(14,15,1,1); loc(8,9,1,1)] (findAllReferences "y" (loc(8,9,1,1)) ast)
+        
+    [<Test>]
+    member this.``Find usage of f given its definition in sample 3`` () =
+        let ast = parseWithPosDecl ("let f x = x  \n" +
+                                    "let g x = f x  ")
+        AssertAreEqual [loc(10,11,2,2); loc(4,5,1,1)] (findAllReferences "f" (loc(4,5,1,1)) ast)       
+               
+              
                                       
