@@ -47,8 +47,7 @@ let exit_scope = state { let! t = getState
                          do! setState (Option.get (SymbolTable.exit_scope t))
                          return () }
 
-let letF isRec bs e2 = state {  do! enter_scope  
-                                let! bsAcc = mmap (fun (p, e1) -> state { let! p' = p
+let letF isRec bs e2 = state {  let! bsAcc = mmap (fun (p, e1) -> state { let! p' = p
                                                                           let flatPat = ASTPatUtils.flatPat p'                                                                           
                                                                           if ((List.length flatPat) > 1 && isRec) 
                                                                           then let (PVar (s, l)) = flatPat.[0]
@@ -65,7 +64,6 @@ let letF isRec bs e2 = state {  do! enter_scope
                                                                                do! insert s l                                                                                                                                                                                                                                                         
                                                                           return p', e1' }) bs 
                                 let! e2' = e2
-                                do! exit_scope 
                                 return Let(isRec, bsAcc, Lit(Unit))   }
 
 let letBangF p e1 e2 = state {  let! p' = p
