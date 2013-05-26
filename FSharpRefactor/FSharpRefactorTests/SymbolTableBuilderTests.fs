@@ -227,3 +227,34 @@ type SymbolTableBuilderTests() =
         let ast = parseWithPosDecl "let f [x;y] = [x;y]"
         AssertAreEqual [loc(15,16,1,1); loc(7,8,1,1)] (findAllReferences "x" (loc(7,8,1,1)) ast)
         AssertAreEqual [loc(17,18,1,1); loc(9,10,1,1)] (findAllReferences "y" (loc(9,10,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of x in array setter given its definition`` () =
+        let ast = parseWithPosDecl ("let x = 42              \n" + 
+                                    "myArray.[0, 1] <- x")
+        AssertAreEqual [loc(18,19,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc(4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of x in array setter given its usage`` () =
+        let ast = parseWithPosDecl ("let x = 42              \n" + 
+                                    "myArray.[0, 1] <- x")
+        AssertAreEqual [loc(18,19,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc(18,19,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages of x in array getter given its definition`` () =
+        let ast = parseWithPosDecl ("let x = 42              \n" + 
+                                    "let z = myArray.[0, x]")
+        AssertAreEqual [loc(20,21,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc(4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of x in array getter given its usage`` () =
+        let ast = parseWithPosDecl ("let x = 42              \n" + 
+                                    "let z = myArray.[0, x]")
+        AssertAreEqual [loc(20,21,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc(20,21,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages of x and y given their definitions`` () = 
+        let ast = parseWithPosDecl ("let (x,y) = (12,42)    \n" +
+                                    "let p = (x, y) ")
+        AssertAreEqual [loc(12,13,2,2); loc(7,8,1,1)] (findAllReferences "y" (loc (7,8,1,1)) ast)
+        AssertAreEqual [loc(9,10,2,2); loc(5,6,1,1)] (findAllReferences "x" (loc (5,6,1,1)) ast)
