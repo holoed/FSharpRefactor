@@ -47,22 +47,25 @@ let exit_scope = state { let! t = getState
                          do! setState (Option.get (SymbolTable.exit_scope t))
                          return () }
 
-let letF isRec bs e2 = state {  let! bsAcc = mmap (fun (p, e1) -> state { let! p' = p
-                                                                          let flatPat = ASTPatUtils.flatPat p'                                                                           
-                                                                          if ((List.length flatPat) > 1 && isRec) 
-                                                                          then let (PVar (s, l)) = flatPat.[0]
-                                                                               do! insert s l                                                                                                                                                    
-                                                                          do! enter_scope  
-                                                                          let! _ = mmap (fun (PVar (s,l)) -> state { do! insert s l }) flatPat.Tail                                     
-                                                                          let! e1' = e1                                                           
-                                                                          do! exit_scope
-                                                                          if ((List.length flatPat) = 1) 
-                                                                          then let (PVar (s, l)) = flatPat.[0]
-                                                                               do! insert s l 
-                                                                          if ((List.length flatPat) > 1 && not isRec) 
-                                                                          then let (PVar (s, l)) = flatPat.[0]
-                                                                               do! insert s l                                                                                                                                                                                                                                                         
-                                                                          return p', e1' }) bs 
+let processBinding isRec (p, e) = 
+        state { let! p' = p
+                let flatPat = ASTPatUtils.flatPat p'                                                                           
+                if ((List.length flatPat) > 1 && isRec) 
+                then let (PVar (s, l)) = flatPat.[0]
+                     do! insert s l                                                                                                                                                    
+                do! enter_scope  
+                let! _ = mmap (fun (PVar (s,l)) -> state { do! insert s l }) flatPat.Tail                                     
+                let! e' = e                                                           
+                do! exit_scope
+                if ((List.length flatPat) = 1) 
+                then let (PVar (s, l)) = flatPat.[0]
+                     do! insert s l 
+                if ((List.length flatPat) > 1 && not isRec) 
+                then let (PVar (s, l)) = flatPat.[0]
+                     do! insert s l                                                                                                                                                                                                                                                         
+                return p', e' }
+
+let letF isRec bs e2 = state {  let! bsAcc = mmap (processBinding isRec) bs 
                                 let! e2' = e2
                                 return Let(isRec, bsAcc, Lit(Unit))   }
 
