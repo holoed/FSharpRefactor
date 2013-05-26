@@ -125,7 +125,12 @@ let ifThenElseF e1 e2 e3 = state { let! e1' = e1
 let recordDefF name fields ms = state { let! msAcc = mmap (fun m -> state { return! m }) ms
                                         return Record(name, fields, msAcc) }
 
-let classF n ms = state {  let! msAcc = mmap (fun m -> state { return! m }) ms
+let classF n ms = state {  let! ic = mmap (fun x -> state { let! xAcc = x
+                                                            match xAcc with | ImplicitCtor ps -> return ps | _ -> return [] }) ms
+                           do! enter_scope
+                           let! _ = mmap (fun ps -> mmap (fun (PVar (s,l)) -> state { do! insert s l }) ps) ic
+                           let! msAcc = mmap (fun m -> state { return! m }) (if ic.IsEmpty then ms else ms.Tail)
+                           do! exit_scope
                            return Class (n, msAcc) }
 
 let valfieldF t1 t2 = state { let! t1' = optionMap id t1
