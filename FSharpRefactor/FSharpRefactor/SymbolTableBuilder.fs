@@ -15,8 +15,7 @@ module SymbolTableBuilder
 open Ast
 open StateMonad
 open AstCatamorphisms
-open Zippers
-open SymbolTable
+open SymbolTableState
 open Currying
 
 let noOp = liftM
@@ -25,27 +24,13 @@ let noOp2 v = liftM2 (curry2 v)
 
 let noOp3 v = liftM3 (curry3 v)
 
-let varF x = state {  let! t = getState
-                      let (s : string, l) = x
-                      let t' = SymbolTable.addRef s l t
-                      do! setState t'
+let varF x = state {  let (s : string, l) = x
+                      do! addRef s l
                       return Ast.Var x }
 
 let lamF ps e = state { let! vars = mmap (fun p -> state { return! p }) ps
                         let! e' = e                         
                         return Lam (vars, e') }
-
-let insert s l = state { let! t = getState
-                         do! setState (SymbolTable.insert s l t) 
-                         return () }
-
-let enter_scope = state { let! t = getState
-                          do! setState (SymbolTable.enter_scope t)
-                          return () }
-
-let exit_scope = state { let! t = getState
-                         do! setState (Option.get (SymbolTable.exit_scope t))
-                         return () }
 
 let processBinding isRec (p, e) = 
         state { let! p' = p
@@ -74,7 +59,8 @@ let letBangF p e1 e2 = state {  let! p' = p
                                 let! e2' = e2
                                 return LetBang (p', e1', e2') }
 
-let unionF name cases = state { return DisUnion(name, cases) }
+let unionF name cases = state { let! _ = mmap (fun (s,l) -> state { do! insert (sprintf "%s.%s" name s) l }) cases
+                                return DisUnion(name, cases) }
 
 let enumF name cases = state { return Enum(name, cases) }
 
@@ -83,12 +69,20 @@ let matchF e cs = state { let! e' = e
                           return Match(e', cs')}
 
 let clauseF p e = state { let! p' = p
+                          let vars = ASTPatUtils.flatPat p'
+                          do! enter_scope
+                          let! _ = mmap (fun (PVar (s,l)) -> state { do! insert s l }) vars    
                           let! e' = e
+                          do! exit_scope
                           return Clause(p', e') }
 
 let forEachF p e1 e2 = state { let! p' = p
+                               let vars = ASTPatUtils.flatPat p'
                                let! e1' = e1
+                               do! enter_scope
+                               let! _ = mmap (fun (PVar (s,l)) -> state { do! insert s l }) vars    
                                let! e2' = e2
+                               do! exit_scope
                                return ForEach (p', e1', e2') }
 
 let forF var startExp endExp bodyExp = 
@@ -152,7 +146,7 @@ let pRecordF es = state { let! esAcc = mmap (fun (i, e) -> state { let! eAcc = e
 let pLongVarF xs = state {  let! xs' = mmapId xs                                                                 
                             return PLongVar xs' }
 
-let private buildSymbolTable' exp : State<SymbolTable TreeLoc, Ast.Module<'a>> = 
+let private buildSymbolTable' exp : State<'t, Ast.Module<'a>> = 
         foldExpAlgebra { memberSigF = noOp Ast.MemberSig
                          traitCallF = fun ss -> noOp3 Ast.TraitCall (state.Return ss)
                          typetestF = noOp2 Ast.TypeTest
