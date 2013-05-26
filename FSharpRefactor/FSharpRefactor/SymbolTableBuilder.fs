@@ -35,19 +35,37 @@ let lamF ps e = state { let! vars = mmap (fun p -> state { return! p }) ps
                         let! e' = e                         
                         return Lam (vars, e') }
 
+let insert s l = state { let! t = getState
+                         do! setState (SymbolTable.insert s l t) 
+                         return () }
 
-let rec evalPattern p isRec = state { match p with
-                                      | PApp(e1, e2) -> if (isRec) then do! evalPattern e1 isRec
-                                                        return! evalPattern e2 isRec           
-                                      | PVar x -> let! t = getState
-                                                  let (s : string, l) = x
-                                                  let t' = SymbolTable.insert s l t
-                                                  do! setState t'  }        
+let enter_scope = state { let! t = getState
+                          do! setState (SymbolTable.enter_scope t)
+                          return () }
 
-let letF isRec bs e2 = state {  let! bsAcc = mmap (fun (p, e1) -> state { let! p' = p 
-                                                                          do! evalPattern p' isRec                                           
-                                                                          let! e1' = e1
+let exit_scope = state { let! t = getState
+                         do! setState (Option.get (SymbolTable.exit_scope t))
+                         return () }
+
+let letF isRec bs e2 = state {  do! enter_scope  
+                                let! bsAcc = mmap (fun (p, e1) -> state { let! p' = p
+                                                                          let flatPat = ASTPatUtils.flatPat p'                                                                           
+                                                                          if ((List.length flatPat) > 1 && isRec) 
+                                                                          then let (PVar (s, l)) = flatPat.[0]
+                                                                               do! insert s l                                                                                                                                                    
+                                                                          do! enter_scope  
+                                                                          let! _ = mmap (fun (PVar (s,l)) -> state { do! insert s l }) flatPat.Tail                                     
+                                                                          let! e1' = e1                                                           
+                                                                          do! exit_scope
+                                                                          if ((List.length flatPat) = 1) 
+                                                                          then let (PVar (s, l)) = flatPat.[0]
+                                                                               do! insert s l 
+                                                                          if ((List.length flatPat) > 1 && not isRec) 
+                                                                          then let (PVar (s, l)) = flatPat.[0]
+                                                                               do! insert s l                                                                                                                                                                                                                                                         
                                                                           return p', e1' }) bs 
+                                let! e2' = e2
+                                do! exit_scope 
                                 return Let(isRec, bsAcc, Lit(Unit))   }
 
 let letBangF p e1 e2 = state {  let! p' = p
@@ -133,7 +151,7 @@ let pRecordF es = state { let! esAcc = mmap (fun (i, e) -> state { let! eAcc = e
 let pLongVarF xs = state {  let! xs' = mmapId xs                                                                 
                             return PLongVar xs' }
 
-let buildSymbolTable' exp : State<SymbolTable TreeLoc, Ast.Module<'a>> = 
+let private buildSymbolTable' exp : State<SymbolTable TreeLoc, Ast.Module<'a>> = 
         foldExpAlgebra { memberSigF = noOp Ast.MemberSig
                          traitCallF = fun ss -> noOp3 Ast.TraitCall (state.Return ss)
                          typetestF = noOp2 Ast.TypeTest
@@ -238,4 +256,9 @@ let buildSymbolTable' exp : State<SymbolTable TreeLoc, Ast.Module<'a>> =
                          attributeF = noOp Ast.Attribute
                          pnamedF = noOp2 Ast.PNamed }   exp
 
-let buildSymbolTable exp = mmap buildSymbolTable' exp
+let private buildSymbolTable exp = mmap buildSymbolTable' exp
+
+let findAllReferences s pos progs =
+    let m = buildSymbolTable progs
+    let state = SymbolTable.empty |> StateMonad.executeGetState m
+    SymbolTable.lookUp s pos  state   
