@@ -24,8 +24,12 @@ let noOp2 v = liftM2 (curry2 v)
 
 let noOp3 v = liftM3 (curry3 v)
 
-let processPVars vars = state {  let! _ = mmap (fun (PVar (s,l)) -> state { do! insert s l }) vars 
-                                 return () }
+let processPVars vars = 
+        state {  
+                 let! _ = mmap (fun p -> match p with
+                                         | (PVar (s,l)) -> state { do! insert s l }
+                                         | _ -> state { return () } ) vars 
+                 return () }
 
 let varF x = state {  let (s : string, l) = x
                       do! addRef s l
@@ -153,7 +157,11 @@ let implicitInheritF t e idOption = state { let! t' = t
                                             return ImplicitInherit (t', e', idOption') }
 
 let memberF isInstance p e = state { let! p' = p
-                                     let! e' = e                            
+                                     let vars = ASTPatUtils.flatPat p'
+                                     do! enter_scope
+                                     do! processPVars vars
+                                     let! e' = e    
+                                     do! exit_scope                        
                                      return Member(isInstance, p', e') }
 
 let interfaceF t msOption = state { let! t' = t
