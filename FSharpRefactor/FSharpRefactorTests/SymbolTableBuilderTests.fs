@@ -349,3 +349,28 @@ type SymbolTableBuilderTests() =
         let ast = parseWithPosDecl ("let f = fun x -> fun y -> x + y")
         AssertAreEqual [loc(26,27,1,1); loc(12,13,1,1)] (findAllReferences "x" (loc (12,13,1,1)) ast)
         AssertAreEqual [loc(30,31,1,1); loc(21,22,1,1)] (findAllReferences "y" (loc (21,22,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of x and y in member body`` () =
+        let ast = parseWithPosDecl  ("type Point = \n" +
+                                     "    member this.Swap (x, y) = (y, x)")        
+        AssertAreEqual [loc(34,35,2,2); loc(22,23,2,2)] (findAllReferences "x" (loc (22,23,2,2)) ast)
+        AssertAreEqual [loc(31,32,2,2); loc(25,26,2,2)] (findAllReferences "y" (loc (25,26,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages of this object identifier of instance member`` () =
+        let ast = parseWithPosDecl  ("type Point = \n" +
+                                     "    member p.Swap = p")        
+        AssertAreEqual [loc(20,21,2,2); loc(11,12,2,2)] (findAllReferences "p" (loc (11,12,2,2)) ast)
+
+    [<Test>]
+    member this.``Identifiers defined within the scope of a method should be unavailable outside of the method`` () =
+        let ast = parseWithPosDecl  ("let y = 12 \n" +
+                                     "type Point = \n" +
+                                     "    member p.Add x =  \n" +
+                                     "        let y = 42    \n" +
+                                     "        x + y         \n" +
+                                     "let foo = y")        
+        AssertAreEqual [loc(10,11,6,6); loc(4,5,1,1)] (findAllReferences "y" (loc (10,11,6,6)) ast)
+        AssertAreEqual [loc(12,13,5,5); loc(12,13,4,4)] (findAllReferences "y" (loc (12,13,5,5)) ast)
+
