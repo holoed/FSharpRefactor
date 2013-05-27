@@ -374,3 +374,26 @@ type SymbolTableBuilderTests() =
         AssertAreEqual [loc(10,11,6,6); loc(4,5,1,1)] (findAllReferences "y" (loc (10,11,6,6)) ast)
         AssertAreEqual [loc(12,13,5,5); loc(12,13,4,4)] (findAllReferences "y" (loc (12,13,5,5)) ast)
 
+    [<Test>]
+    member this.``Find usages of x in computation expression return!`` () =
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "let y = identity { return! x }")
+        AssertAreEqual [loc(27,28,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in body of try with expression`` () =
+        let ast = parseWithPosDecl(  "let divide1 x y =      \n" +
+                                     "    try               \n" +
+                                     "      Some (x / y)    \n" +
+                                     "    with              \n" +
+                                     "    | :? System.DivideByZeroException -> None ")
+        AssertAreEqual [loc(12,13,3,3); loc(12,13,1,1)] (findAllReferences "x" (loc (12,13,1,1)) ast)
+        AssertAreEqual [loc(16,17,3,3); loc(14,15,1,1)] (findAllReferences "y" (loc (14,15,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of identifiers bound with let! in computation expression``  () =
+        let ast = parseWithPosDecl("let y = state { let! x = f   \n" +
+                                   "                return x }")
+        AssertAreEqual [loc(23,24,2,2); loc(21,22,1,1)] (findAllReferences "x" (loc (21,22,1,1)) ast)
+
+

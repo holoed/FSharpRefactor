@@ -76,6 +76,7 @@ let letF isRec bs e2 = state {  let! bsAcc = mmap (processBinding isRec) bs
 
 let letBangF p e1 e2 = state {  let! p' = p
                                 let! e1' = e1
+                                let! _ = processBinding false (p, e1)
                                 let! e2' = e2
                                 return LetBang (p', e1', e2') }
 
