@@ -304,3 +304,48 @@ type SymbolTableBuilderTests() =
                                     "               member this.Y = y }")
         AssertAreEqual [loc(31,32,4,4); loc(7,8,1,1)] (findAllReferences "y" (loc (7,8,1,1)) ast)
         AssertAreEqual [loc(31,32,3,3); loc(5,6,1,1)] (findAllReferences "x" (loc (5,6,1,1)) ast)
+
+    [<Test>]
+    member this.``Find definition of x and y given their usages in members of Object Expression`` () =
+        let ast = parseWithPosDecl ("let (x,y) = (12,42)    \n" +
+                                    "let p = { new IPoint with            \n" +
+                                    "               member this.X = x      \n" +
+                                    "               member this.Y = y }")
+        AssertAreEqual [loc(31,32,4,4); loc(7,8,1,1)] (findAllReferences "y" (loc (31,32,4,4)) ast)
+        AssertAreEqual [loc(31,32,3,3); loc(5,6,1,1)] (findAllReferences "x" (loc (31,32,3,3)) ast)
+
+    [<Test>]
+    member this.``Find usages of x in do expression given its definition or usage`` () =
+        let ast = parseWithPosDecl ("let x = 42   \n" +
+                                    "do write x ")
+        AssertAreEqual [loc(9,10,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+        AssertAreEqual [loc(9,10,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (9,10,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages of x in interface implementation given its definition or usage`` () =
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "type MyClass = \n" +
+                                    "     interface IFoo with \n" +
+                                    "          member this.Bar () = x")
+        AssertAreEqual [loc(31,32,4,4); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+        AssertAreEqual [loc(31,32,4,4); loc(4,5,1,1)] (findAllReferences "x" (loc (31,32,4,4)) ast)
+
+    [<Test>]
+    member this.``Find usages of x in assignment given its definition or usages`` () =
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "x <- x + 1")
+        AssertAreEqual [loc(5,6,2,2); loc(0,1,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+        AssertAreEqual [loc(5,6,2,2); loc(0,1,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (0,1,2,2)) ast)
+        AssertAreEqual [loc(5,6,2,2); loc(0,1,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (5,6,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages of x in lambda expression`` () =
+        let ast = parseWithPosDecl ("let f = fun x -> x")
+        AssertAreEqual [loc(17,18,1,1); loc(12,13,1,1)] (findAllReferences "x" (loc (12,13,1,1)) ast)
+        AssertAreEqual [loc(17,18,1,1); loc(12,13,1,1)] (findAllReferences "x" (loc (17,18,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of x and y in lambda expression`` () =
+        let ast = parseWithPosDecl ("let f = fun x -> fun y -> x + y")
+        AssertAreEqual [loc(26,27,1,1); loc(12,13,1,1)] (findAllReferences "x" (loc (12,13,1,1)) ast)
+        AssertAreEqual [loc(30,31,1,1); loc(21,22,1,1)] (findAllReferences "y" (loc (21,22,1,1)) ast)
