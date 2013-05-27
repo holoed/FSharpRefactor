@@ -24,12 +24,18 @@ let noOp2 v = liftM2 (curry2 v)
 
 let noOp3 v = liftM3 (curry3 v)
 
+let processPVars vars = state {  let! _ = mmap (fun (PVar (s,l)) -> state { do! insert s l }) vars 
+                                 return () }
+
 let varF x = state {  let (s : string, l) = x
                       do! addRef s l
                       return Ast.Var x }
 
 let lamF ps e = state { let! vars = mmap (fun p -> state { return! p }) ps
-                        let! e' = e                         
+                        do! enter_scope
+                        do! processPVars vars
+                        let! e' = e
+                        do! exit_scope 
                         return Lam (vars, e') }
 
 let processBinding isRec (p, e) = 
@@ -41,7 +47,7 @@ let processBinding isRec (p, e) =
                     then let (PVar (s, l)) = flatPat.[0]
                          do! insert s l                                                                                                                                                    
                     do! enter_scope  
-                    let! _ = mmap (fun (PVar (s,l)) -> state { do! insert s l }) flatPat.Tail                                     
+                    do! processPVars flatPat.Tail                                     
                     let! e' = e                                                           
                     do! exit_scope
                     if ((List.length flatPat) = 1) 
@@ -56,7 +62,7 @@ let processBinding isRec (p, e) =
                     do! enter_scope
                     let! e' = e   
                     do! exit_scope
-                    let! _ = mmap (fun (PVar (s,l)) -> state { do! insert s l }) flatPat  
+                    do! processPVars flatPat  
                     return pAcc, e'                                                                                                                                                                                                                                                                               
                  }
 
@@ -81,7 +87,7 @@ let matchF e cs = state { let! e' = e
 let clauseF p e = state { let! p' = p
                           let vars = ASTPatUtils.flatPat p'
                           do! enter_scope
-                          let! _ = mmap (fun (PVar (s,l)) -> state { do! insert s l }) vars    
+                          do! processPVars vars    
                           let! e' = e
                           do! exit_scope
                           return Clause(p', e') }
@@ -90,7 +96,7 @@ let forEachF p e1 e2 = state { let! p' = p
                                let vars = ASTPatUtils.flatPat p'
                                let! e1' = e1
                                do! enter_scope
-                               let! _ = mmap (fun (PVar (s,l)) -> state { do! insert s l }) vars    
+                               do! processPVars vars    
                                let! e2' = e2
                                do! exit_scope
                                return ForEach (p', e1', e2') }
@@ -128,7 +134,7 @@ let recordDefF name fields ms = state { let! msAcc = mmap (fun m -> state { retu
 let classF n ms = state {  let! ic = mmap (fun x -> state { let! xAcc = x
                                                             match xAcc with | ImplicitCtor ps -> return ps | _ -> return [] }) ms
                            do! enter_scope
-                           let! _ = mmap (fun ps -> mmap (fun (PVar (s,l)) -> state { do! insert s l }) ps) ic
+                           let! _ = mmap (fun ps -> processPVars ps) ic
                            let! msAcc = mmap (fun m -> state { return! m }) (if ic.IsEmpty then ms else ms.Tail)
                            do! exit_scope
                            return Class (n, msAcc) }
