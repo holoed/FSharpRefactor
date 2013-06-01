@@ -396,4 +396,221 @@ type SymbolTableBuilderTests() =
                                    "                return x }")
         AssertAreEqual [loc(23,24,2,2); loc(21,22,1,1)] (findAllReferences "x" (loc (21,22,1,1)) ast)
 
+    [<Test>]
+    member this.``Find usages in mutually recursive functions``() =
+        let ast = parseWithPosDecl ( "let loop e =              \n" +
+                                     "    let rec foo x =       \n" +
+                                     "      bar x               \n" +
+                                     "    and bar y =           \n" +
+                                     "        foo y             \n" +
+                                     "    foo e")
+        AssertAreEqual [loc(10,11,3,3); loc(16,17,2,2)] (findAllReferences "x" (loc (16,17,2,2)) ast)
+        AssertAreEqual [loc(12,13,5,5); loc(12,13,4,4)] (findAllReferences "y" (loc (12,13,4,4)) ast)
+
+    [<Test>]
+    member this.``Find usages of identifiers in do!``  () =
+        let ast = parseWithPosDecl("let transfer accA accB amount = stm { do! withdraw accA amount \n" +
+                                   "                                      do! deposit accB amount }")
+        AssertAreEqual [loc(51,55,1,1); loc(13,17,1,1)] (findAllReferences "accA" (loc (13,17,1,1)) ast)
+        AssertAreEqual [loc(50,54,2,2); loc(18,22,1,1)] (findAllReferences "accB" (loc (18,22,1,1)) ast)
+        AssertAreEqual [loc(55,61,2,2); loc(56,62,1,1); loc(23,29,1,1)] (findAllReferences "amount" (loc (23,29,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of identifiers in dotGet``  () =
+        let ast = parseWithPosDecl("let getName xs = (List.head xs).Name")
+        AssertAreEqual [loc(28,30,1,1); loc(12,14,1,1)] (findAllReferences "xs" (loc (12,14,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of identifiers in dotSet``  () =
+        let ast = parseWithPosDecl("let x = 42 \n" +
+                                   "(List.head xs).Value <- x")
+        AssertAreEqual [loc(24,25,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of identifiers in typed function`` () =
+        let ast = parseWithPosDecl ("let f x : int = x")
+        AssertAreEqual [loc(16,17,1,1); loc(6,7,1,1)] (findAllReferences "x" (loc (6,7,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in static members of exception definition`` () =
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "exception Foo with static member Bar = x")
+        AssertAreEqual [loc(39,40,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in instance members of exception definition`` () =
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "exception Foo with member this.Bar = x")
+        AssertAreEqual [loc(37,38,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in IfThen expression without else`` () =
+        let ast = parseWithPosDecl ("let f x = state { if (x > 0) then return! f x }")
+        AssertAreEqual [loc(44,45,1,1); loc(22,23,1,1); loc(6,7,1,1)] (findAllReferences "x" (loc (6,7,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in Record pattern`` () =
+        let ast = parseWithPosDecl ("let { FirstName = x; LastName = y } = ret  \n" +
+                                    "let fullName = x + y                         ")
+        AssertAreEqual [loc(15,16,2,2); loc(18,19,1,1)] (findAllReferences "x" (loc (18,19,1,1)) ast)
+        AssertAreEqual [loc(19,20,2,2); loc(32,33,1,1)] (findAllReferences "y" (loc (32,33,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in expression containing anonymous type constraints`` () =
+        let ast = parseWithPosDecl ("let x : IDictionary<_, _> = dict \n" +
+                                    "let y = x ")
+        AssertAreEqual [loc(8,9,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in expression containing an array type constraint`` () =
+        let ast = parseWithPosDecl ("let x : int[] = xs \n" +
+                                    "let y = x ")
+        AssertAreEqual [loc(8,9,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of a type application`` () =
+        let ast = parseWithPosDecl ("let x = Foo<int> \n" +
+                                    "let y = x")
+        AssertAreEqual [loc(8,9,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of addressOf &`` () =
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "let y = &x")
+        AssertAreEqual [loc(9,10,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of a null pattern`` () =
+        let ast = parseWithPosDecl ("let x = null \n" +
+                                    "let null = x")
+        AssertAreEqual [loc(11,12,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of iterator variable in for loop`` () =
+        let ast = parseWithPosDecl ("for i = 0 to 5 do \n" +
+                                    "   printf \"%i\" i ")
+        AssertAreEqual [loc(15,16,2,2); loc(4,5,1,1)] (findAllReferences "i" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Iterator variable should be available only within the body of the loop`` () =
+        let ast = parseWithPosDecl ("let i = 42 \n" +
+                                    "for i = 0 to 5 do \n" +
+                                    "   printf \"%i\" i \n" +
+                                    "let x = i ")
+        AssertAreEqual [loc(15,16,3,3); loc(4,5,2,2)] (findAllReferences "i" (loc (4,5,2,2)) ast)
+        AssertAreEqual [loc(8,9,4,4); loc(4,5,1,1)] (findAllReferences "i" (loc (8,9,4,4)) ast)
+
+    [<Test>]
+    member this.``Iterator variable should not be available in the expression used to define the start value of the loop`` () =
+        let ast = parseWithPosDecl ("let i = 42 \n" +
+                                    "for i = 0 + i to 5 do \n" +
+                                    "   printf \"%i\" i ")
+        AssertAreEqual [loc(15,16,3,3); loc(4,5,2,2)] (findAllReferences "i" (loc (4,5,2,2)) ast)
+        AssertAreEqual [loc(12,13,2,2); loc(4,5,1,1)] (findAllReferences "i" (loc (12,13,2,2)) ast)
+
+    [<Test>]
+    member this.``Iterator variable should not be available in the expression used to define the end value of the loop`` () =
+        let ast = parseWithPosDecl ("let i = 42 \n" +
+                                    "for i = 0 to 5 + i do \n" +
+                                    "   printf \"%i\" i ")
+        AssertAreEqual [loc(15,16,3,3); loc(4,5,2,2)] (findAllReferences "i" (loc (4,5,2,2)) ast)
+        AssertAreEqual [loc (17,18,2,2); loc (4,5,1,1)] (findAllReferences "i" (loc (17,18,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of or on pattern matching ``() =
+        let ast = parseWithPosDecl ("let x = 42  \n"+
+                                    "try Foo() with                     \n" +
+                                    "| :? System.ArgumentException      \n" +
+                                    "| :? System.ArgumentNullException -> x")
+        AssertAreEqual [loc(37,38,4,4); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of an assert``() = 
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "let _ = assert (x <= 32)")
+        AssertAreEqual [loc(16,17,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in a while loop``() = 
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "let y = 32 \n" +
+                                    "while x > 0 do  \n" +
+                                    "   foo y ")
+        AssertAreEqual [loc(6,7,3,3); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+        AssertAreEqual [loc(7,8,4,4); loc(4,5,2,2)] (findAllReferences "y" (loc (4,5,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages in a lazy value``() =
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "let g = lazy x")
+        AssertAreEqual [loc(13,14,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages of enum cases``() =
+        let ast = parseWithPosDecl ("type Choice = \n" +
+                                    "   | Yes = 0    \n" +
+                                    "   | No  = 1    \n" +
+                                    "let x = Yes")
+        AssertAreEqual [loc(8,11,4,4);loc(5,8,2,2)] (findAllReferences "Yes" (loc (5,8,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages in an inferred downcast``() =
+        let ast = parseWithPosDecl ("let x = 42 :> System.Object \n" +
+                                    "let y:string = downcast x")
+        AssertAreEqual [loc(24,25,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in an inferred upcast``() =
+        let ast = parseWithPosDecl ("let x = 42 :> System.Object \n" +
+                                    "let y:string = upcast x")
+        AssertAreEqual [loc(22,23,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Quoted identifier``() =        
+        let ast = parseWithPosDecl ("let x' = 42 \n" +
+                                    "let y = x'")
+        AssertAreEqual [loc(8,10,2,2); loc(4,6,1,1)] (findAllReferences "x'" (loc (4,6,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of inheriting a base type`` () =
+        let ast = parseWithPosDecl  ("type MyClassDerived1 =   \n" +
+                                     "  inherit MyClassBase1   \n" +
+                                     "  override u.function1(a: int) = a + 1")        
+        AssertAreEqual [loc(33,34,3,3); loc(23,24,3,3)] (findAllReferences "a" (loc (23,24,3,3)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of implicit inheriting a base type`` () =
+        let ast = parseWithPosDecl  ("type MyClassDerived1() =   \n" +
+                                     "  inherit MyClassBase1()   \n" +
+                                     "  override u.function1(a: int) = a + 1")        
+        AssertAreEqual [loc(33,34,3,3); loc(23,24,3,3)] (findAllReferences "a" (loc (23,24,3,3)) ast)
+
+    [<Test>]
+    member this.``Find usages in a Try finally``() =
+        let ast = parseWithPosDecl ("let divide x y =   \n" +
+                                    "      try          \n" +  
+                                    "          x / y    \n" +
+                                    "      finally      \n" +
+                                    "        printfn \"%A %A\" x y ")
+        AssertAreEqual [loc(24,25,5,5); loc(10,11,3,3); loc(11,12,1,1)] (findAllReferences "x" (loc (11,12,1,1)) ast)
+        AssertAreEqual [loc(26,27,5,5); loc(14,15,3,3); loc(13,14,1,1)] (findAllReferences "y" (loc (13,14,1,1)) ast)
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

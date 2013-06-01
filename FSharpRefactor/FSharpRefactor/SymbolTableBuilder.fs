@@ -24,11 +24,14 @@ let noOp2 v = liftM2 (curry2 v)
 
 let noOp3 v = liftM3 (curry3 v)
 
-let processPVars vars = 
-        state {  
-                 let! _ = mmap (fun p -> match p with
-                                         | (PVar (s,l)) -> state { do! insert s l }
-                                         | _ -> state { return () } ) vars 
+let rec processPVar p = 
+                state { 
+                        match p with
+                        | PVar (s,l) -> do! insert s l 
+                        | PRecord xs -> do! processPVars (List.map (fun (_,x) -> x) xs) 
+                        | _ -> return ()  }
+and processPVars vars = 
+        state {  let! _ = mmap processPVar vars 
                  return () }
 
 let varF x = state {  let (s : string, l) = x
@@ -83,7 +86,8 @@ let letBangF p e1 e2 = state {  let! p' = p
 let unionF name cases = state { let! _ = mmap (fun (s,l) -> state { do! insert (sprintf "%s.%s" name s) l }) cases
                                 return DisUnion(name, cases) }
 
-let enumF name cases = state { return Enum(name, cases) }
+let enumF name cases = state { let! _ = mmap (fun ((s,l), _) -> state { do! insert s l }) cases
+                               return Enum(name, cases) }
 
 let matchF e cs = state { let! e' = e
                           let! cs' = mmap (fun c -> state { return! c }) cs
@@ -107,10 +111,13 @@ let forEachF p e1 e2 = state { let! p' = p
                                return ForEach (p', e1', e2') }
 
 let forF var startExp endExp bodyExp = 
-                        state{ let! var' = var
+                        state{ let! var' = var                               
                                let! startExp' = startExp
                                let! endExp' = endExp
-                               let! bodyExp' = bodyExp                               
+                               do! enter_scope
+                               do! processPVar var'
+                               let! bodyExp' = bodyExp
+                               do! exit_scope                               
                                return For(var', startExp', endExp', bodyExp') }
 
 let moduleF n ms = state { let! ms' = mmap (fun m -> state { return! m }) ms
@@ -286,4 +293,5 @@ let private buildSymbolTable exp = mmap buildSymbolTable' exp
 let findAllReferences s pos progs =
     let m = buildSymbolTable progs
     let state = SymbolTable.empty |> StateMonad.executeGetState m
-    SymbolTable.lookUp s pos  state   
+    SymbolTable.lookUp s pos  state |> Seq.distinct
+                                    |> Seq.toList
