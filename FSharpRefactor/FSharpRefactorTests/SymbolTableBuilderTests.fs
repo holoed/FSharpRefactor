@@ -705,15 +705,76 @@ type SymbolTableBuilderTests() =
         AssertAreEqual [loc(12,15,3,3); loc(8,15,3,3); loc(11,14,1,1)] (findAllReferences "Foo.Var" (loc (11,14,1,1)) ast)
         AssertAreEqual [loc(12,15,4,4); loc(8,15,4,4); loc(11,14,2,2)] (findAllReferences "Bar.Var" (loc (11,14,2,2)) ast)
 
+    [<Test>]
+    member this.``Find usages should distinguish between two different discriminated unions in a match expression``() =
+        let ast = parseWithPosDecl ("type Foo = Yes | No  \n" +
+                                    "type Bar = Yes | No  \n" +
+                                    "let f x = match x with \n" +
+                                    "          | Bar.Yes -> Foo.Yes \n" +
+                                    "          | Bar.No -> Foo.No ")
+        AssertAreEqual [loc(27,30,4,4); loc(23,30,4,4); loc(11,14,1,1)] (findAllReferences "Foo.Yes" (loc (11,14,1,1)) ast)
+        AssertAreEqual [loc(12,19,4,4); loc(11,14,2,2)] (findAllReferences "Bar.Yes" (loc (11,14,2,2)) ast)
+        AssertAreEqual [loc(26,28,5,5); loc(22,28,5,5); loc(17,19,1,1)] (findAllReferences "Foo.No" (loc (17,19,1,1)) ast)
+        AssertAreEqual [loc(12,18,5,5); loc(17,19,2,2)] (findAllReferences "Bar.No" (loc (17,19,2,2)) ast)
     
+    [<Test>]
+    member this.``Find usages of long name identifiers``() = 
+        let ast = parseWithPosDecl ("let ``my function`` ``this value`` = ``this value``")
+        AssertAreEqual [loc(37,51,1,1); loc(20,34,1,1)] (findAllReferences "this value" (loc (20,34,1,1)) ast)
 
+    [<Test>]
+    member this.``Find usages in the presence of a Params array attribute`` () =
+        let ast = parseWithPosDecl (@"  [<AttributeUsage(AttributeTargets.Method, AllowMultiple = true)>]
+                                        type TestAttribute([<ParamArray>] parameters: obj[])  =
+                                            inherit Attribute()
+                                            member this.Parameters = parameters")         
+        AssertAreEqual [loc(69,79,4,4); loc(74,84,2,2)] (findAllReferences "parameters" (loc (69,79,4,4)) ast)
+        AssertAreEqual [loc(69,79,4,4); loc(74,84,2,2)] (findAllReferences "parameters" (loc (74,84,2,2)) ast)
 
+    [<Test>]
+    member this.``Find usages in the presence of static methods with parameters`` () = 
+        let ast = parseWithPosDecl (" type Sample (code : string) =           \n" +
+                                    "     member this.Encoding = code         \n" +
+                                    "     static member Decode code = code      ")
+        AssertAreEqual [loc(33,37,3,3); loc(26,30,3,3)] (findAllReferences "code" (loc (26,30,3,3)) ast)
 
+    [<Test>]
+    member this.``Find usages in the presence of static methods with no parameters`` () = 
+        let ast = parseWithPosDecl (" type Sample (code : string, value: string) =           \n" +
+                                    "     member this.Encoding = code         \n" +
+                                    "     static member Decode = value      ")
+        AssertAreEqual [loc(28,33,3,3); loc(29,34,1,1)] (findAllReferences "value" (loc (28,33,3,3)) ast)
 
+    [<Test>]
+    member this.``Find usages in the presence of static methods with multiple parameters`` () = 
+        let ast = parseWithPosDecl (" type Sample (code : string) =           \n" +
+                                    "     member this.Encoding = code         \n" +
+                                    "     static member Decode (code, other) = (code, other)   ")
+        AssertAreEqual [loc(43,47,3,3); loc(27,31,3,3)] (findAllReferences "code" (loc (27,31,3,3)) ast)
+        AssertAreEqual [loc(49,54,3,3); loc(33,38,3,3)] (findAllReferences "other" (loc (33,38,3,3)) ast)
 
+    [<Test>]
+    member this.``Find usages in the presence of a Hash constraint`` () =
+        let ast = parseWithPosDecl ("let something: #IEnumerable option = None \n" +
+                                    "let foo = something ")
+        AssertAreEqual [loc(10,19,2,2); loc(4,13,1,1)] (findAllReferences "something" (loc (4,13,1,1)) ast)
   
+    [<Test>]
+    member this.``Find usages of Value constructor when fully qualified``() =
+        let ast = parseWithPosDecl ("type Foo = Yes | No     \n" + 
+                                    "type Bar = Yes | No     \n" + 
+                                    "let x = function        \n" + 
+                                    "        | Foo.Yes -> 0  \n" + 
+                                    "        | Foo.No -> 1   \n" +
+                                    "let y = function        \n" + 
+                                    "        | Bar.Yes -> 0  \n" + 
+                                    "        | Bar.No -> 1   ")
+        AssertAreEqual [loc(10,17,4,4); loc(11,14,1,1)] (findAllReferences "Foo.Yes" (loc (11,14,1,1)) ast)
+        AssertAreEqual [loc(10,16,5,5); loc(17,19,1,1)] (findAllReferences "Foo.No" (loc (17,19,1,1)) ast)
+        AssertAreEqual [loc(10,17,7,7); loc(11,14,2,2)] (findAllReferences "Bar.Yes" (loc (11,14,2,2)) ast)
+        AssertAreEqual [loc(10,16,8,8); loc(17,19,2,2)] (findAllReferences "Bar.No" (loc (17,19,2,2)) ast)
 
-
+ 
 
 
 

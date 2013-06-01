@@ -192,7 +192,15 @@ let pRecordF es = state { let! esAcc = mmap (fun (i, e) -> state { let! eAcc = e
                                                                    return i, eAcc }) es
                           return PRecord esAcc }
 
-let pLongVarF xs = state {  let! xs' = mmapId xs                                                                 
+let pLongVarF xs = state {  let! xs' = mmapId xs   
+                            let s = xs' |> List.map (fun (PVar (s,_)) -> s)
+                                        |> fun xs -> System.String.Join(".", xs)
+                            let ls = xs' |> List.map (fun (PVar (_, l)) -> l)
+                            let first = List.head ls
+                            let last = Seq.last ls
+                            let l = { first with srcColumn = { startColumn = first.srcColumn.startColumn
+                                                               endColumn = last.srcColumn.endColumn } }
+                            do! addRef s l
                             return PLongVar xs' }
 
 let private buildSymbolTable' exp : State<'t, Ast.Module<'a>> = 
