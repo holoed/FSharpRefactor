@@ -34,8 +34,20 @@ and processPVars vars =
         state {  let! _ = mmap processPVar vars 
                  return () }
 
+let fromLoc loc n = { loc with srcColumn = { startColumn = loc.srcColumn.startColumn
+                                             endColumn = loc.srcColumn.startColumn  + n } }
+
 let varF x = state {  let (s : string, l) = x
-                      do! addRef s l
+                      let! state = getState
+                      if (s.Contains ".") 
+                      then do! s.Split '.' |> fun xs -> xs.[0]
+                                           |> fun s -> addRef s (fromLoc l s.Length)
+                           if (SymbolTable.containsDef s state)
+                           then do! addRef s l
+                                let last = s.Split '.' |> Seq.last
+                                do! addRef s { l with srcColumn = { startColumn = l.srcColumn.startColumn + (s.Length - last.Length)
+                                                                    endColumn = l.srcColumn.endColumn } }
+                      else do! addRef s l
                       return Ast.Var x }
 
 let lamF ps e = state { let! vars = mmap (fun p -> state { return! p }) ps
@@ -290,8 +302,8 @@ let private buildSymbolTable' exp : State<'t, Ast.Module<'a>> =
 
 let private buildSymbolTable exp = mmap buildSymbolTable' exp
 
-let findAllReferences s pos progs =
+let findAllReferences s l progs =
     let m = buildSymbolTable progs
     let state = SymbolTable.empty |> StateMonad.executeGetState m
-    SymbolTable.lookUp s pos  state |> Seq.distinct
-                                    |> Seq.toList
+    SymbolTable.lookUp s l state |> Seq.distinct
+                                 |> Seq.toList

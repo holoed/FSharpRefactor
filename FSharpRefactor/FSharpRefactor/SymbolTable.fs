@@ -60,3 +60,9 @@ let addRef s l (t:SymbolTable TreeLoc) =
     | Some(t', path) ->  
         t' |> modifyLabel (fun (dict, n) -> (Map.map (fun s' ls -> if (s = s') then l::ls else ls) dict), n) 
            |> moveBackTo path
+
+let rec containsDef s (t:SymbolTable TreeLoc) = 
+        let { rootLabel = (dict, n)
+              subForest = children } = t |> toTree
+        (Map.containsKey s dict) ||
+         children |> List.exists (fun x -> containsDef s (fromTree x))   
