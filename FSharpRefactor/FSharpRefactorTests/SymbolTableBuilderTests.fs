@@ -147,13 +147,13 @@ type SymbolTableBuilderTests() =
     member this.``Find usage of Var given its definition in sample 8`` () =
         let ast = parseWithPosDecl ("type Exp = Var of string\n" + 
                                     "let exp = Exp.Var(\"x\")   ")
-        AssertAreEqual [loc(10,17,2,2); loc(11,14,1,1)] (findAllReferences "Exp.Var" (loc(11,14,1,1)) ast) 
+        AssertAreEqual [loc(14,17,2,2); loc(10,17,2,2); loc(11,14,1,1)] (findAllReferences "Exp.Var" (loc(11,14,1,1)) ast) 
 
     [<Test>]
     member this.``Find definition of Var given its usage in sample 8`` () =
         let ast = parseWithPosDecl ("type Exp = Var of string\n" + 
                                     "let exp = Exp.Var(\"x\")   ")
-        AssertAreEqual [loc(10,17,2,2); loc(11,14,1,1)] (findAllReferences "Exp.Var" (loc(10,17,2,2)) ast) 
+        AssertAreEqual [loc(14,17,2,2); loc(10,17,2,2); loc(11,14,1,1)] (findAllReferences "Exp.Var" (loc(10,17,2,2)) ast) 
 
     [<Test>]
     member this.``Find usage of x given its definition in sample 9`` () =
@@ -594,6 +594,120 @@ type SymbolTableBuilderTests() =
                                     "        printfn \"%A %A\" x y ")
         AssertAreEqual [loc(24,25,5,5); loc(10,11,3,3); loc(11,12,1,1)] (findAllReferences "x" (loc (11,12,1,1)) ast)
         AssertAreEqual [loc(26,27,5,5); loc(14,15,3,3); loc(13,14,1,1)] (findAllReferences "y" (loc (13,14,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in a for with a PWild as a bound variable``() = 
+        let ast = parseWithPosDecl ("let Padded initialAlignment (v:byte[]) = \n" +
+                                    "      [| yield! v                        \n" +
+                                    "         for _ in 1..(4 - (initialAlignment + v.Length) % 4) % 4 do  \n" +
+                                    "             yield 0x0uy |]")
+        AssertAreEqual [loc(46,47,3,3); loc(16,17,2,2); loc(29,30,1,1)] (findAllReferences "v" (loc (29,30,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in typed quotation``() =
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "let y = <@ x + 1 @>")
+        AssertAreEqual [loc(11,12,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in un-typed quotation``() =
+        let ast = parseWithPosDecl ("let x = 42 \n" +
+                                    "let y = <@@ x + 1 @@>")
+        AssertAreEqual [loc(12,13,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of unit of measures``() =   
+        let ast = parseWithPosDecl ("[<Measure>] type kg          \n" +
+                                    "let x = 42.5<kg> \n" +
+                                    "let y = x + 12.5<kg>");
+        AssertAreEqual [loc(8,9,3,3); loc(4,5,2,2)] (findAllReferences "x" (loc (4,5,2,2)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of unit of measures power``() =   
+        let ast = parseWithPosDecl ("[<Measure>] type cm \n" +
+                                    "[<Measure>] type ml = cm^3  \n" +
+                                    "let x = 42.5<ml> \n" +
+                                    "let y = x + 12.5<cm^3>");
+        AssertAreEqual [loc(8,9,4,4); loc(4,5,3,3)] (findAllReferences "x" (loc (4,5,3,3)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of unit of measure divide``() =
+        let ast = parseWithPosDecl ("[<Measure>] type foo \n" +
+                                    "[<Measure>] type bar = foo/3  \n" +
+                                    "let x = 42.5<bar> \n" +
+                                    "let y = x + 12.5<foo/3>");
+        AssertAreEqual [loc(8,9,4,4); loc(4,5,3,3)] (findAllReferences "x" (loc (4,5,3,3)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of a type test``() =
+        let ast = parseWithPosDecl ("let x = 2 :? double \n" +
+                                    "let y = x :? int ")
+        AssertAreEqual [loc(8,9,2,2); loc(4,5,1,1)] (findAllReferences "x" (loc (4,5,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of an anoymous measure``() =
+        let ast = parseWithPosDecl ("[<Measure>]                \n" +
+                                    "type m                     \n" +
+                                    "                           \n" +
+                                    "let x = 0.0<_>             \n" +
+                                    "let y = x + 4.0<m>           ")
+        AssertAreEqual [loc(8,9,5,5); loc(4,5,4,4)] (findAllReferences "x" (loc (4,5,4,4)) ast)
+
+    [<Test>]
+    member this.``Find usages in ands patterns``() = 
+        let ast = parseWithPosDecl ("let detectZeroAND point =               \n" +
+                                    "       match point with                 \n" +
+                                    "       | (0, 0) -> 0                    \n" +
+                                    "       | (var1, var2) & (0, _) -> var1     \n" +
+                                    "       | (var1, var2)  & (_, 0) -> var2    \n" +
+                                    "       | _ -> 3")
+        AssertAreEqual [loc(34,38,4,4); loc(10,14,4,4)] (findAllReferences "var1" (loc (10,14,4,4)) ast)
+        AssertAreEqual [loc(35,39,5,5); loc(16,20,5,5)] (findAllReferences "var2" (loc (16,20,5,5)) ast)
+   
+    [<Test>]
+    member this.``Find usages in the presence of statically resolved typed parameters``() =    
+        let ast = parseWithPosDecl ("let inline joinM b m =          \n" +
+                                    "   let (>>=) m f = (^x: (member Bind: ^m -> (^n -> ^n) -> ^n) b, m, f) \n" +
+                                    "   m >>= id")   
+        AssertAreEqual [loc(3,4,3,3); loc(19,20,1,1)] (findAllReferences "m" (loc (19,20,1,1)) ast)
+        AssertAreEqual [loc(65,66,2,2); loc(13,14,2,2)] (findAllReferences "m" (loc (13,14,2,2)) ast)
+ 
+    [<Test>]
+    member this.``Find usages in a type extension``() =
+        let ast = parseWithPosDecl ("type A () = do () with member x.A b c d = b + c * d")
+        AssertAreEqual [loc(42,43,1,1); loc(34,35,1,1)] (findAllReferences "b" (loc (34,35,1,1)) ast)
+        AssertAreEqual [loc(46,47,1,1); loc(36,37,1,1)] (findAllReferences "c" (loc (36,37,1,1)) ast)
+        AssertAreEqual [loc(50,51,1,1); loc(38,39,1,1)] (findAllReferences "d" (loc (50,51,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages when using record aliases`` () =
+        let ast = parseWithPosDecl("type AParameters = { a : int }\n" +
+                                   "type X = | A of AParameters | B\n" +
+                                   "let f (r : X) =\n" +
+                                   " match r with\n" +
+                                   " | X.A ( { a = aValue } as t )-> aValue\n" +
+                                   " | X.B -> 0\n")
+        AssertAreEqual [loc(33,39,5,5); loc(15,21,5,5)] (findAllReferences "aValue" (loc (15,21,5,5)) ast)
+
+    [<Test>]
+    member this.``Find usages in the presence of optional arguments in class members``() =
+        let ast = parseWithPosDecl ("type Foo() = member this.Foo ?x = defaultArg x 42")
+        AssertAreEqual [loc(45,46,1,1); loc(30,31,1,1)] (findAllReferences "x" (loc (30,31,1,1)) ast)
+
+    [<Test>]
+    member this.``Find usages should distinguish between two different discriminated unions with the same constructor name``() =
+        let ast = parseWithPosDecl ("type Foo = Var of string  \n" +
+                                    "type Bar = Var of string  \n" +
+                                    "let x = Foo.Var \"Hello\" \n" +
+                                    "let y = Bar.Var \"World\" ")
+        AssertAreEqual [loc(12,15,3,3); loc(8,15,3,3); loc(11,14,1,1)] (findAllReferences "Foo.Var" (loc (12,15,3,3)) ast)
+        AssertAreEqual [loc(12,15,4,4); loc(8,15,4,4); loc(11,14,2,2)] (findAllReferences "Bar.Var" (loc (12,15,4,4)) ast)        
+        AssertAreEqual [loc(12,15,3,3); loc(8,15,3,3); loc(11,14,1,1)] (findAllReferences "Foo.Var" (loc (11,14,1,1)) ast)
+        AssertAreEqual [loc(12,15,4,4); loc(8,15,4,4); loc(11,14,2,2)] (findAllReferences "Bar.Var" (loc (11,14,2,2)) ast)
+
+    
+
+
 
 
 
