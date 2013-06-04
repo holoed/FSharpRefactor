@@ -151,3 +151,35 @@ type SymbolTableTests() =
         Assert.AreEqual (2, List.length occurences3)
         Assert.AreEqual (loc3, occurences3.[0])
         Assert.AreEqual (loc, occurences3.[1])
+
+    [<Test>]
+    member this.``Should be able to addRef for sub-match of identifier``() =
+        let loc = { srcFilename = "foo.fs"
+                    srcLine = { startLine = 1; endLine = 1 }
+                    srcColumn = { startColumn = 3; endColumn = 4 } }
+        let loc2 = { srcFilename = "foo.fs"
+                     srcLine = { startLine = 4; endLine = 4 }
+                     srcColumn = { startColumn = 1; endColumn = 2 } }
+        let occurences = empty |> insert "Foo.Yes" loc
+                               |> addRef "Yes" loc2
+                               |> lookUp "Foo.Yes" loc
+        Assert.AreEqual (2, List.length occurences)
+        Assert.AreEqual (loc2, occurences.[0])
+        Assert.AreEqual (loc, occurences.[1])
+
+    [<Test>]
+    member this.``Should be able to find identifier by partial matching``() =
+        let loc = { srcFilename = "foo.fs"
+                    srcLine = { startLine = 1; endLine = 1 }
+                    srcColumn = { startColumn = 3; endColumn = 4 } }
+        let loc2 = { srcFilename = "foo.fs"
+                     srcLine = { startLine = 4; endLine = 4 }
+                     srcColumn = { startColumn = 1; endColumn = 2 } }
+        let occurences = empty |> insert "Foo.Yes" loc
+                               |> addRef "Yes" loc2
+                               |> lookUp "Yes" loc2
+        Assert.AreEqual (2, List.length occurences)
+        Assert.AreEqual (loc2, occurences.[0])
+        Assert.AreEqual (loc, occurences.[1])
+     
+     
