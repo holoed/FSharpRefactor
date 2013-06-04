@@ -24,10 +24,45 @@ let noOp2 v = liftM2 (curry2 v)
 
 let noOp3 v = liftM3 (curry3 v)
 
+let flatPat p =
+    let rec LoopPat pat =    
+                ContinuationMonad.cont {  match pat with   
+                                          | PParen p -> return! LoopPat p
+                                          | PAttribute(p, attrs) -> let! pAcc = LoopPat p
+                                                                    return pAcc
+                                          | POr (p1, p2) -> let! p1Acc = LoopPat p1
+                                                            let! p2Acc = LoopPat p2
+                                                            return p1Acc @ p2Acc  
+                                          | PAnds ps -> let! psAcc = ContinuationMonad.mmap LoopPat ps
+                                                        return List.concat psAcc                                                                                                 
+                                          | PRecord x -> return [PRecord x]
+                                          | PVar x -> return [PVar x]
+                                          | PApp (l, r) -> let! lAcc = LoopPat l
+                                                           let! rAcc = LoopPat r
+                                                           return lAcc @ rAcc  
+                                          | PLit x -> return [PLit x]
+                                          | PTuple es -> let! esAcc = ContinuationMonad.mmap LoopPat es
+                                                         return List.concat esAcc
+                                          | PWild -> return []
+                                          | PNull -> return [] 
+                                          | PList es -> let! esAcc = ContinuationMonad.mmap LoopPat es
+                                                        return List.concat esAcc
+                                          | PLongVar xs -> return []
+                                          | PIsInst t -> return []
+                                          | PNamed (p1, p2) -> let! p1Acc = LoopPat p1
+                                                               let! p2Acc = LoopPat p2
+                                                               return p1Acc @ p2Acc }
+    LoopPat p id
+
+
 let rec processPVar p = 
                 state { 
                         match p with
-                        | PVar (s,l) -> do! insert s l 
+                        | PVar (s:string,l) -> 
+                                if (System.Char.IsUpper s.[0]) then
+                                        do! addRef s l
+                                else
+                                        do! insert s l 
                         | PRecord xs -> do! processPVars (List.map (fun (_,x) -> x) xs) 
                         | _ -> return ()  }
 and processPVars vars = 
@@ -39,7 +74,7 @@ let fromLoc loc n = { loc with srcColumn = { startColumn = loc.srcColumn.startCo
 
 let varF x = state {  let (s : string, l) = x
                       let! state = getState
-                      if (s.Contains ".") 
+                      if ((s.Contains ".") && (System.Char.IsLower s.[0])) 
                       then do! s.Split '.' |> fun xs -> xs.[0]
                                            |> fun s -> addRef s (fromLoc l s.Length)
                            if (SymbolTable.containsDef s state)
@@ -59,7 +94,7 @@ let lamF ps e = state { let! vars = mmap (fun p -> state { return! p }) ps
 
 let processBinding isRec (p, e) = 
         state { let! pAcc = p
-                let flatPat = ASTPatUtils.flatPat pAcc
+                let flatPat = flatPat pAcc
                 match pAcc with   
                 | PApp(_, _) ->                                                                         
                     if ((List.length flatPat) > 1 && isRec) 
@@ -105,16 +140,16 @@ let matchF e cs = state { let! e' = e
                           let! cs' = mmap (fun c -> state { return! c }) cs
                           return Match(e', cs')}
 
-let clauseF p e = state { let! p' = p
-                          let vars = ASTPatUtils.flatPat p'
-                          do! enter_scope
+let clauseF p e = state { do! enter_scope
+                          let! p' = p
+                          let vars = flatPat p'                          
                           do! processPVars vars    
                           let! e' = e
                           do! exit_scope
                           return Clause(p', e') }
 
 let forEachF p e1 e2 = state { let! p' = p
-                               let vars = ASTPatUtils.flatPat p'
+                               let vars = flatPat p'
                                let! e1' = e1
                                do! enter_scope
                                do! processPVars vars    
@@ -177,7 +212,7 @@ let implicitInheritF t e idOption = state { let! t' = t
                                             return ImplicitInherit (t', e', idOption') }
 
 let memberF isInstance p e = state { let! p' = p
-                                     let vars = ASTPatUtils.flatPat p'
+                                     let vars = flatPat p'
                                      do! enter_scope
                                      do! processPVars vars
                                      let! e' = e    
@@ -200,7 +235,10 @@ let pLongVarF xs = state {  let! xs' = mmapId xs
                             let last = Seq.last ls
                             let l = { first with srcColumn = { startColumn = first.srcColumn.startColumn
                                                                endColumn = last.srcColumn.endColumn } }
-                            do! addRef s l
+                            if ((s.Contains ".") && (System.Char.IsLower s.[0])) 
+                            then let ident = Seq.head (s.Split '.')
+                                 do! insert ident (fromLoc l (ident.Length))
+                            else  do! addRef s l
                             return PLongVar xs' }
 
 let private buildSymbolTable' exp : State<'t, Ast.Module<'a>> = 

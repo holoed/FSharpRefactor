@@ -147,13 +147,13 @@ type SymbolTableBuilderTests() =
     member this.``Find usage of Var given its definition in sample 8`` () =
         let ast = parseWithPosDecl ("type Exp = Var of string\n" + 
                                     "let exp = Exp.Var(\"x\")   ")
-        AssertAreEqual [loc(14,17,2,2); loc(10,17,2,2); loc(11,14,1,1)] (findAllReferences "Exp.Var" (loc(11,14,1,1)) ast) 
+        AssertAreEqual [loc(10,17,2,2); loc(11,14,1,1)] (findAllReferences "Exp.Var" (loc(11,14,1,1)) ast) 
 
     [<Test>]
     member this.``Find definition of Var given its usage in sample 8`` () =
         let ast = parseWithPosDecl ("type Exp = Var of string\n" + 
                                     "let exp = Exp.Var(\"x\")   ")
-        AssertAreEqual [loc(14,17,2,2); loc(10,17,2,2); loc(11,14,1,1)] (findAllReferences "Exp.Var" (loc(10,17,2,2)) ast) 
+        AssertAreEqual [loc(10,17,2,2); loc(11,14,1,1)] (findAllReferences "Exp.Var" (loc(10,17,2,2)) ast) 
 
     [<Test>]
     member this.``Find usage of x given its definition in sample 9`` () =
@@ -700,10 +700,10 @@ type SymbolTableBuilderTests() =
                                     "type Bar = Var of string  \n" +
                                     "let x = Foo.Var \"Hello\" \n" +
                                     "let y = Bar.Var \"World\" ")
-        AssertAreEqual [loc(12,15,3,3); loc(8,15,3,3); loc(11,14,1,1)] (findAllReferences "Foo.Var" (loc (12,15,3,3)) ast)
-        AssertAreEqual [loc(12,15,4,4); loc(8,15,4,4); loc(11,14,2,2)] (findAllReferences "Bar.Var" (loc (12,15,4,4)) ast)        
-        AssertAreEqual [loc(12,15,3,3); loc(8,15,3,3); loc(11,14,1,1)] (findAllReferences "Foo.Var" (loc (11,14,1,1)) ast)
-        AssertAreEqual [loc(12,15,4,4); loc(8,15,4,4); loc(11,14,2,2)] (findAllReferences "Bar.Var" (loc (11,14,2,2)) ast)
+        AssertAreEqual [loc(8,15,3,3); loc(11,14,1,1)] (findAllReferences "Foo.Var" (loc (8,15,3,3)) ast)
+        AssertAreEqual [loc(8,15,4,4); loc(11,14,2,2)] (findAllReferences "Bar.Var" (loc (8,15,4,4)) ast)        
+        AssertAreEqual [loc(8,15,3,3); loc(11,14,1,1)] (findAllReferences "Foo.Var" (loc (11,14,1,1)) ast)
+        AssertAreEqual [loc(8,15,4,4); loc(11,14,2,2)] (findAllReferences "Bar.Var" (loc (11,14,2,2)) ast)
 
     [<Test>]
     member this.``Find usages should distinguish between two different discriminated unions in a match expression``() =
@@ -712,9 +712,9 @@ type SymbolTableBuilderTests() =
                                     "let f x = match x with \n" +
                                     "          | Bar.Yes -> Foo.Yes \n" +
                                     "          | Bar.No -> Foo.No ")
-        AssertAreEqual [loc(27,30,4,4); loc(23,30,4,4); loc(11,14,1,1)] (findAllReferences "Foo.Yes" (loc (11,14,1,1)) ast)
+        AssertAreEqual [loc(23,30,4,4); loc(11,14,1,1)] (findAllReferences "Foo.Yes" (loc (11,14,1,1)) ast)
         AssertAreEqual [loc(12,19,4,4); loc(11,14,2,2)] (findAllReferences "Bar.Yes" (loc (11,14,2,2)) ast)
-        AssertAreEqual [loc(26,28,5,5); loc(22,28,5,5); loc(17,19,1,1)] (findAllReferences "Foo.No" (loc (17,19,1,1)) ast)
+        AssertAreEqual [loc(22,28,5,5); loc(17,19,1,1)] (findAllReferences "Foo.No" (loc (17,19,1,1)) ast)
         AssertAreEqual [loc(12,18,5,5); loc(17,19,2,2)] (findAllReferences "Bar.No" (loc (17,19,2,2)) ast)
     
     [<Test>]
@@ -774,6 +774,15 @@ type SymbolTableBuilderTests() =
         AssertAreEqual [loc(10,17,7,7); loc(11,14,2,2)] (findAllReferences "Bar.Yes" (loc (11,14,2,2)) ast)
         AssertAreEqual [loc(10,16,8,8); loc(17,19,2,2)] (findAllReferences "Bar.No" (loc (17,19,2,2)) ast)
 
+    [<Test>]
+    member this.``Find usages of Value constructor when not fully qualified``() =
+        let ast = parseWithPosDecl ("type Foo = Yes | No     \n" + 
+                                    "type Bar = Yes | No     \n" + 
+                                    "let x = function        \n" + 
+                                    "        | Yes -> 0      \n" + 
+                                    "        | No -> 1         ")
+        AssertAreEqual [loc(10,13,4,4); loc(11,14,2,2)] (findAllReferences "Bar.Yes" (loc (11,14,2,2)) ast)
+        AssertAreEqual [loc(10,12,5,5); loc(17,19,2,2)] (findAllReferences "Bar.No" (loc (17,19,2,2)) ast)
  
 
 
