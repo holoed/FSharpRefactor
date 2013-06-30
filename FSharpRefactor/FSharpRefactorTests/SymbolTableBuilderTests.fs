@@ -784,9 +784,38 @@ type SymbolTableBuilderTests() =
         AssertAreEqual [loc(10,13,4,4); loc(11,14,2,2)] (findAllReferences "Bar.Yes" (loc (11,14,2,2)) ast)
         AssertAreEqual [loc(10,12,5,5); loc(17,19,2,2)] (findAllReferences "Bar.No" (loc (17,19,2,2)) ast)
  
+    [<Test>]
+    member this.``Find usages in the presence of record pattern matching in for loop``() =
+        let ast = parseWithPosDecl (" for {Button=b} as sq in squares do\n" +
+                                    "    b.Click.Add(fun _ ->  onClick sq ) ")
+        AssertAreEqual [loc(4, 5, 2, 2); loc(13, 14, 1, 1)] (findAllReferences "b" (loc(13, 14, 1, 1)) ast)
 
+    [<Test>]
+    member this.``Find usages of discriminated unions value constructors in function application``() =
+        let ast = parseWithPosDecl ("type Foo = Yes | No  \n" +
+                                    "let f = function      \n" +
+                                    "        | Yes -> 0    \n" +
+                                    "        | No -> 1     \n" +
+                                    "(f No) |> printf \"%A\" \n")
+        AssertAreEqual [loc(3,5,5,5); loc(10,12,4,4); loc(17,19,1,1)] (findAllReferences "Foo.No" (loc (17,19,1,1)) ast)
+    
+    [<Test>]
+    member this.``Find usages of identifiers bound in left side pattern match of Algebraic Data Type``() =
+         let ast = parseWithPosDecl ("type Foo = Foo of int * int  \n" +
+                                     "let (Foo(x,y)) = Foo(5,7)    \n" +
+                                     "let z = x")
+         AssertAreEqual [loc(8,9,3,3); loc(9,10,2,2)] (findAllReferences "x" (loc (9,10,2,2)) ast)
 
+    [<Test>]
+    member this.``Issue:17434 Reported by LostTheBlack``() =
+        let ast = parseWithPosDecl ("let True _ = true  \n" +
+                                    "let b = True 42")
+        AssertAreEqual [loc(8,12,2,2); loc(4,8,1,1)] (findAllReferences "True" (loc (4,8,1,1)) ast)
 
+    [<Test>]
+    member this.``Loop with literal loop variable`` () =
+        let ast = parseWithPosDecl ("for () in 0 .. 10 do ()")
+        AssertAreEqual [] (findAllReferences "()" (loc (4,6,1,1)) ast)
 
 
 
